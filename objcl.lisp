@@ -44,8 +44,14 @@
   (:report (lambda (condition stream)
              (format stream
                      "The Objective C runtime has issued an exception of ~
-                      type `~A'."
-                     (objcl-invoke-class-method condition "name")))))
+                      type `~A'.~&~
+                      Reason: ~A."
+                     (objcl-invoke-class-method
+                      (objcl-invoke-class-method condition "name")
+                      "UTF8String")
+                     (objcl-invoke-class-method
+                      (objcl-invoke-class-method condition "reason")
+                      "UTF8String")))))
 
 
 (defgeneric objcl-eql (obj1 obj2))
@@ -236,10 +242,7 @@
 
 (defun arglist-intersperse-types (arglist)
   (mapcan #'(lambda (arg)
-              (with-foreign-slots ((type data) arg obj-data)
-                (list (type-name->c-type (type-id->type-name
-                                          (foreign-string-to-lisp type)))
-                      arg)))
+              (list :pointer arg))
           arglist))
 
 
