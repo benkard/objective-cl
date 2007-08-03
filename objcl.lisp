@@ -272,3 +272,85 @@
             nil
             (obj-data->lisp obj-data))
       (dealloc-obj-data obj-data))))
+
+
+(defun objcl-class-name (class)
+  (declare (type (or objc-class objc-id) class))
+  (let ((obj-data (foreign-alloc 'obj-data)))
+    (with-foreign-slots ((type data) obj-data obj-data)
+      (setf type (typecase class
+                   (objc-class "#")
+                   (objc-id    "@")))
+      (setf (foreign-slot-value obj-data
+                                'obj-data-union
+                                (typecase class
+                                  (objc-class 'class-val)
+                                  (objc-id    'id-val)))
+            (pointer-to class)))
+    (prog1
+        (%objcl-class-name (pointer-to class))
+      (dealloc-obj-data obj-data))))
+
+
+(defmethod print-object ((object objc-id) stream)
+  (print-unreadable-object (object stream)
+    (format stream "~A OBJC-ID"
+            (objcl-class-name
+             (objcl-invoke-instance-method object "class")))))
+
+
+(defmethod print-object ((object objc-class) stream)
+  (print-unreadable-object (object stream)
+    (format stream "OBJC-CLASS ~A"
+            (objcl-class-name object))))
+
+
+(set-macro-character #\] (get-macro-character #\)))
+
+(set-macro-character #\[ #'(lambda (stream char)
+                             (declare (ignore char))
+                             (parse-objc-call stream)))
+
+(defun parse-objc-call (stream)
+  (let ((*standard-input* stream))
+    (flet ((read-message-part (buffer)
+             (do ((char (read-char stream t nil t)
+                        (read-char stream t nil t)))
+                 ((not (or (alphanumericp char)
+                           (member char (coerce ":_-" 'list))))
+                  (unread-char char))
+               (vector-push-extend char buffer)))
+           (slurp-whitespace ()
+             (do ((char nil
+                        (read-char stream t nil t)))
+                 ((not (member (peek-char) '(#\Space #\Newline #\Tab)))))))
+      (let* ((class-method-p nil)
+             (receiver (if (upper-case-p (peek-char))
+                           ;; A class name.
+                           (let ((*readtable* (copy-readtable)))
+                             (setf class-method-p t)
+                             (setf (readtable-case *readtable*) :preserve)
+                             `(objcl-find-class
+                               ,(symbol-name (read stream t nil t))))
+                           ;; Something else.
+                           (read stream t nil t)))
+             (args (list))
+             (message (make-array '(0) :element-type 'character
+                                       :adjustable t :fill-pointer t)))
+
+        (slurp-whitespace)
+        (do ()
+            ((char= #\] (peek-char)))
+          (read-message-part message)
+          (slurp-whitespace)
+          (unless (char= #\] (peek-char))
+            (push (read stream t nil t) args)
+            (slurp-whitespace)))
+
+        ;; Slurp the trailing #\].
+        (assert (char= #\] (read-char)))
+        (setf args (nreverse args))
+        `(,(if class-method-p
+               'objcl-invoke-class-method
+               'objcl-invoke-instance-method)
+           ,receiver ,message ,@args)))))
