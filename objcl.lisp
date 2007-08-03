@@ -353,4 +353,10 @@
         `(,(if class-method-p
                'objcl-invoke-class-method
                'objcl-invoke-instance-method)
-           ,receiver ,message ,@args)))))
+           ,receiver
+           ,(make-array (list (length message))
+                        :element-type 'character
+                        :initial-contents message
+                        :adjustable nil
+                        :fill-pointer nil)
+           ,@args)))))
