@@ -13,6 +13,19 @@
   '(satisfies pointerp))
 
 
+(defctype char-pointer :pointer)
+
+(defmethod translate-to-foreign ((value string) (type (eql 'char-pointer)))
+  #+nil
+  (let ((buffer (foreign-alloc :char :count (length value))))
+    (cffi:lisp-string-to-foreign value buffer (length value))
+    buffer)
+  (foreign-string-alloc value))
+
+(defmethod translate-from-foreign (c-value (type (eql 'char-pointer)))
+  (foreign-string-to-lisp c-value))
+
+
 (defclass c-pointer-wrapper ()
   ((pointer :type     c-pointer
             :accessor pointer-to
@@ -23,10 +36,22 @@
 (defclass objc-id       (c-pointer-wrapper) ())
 (defclass objc-class    (c-pointer-wrapper) ())
 
+(define-condition objc-exception (error)
+  ((pointer :type     c-pointer
+            :accessor pointer-to
+            :initarg  :pointer))
+  (:documentation "The condition type for Objective C exceptions.")
+  (:report (lambda (condition stream)
+             (format stream
+                     "The Objective C runtime has issued an exception of ~
+                      type `~A'."
+                     (objcl-invoke-class-method condition "name")))))
+
 
 (defcunion obj-data-union
   (id-val :pointer)
   (class-val :pointer)
+  (exc-val :pointer)
   (sel-val :pointer)
   (char-val :char)
   (short-val :short)
@@ -41,14 +66,13 @@
 
 
 (defcstruct obj-data
-  (type :string)
+  (type char-pointer)
   (data obj-data-union))
 
 
 (defun dealloc-obj-data (obj-data)
-  #+nil
   (with-foreign-slots ((type data) obj-data obj-data)
-    (free-translated-object type :string '(t)))
+    (foreign-string-free type))
   (foreign-free obj-data))
 
 
@@ -80,6 +104,7 @@
 (defparameter *objcl-api-type-names*
   '((id       . #\@)
     (class    . #\#)
+    (exc      . #\E)
     (sel      . #\:)
     (chr      . #\c)
     (uchr     . #\C)
@@ -113,6 +138,7 @@
 (defparameter *objcl-data-map*
   '((id       . id-val)
     (class    . class-val)
+    (exc      . exc-val)
     (sel      . sel-val)
     (chr      . char-val)
     (uchr     . char-val)
@@ -135,6 +161,7 @@
   '((id       . objc-id)
     (class    . objc-class)
     (sel      . objc-selector)
+    (exc      . objc-exception)
     (chr      . character)
     (int      . integer)
     (uint     . integer)
@@ -154,6 +181,7 @@
   '((id       . :pointer)
     (class    . :pointer)
     (sel      . :pointer)
+    (exc      . :pointer)
     (chr      . :char)
     (int      . :int)
     (uint     . :unsigned-int)
@@ -202,7 +230,8 @@
 (defun arglist-intersperse-types (arglist)
   (mapcan #'(lambda (arg)
               (with-foreign-slots ((type data) arg obj-data)
-                (list (type-name->c-type (type-id->type-name type))
+                (list (type-name->c-type (type-id->type-name
+                                          (foreign-string-to-lisp type)))
                       arg)))
           arglist))
 
@@ -229,7 +258,13 @@
                                     (length args)
                                     arglist)))
     (prog1
-        (obj-data->lisp return-value)
+        (let ((value (obj-data->lisp return-value)))
+          (if (typep value 'condition)
+              (cerror "Return NIL from OBJCL-INVOKE-CLASS-METHOD" value)
+              value))
+      #+nil (print (foreign-string-to-lisp (foreign-slot-value return-value
+                                                               'obj-data
+                                                               'type)))
       (dealloc-obj-data return-value))))
 
 
@@ -241,24 +276,26 @@
                                 'obj-data-union
                                 (type-name->slot-name type-name))
             (typecase value
-              ((or objc-id objc-class objc-selector)
+              ((or objc-id objc-class objc-selector objc-exception)
                (pointer-to value))
               (otherwise value)))
       (setf type
-            (type-name->type-id type-name)))
+            (foreign-string-alloc (type-name->type-id type-name)))
+      #+nil (print (foreign-string-to-lisp type)))
     obj-data))
 
 
 (defun obj-data->lisp (obj-data)
   (with-foreign-slots ((type data) obj-data obj-data)
-    (let* ((type-name (type-id->type-name type))
+    (let* ((type-name (type-id->type-name (foreign-string-to-lisp type)))
            (lisp-type (type-name->lisp-type type-name))
            (value     (foreign-slot-value data
                                           'obj-data-union
                                           (type-name->slot-name type-name))))
       (case lisp-type
-        ((objc-id objc-class objc-selector)
+        ((objc-id objc-class objc-selector objc-exception)
          (make-instance lisp-type :pointer value))
+        ((string)  (foreign-string-to-lisp value))
         (otherwise value)))))
 
 
@@ -275,20 +312,22 @@
 
 
 (defun objcl-class-name (class)
-  (declare (type (or objc-class objc-id) class))
+  (declare (type (or objc-class objc-id objc-exception) class))
   (let ((obj-data (foreign-alloc 'obj-data)))
     (with-foreign-slots ((type data) obj-data obj-data)
-      (setf type (typecase class
-                   (objc-class "#")
-                   (objc-id    "@")))
       (setf (foreign-slot-value obj-data
                                 'obj-data-union
-                                (typecase class
-                                  (objc-class 'class-val)
-                                  (objc-id    'id-val)))
-            (pointer-to class)))
+                                (etypecase class
+                                  (objc-class     'class-val)
+                                  (objc-id        'id-val)
+                                  (objc-exception 'exc-val)))
+            (pointer-to class))
+      (setf type (foreign-string-alloc (etypecase class
+                                         (objc-class     "#")
+                                         (objc-id        "@")
+                                         (objc-exception "E")))))
     (prog1
-        (%objcl-class-name (pointer-to class))
+        (%objcl-class-name obj-data)
       (dealloc-obj-data obj-data))))
 
 
@@ -352,7 +391,8 @@
         (setf args (nreverse args))
         `(,(if class-method-p
                'objcl-invoke-class-method
-               'objcl-invoke-instance-method)
+               #+nil 'objcl-invoke-instance-method
+               #-nil 'objcl-invoke-class-method)
            ,receiver
            ,(make-array (list (length message))
                         :element-type 'character

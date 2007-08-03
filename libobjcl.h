@@ -11,6 +11,7 @@ typedef struct objcl_object
   {
     id id_val;
     Class class_val;
+    NSException *exc_val;
     SEL sel_val;
     char char_val;
     short short_val;
@@ -24,6 +25,9 @@ typedef struct objcl_object
     void *ptr_val;
   } data;
 } *OBJCL_OBJ_DATA;
+
+
+#define EXCEPTION_TYPESPEC "ERROR"
 
 
 void

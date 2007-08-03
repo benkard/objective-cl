@@ -72,8 +72,9 @@ _objcl_get_arg_pointer (void *buffer, OBJCL_OBJ_DATA argdata)
 }
 
 
-static void *
+static void
 _objcl_invoke_method (id self_,
+                      OBJCL_OBJ_DATA result,
                       NSMethodSignature *signature,
                       SEL selector,
                       int argc,
@@ -82,7 +83,6 @@ _objcl_invoke_method (id self_,
   int i;
   NSInvocation *invocation;
   void *result_ptr = NULL;
-  OBJCL_OBJ_DATA result = malloc (sizeof (struct objcl_object));
   const char *type = [signature methodReturnType];
 
   result->type = malloc (strlen (type) + 1);
@@ -90,7 +90,9 @@ _objcl_invoke_method (id self_,
 
   if (signature == NULL)
     {
-      return NULL;
+      [[NSException exceptionWithName: @"MLKNoSignatureFoundException"
+                    reason: @"No signature found"
+                    userInfo: NULL] raise];
     }
 
   
@@ -159,8 +161,6 @@ _objcl_invoke_method (id self_,
   [invocation getReturnValue: result_ptr];
   if (result->type[0] == '#')
     NSLog (@"Returning: %@", result->data.id_val);
-
-  return result;
 }
 
 
@@ -174,24 +174,38 @@ objcl_invoke_instance_method (OBJCL_OBJ_DATA receiver,
   id self_ = NULL;
   SEL selector;
   NSMethodSignature *signature;
-  void *result;
+  OBJCL_OBJ_DATA result = malloc (sizeof (struct objcl_object));
 
-  assert (receiver->type[0] == '#'
-          || receiver->type[0] == '@');
-  switch (receiver->type[0])
+  NS_DURING
     {
-    case '#': self_ = receiver->data.class_val;
-    case '@': self_ = receiver->data.id_val;
+      fprintf (stderr, "! ---------> %s <--------\n", receiver->type);
+      assert (receiver->type[0] == '#'
+              || receiver->type[0] == '@'
+              || receiver->type[0] == 'E');
+      switch (receiver->type[0])
+        {
+        case '#': self_ = receiver->data.class_val;
+        case '@': self_ = receiver->data.id_val;
+        case 'E': self_ = receiver->data.exc_val;                
+        }
+
+      selector = NSSelectorFromString ([NSString
+                                         stringWithUTF8String: method_name]);
+
+      signature = [self_ instanceMethodSignatureForSelector: selector];
+
+      va_start (arglist, argc);
+      _objcl_invoke_method (self_, result, signature, selector, argc, arglist);
+      va_end (arglist);
     }
-
-  selector = NSSelectorFromString ([NSString
-                                     stringWithUTF8String: method_name]);
-
-  signature = [self_ instanceMethodSignatureForSelector: selector];
-
-  va_start (arglist, argc);
-  result = _objcl_invoke_method (self_, signature, selector, argc, arglist);
-  va_end (arglist);
+  NS_HANDLER
+    {
+      result->type = malloc (strlen (EXCEPTION_TYPESPEC) + 1);
+      strcpy (result->type, EXCEPTION_TYPESPEC);
+      result->data.exc_val = localException;
+      NS_VALUERETURN (result, void *);
+    }
+  NS_ENDHANDLER
 
   return result;
 }
@@ -207,26 +221,39 @@ objcl_invoke_class_method (OBJCL_OBJ_DATA class,
   id self_ = NULL;
   SEL selector;
   NSMethodSignature *signature;
-  void *result;
+  OBJCL_OBJ_DATA result = malloc (sizeof (struct objcl_object));
 
-  assert (class->type[0] == '#'
-          || class->type[0] == '@');
-  switch (class->type[0])
+  NS_DURING
     {
-    case '#': self_ = class->data.class_val;
-    case '@': self_ = class->data.id_val;
+      assert (class->type[0] == '#'
+              || class->type[0] == '@'
+              || class->type[0] == 'E');
+      switch (class->type[0])
+        {
+        case '#': self_ = class->data.class_val;
+        case '@': self_ = class->data.id_val;
+        case 'E': self_ = class->data.exc_val;
+        }
+
+      selector = NSSelectorFromString ([NSString
+                                         stringWithUTF8String: method_name]);
+
+      signature = [self_ methodSignatureForSelector: selector];
+
+      va_start (arglist, argc);
+      _objcl_invoke_method (self_, result, signature, selector, argc, arglist);
+      va_end (arglist);
     }
+  NS_HANDLER
+    {
+      result->type = malloc (strlen (EXCEPTION_TYPESPEC) + 1);
+      strcpy (result->type, EXCEPTION_TYPESPEC);
+      result->data.exc_val = localException;
+      NS_VALUERETURN (result, void *);
+    }
+  NS_ENDHANDLER
 
-  selector = NSSelectorFromString ([NSString
-                                     stringWithUTF8String: method_name]);
-
-  signature = [self_ methodSignatureForSelector: selector];
-
-  va_start (arglist, argc);
-  result = _objcl_invoke_method (self_, signature, selector, argc, arglist);
-  va_end (arglist);
-
-  return result;
+    return result;
 }
 
 
@@ -251,12 +278,16 @@ objcl_class_name (OBJCL_OBJ_DATA class)
 {
   Class cls = NULL;
 
+  fprintf (stderr, "---------> %s <--------\n", class->type);
+  fflush (stderr);
   assert (class->type[0] == '#'
-          || class->type[0] == '@');
+          || class->type[0] == '@'
+          || class->type[0] == 'E');
   switch (class->type[0])
     {
     case '#': cls = class->data.class_val;
     case '@': cls = class->data.id_val;
+    case 'E': cls = (id) class->data.exc_val;
     }
 
   return class_get_class_name (cls);
