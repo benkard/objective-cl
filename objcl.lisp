@@ -28,7 +28,7 @@
 
 (defclass c-pointer-wrapper ()
   ((pointer :type     c-pointer
-            :accessor pointer-to
+            :reader   pointer-to
             :initarg  :pointer)))
 
 
@@ -52,6 +52,32 @@
                      (objcl-invoke-class-method
                       (objcl-invoke-class-method condition "reason")
                       "UTF8String")))))
+
+(defvar *skip-finalization* nil)
+(defvar *skip-retaining*    nil)
+
+;; We call the `retain' method on every object that is garbage collected
+;; on our side.  Upon finalization, wie `release' it.
+(eval-when (:load-toplevel)
+  (dolist (type '(objc-id objc-class objc-exception))
+    (funcall
+     (compile nil
+              `(lambda ()
+                 (defmethod initialize-instance ((obj ,type) &key)
+                   (call-next-method)
+                   (unless *skip-retaining*
+                     (let ((*skip-retaining* t))
+                       (objcl-invoke-class-method obj "retain")))
+                   (unless *skip-finalization*
+                     (assert (not (null (pointer-to obj))))
+                     (let ((saved-pointer (pointer-to obj))
+                           (saved-type    (type-of obj)))
+                       (flet ((finalizer ()
+                                (let ((temp (let ((*skip-finalization* t))
+                                              (make-instance saved-type
+                                                             :pointer saved-pointer))))
+                                  (objcl-invoke-class-method temp "release"))))
+                         (trivial-garbage:finalize obj #'finalizer))))))))))
 
 
 (defgeneric objcl-eql (obj1 obj2))
@@ -246,6 +272,7 @@
           arglist))
 
 
+#+nil
 (defun objcl-invoke-instance-method (receiver method-name &rest args)
   (let* ((arglist (arglist-intersperse-types
                    (mapcar #'lisp->obj-data args)))
@@ -259,6 +286,18 @@
       (dealloc-obj-data return-value))))
 
 
+(defun constructor-name-p (method-name)
+  (flet ((method-name-starts-with (prefix)
+           (and (>= (length method-name) (length prefix))
+                (or (and (string= prefix
+                                  (subseq method-name 0 (length prefix)))
+                         (or (= (length method-name)
+                                (length prefix))
+                             (not (lower-case-p (char method-name (length prefix))))))))))
+    (or (method-name-starts-with "alloc")
+        (method-name-starts-with "new"))))
+
+
 (defun objcl-invoke-class-method (class method-name &rest args)
   (let* ((arglist (arglist-intersperse-types
                    (mapcar #'lisp->obj-data args)))
@@ -267,14 +306,14 @@
                                     method-name
                                     (length args)
                                     arglist)))
-    (prog1
-        (let ((value (obj-data->lisp return-value)))
-          (if (typep value 'condition)
-              (cerror "Return NIL from OBJCL-INVOKE-CLASS-METHOD" value)
-              value))
-      #+nil (print (foreign-string-to-lisp (foreign-slot-value return-value
-                                                               'obj-data
-                                                               'type)))
+    (unwind-protect
+         (let ((value
+                (let ((*skip-retaining* (or *skip-retaining*
+                                            (constructor-name-p method-name))))
+                  (obj-data->lisp return-value))))
+           (if (typep value 'condition)
+               (cerror "Return NIL from OBJCL-INVOKE-CLASS-METHOD" value)
+               value))
       (dealloc-obj-data return-value))))
 
 
