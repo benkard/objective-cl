@@ -285,6 +285,7 @@
             (typecase value
               ((or objc-id objc-class objc-selector objc-exception)
                (pointer-to value))
+              (string    (foreign-string-alloc value))
               (otherwise value)))
       (setf type
             (foreign-string-alloc (type-name->type-id type-name)))
