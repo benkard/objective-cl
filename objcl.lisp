@@ -26,6 +26,7 @@
 
 (defcunion obj-data-union
   (id-val :pointer)
+  (class-val :pointer)
   (sel-val :pointer)
   (char-val :char)
   (short-val :short)
@@ -60,7 +61,8 @@
   (argc :int)
   &rest)
 
-(defcfun "objcl_invoke_class_method" obj-data
+(defcfun ("objcl_invoke_class_method"
+          %objcl-invoke-class-method) obj-data
   (receiver obj-data)
   (method-name :string)
   (argc :int)
@@ -68,6 +70,9 @@
 
 (defcfun ("objcl_find_class" %objcl-find-class) :pointer
   (class-name :string))
+
+(defcfun ("objcl_class_name" %objcl-class-name) :string
+  (class obj-data))
 
 
 ;;; Copied from objc-api.h
@@ -107,7 +112,7 @@
 
 (defparameter *objcl-data-map*
   '((id       . id-val)
-    (class    . id-val)
+    (class    . class-val)
     (sel      . sel-val)
     (chr      . char-val)
     (uchr     . char-val)
@@ -215,6 +220,19 @@
       (dealloc-obj-data return-value))))
 
 
+(defun objcl-invoke-class-method (class method-name &rest args)
+  (let* ((arglist (arglist-intersperse-types
+                   (mapcar #'lisp->obj-data args)))
+         (return-value (apply-macro '%objcl-invoke-class-method
+                                    (lisp->obj-data class)
+                                    method-name
+                                    (length args)
+                                    arglist)))
+    (prog1
+        (obj-data->lisp return-value)
+      (dealloc-obj-data return-value))))
+
+
 (defun lisp->obj-data (value)
   (let ((obj-data (foreign-alloc 'obj-data))
         (type-name (lisp-value->type-name value)))
@@ -250,7 +268,7 @@
         (if (null-pointer-p (foreign-slot-value
                              (foreign-slot-value obj-data 'obj-data 'data)
                              'obj-data-union
-                             'id-val))
+                             'class-val))
             nil
             (obj-data->lisp obj-data))
       (dealloc-obj-data obj-data))))

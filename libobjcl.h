@@ -10,6 +10,7 @@ typedef struct objcl_object
   union
   {
     id id_val;
+    Class class_val;
     SEL sel_val;
     char char_val;
     short short_val;
@@ -51,3 +52,7 @@ objcl_find_class (const char *class_name);
 char **
 objcl_query_arglist_info (void *receiver,
                           const char *method_name);
+
+
+const char *
+objcl_class_name (OBJCL_OBJ_DATA class);

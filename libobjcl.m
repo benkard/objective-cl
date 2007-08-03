@@ -171,14 +171,19 @@ objcl_invoke_instance_method (OBJCL_OBJ_DATA receiver,
                               ...)
 {
   va_list arglist;
-  id self_;
+  id self_ = NULL;
   SEL selector;
   NSMethodSignature *signature;
   void *result;
 
   assert (receiver->type[0] == '#'
           || receiver->type[0] == '@');
-  self_ = receiver->data.id_val;
+  switch (receiver->type[0])
+    {
+    case '#': self_ = receiver->data.class_val;
+    case '@': self_ = receiver->data.id_val;
+    }
+
   selector = NSSelectorFromString ([NSString
                                      stringWithUTF8String: method_name]);
 
@@ -199,14 +204,19 @@ objcl_invoke_class_method (OBJCL_OBJ_DATA class,
                            ...)
 {
   va_list arglist;
-  id self_;
+  id self_ = NULL;
   SEL selector;
   NSMethodSignature *signature;
   void *result;
 
   assert (class->type[0] == '#'
           || class->type[0] == '@');
-  self_ = class->data.id_val;
+  switch (class->type[0])
+    {
+    case '#': self_ = class->data.class_val;
+    case '@': self_ = class->data.id_val;
+    }
+
   selector = NSSelectorFromString ([NSString
                                      stringWithUTF8String: method_name]);
 
@@ -223,14 +233,31 @@ objcl_invoke_class_method (OBJCL_OBJ_DATA class,
 void *
 objcl_find_class (const char *class_name)
 {
-  id class =
+  Class class =
     NSClassFromString ([NSString stringWithUTF8String: class_name]);
   OBJCL_OBJ_DATA result = malloc (sizeof (struct objcl_object));
   const char *const typespec = "#8@0:4";
 
   result->type = malloc (strlen (typespec) + 1);
   strcpy (result->type, typespec);
-  result->data.id_val = class;
+  result->data.class_val = class;
 
   return result;
+}
+
+
+const char *
+objcl_class_name (OBJCL_OBJ_DATA class)
+{
+  Class cls = NULL;
+
+  assert (class->type[0] == '#'
+          || class->type[0] == '@');
+  switch (class->type[0])
+    {
+    case '#': cls = class->data.class_val;
+    case '@': cls = class->data.id_val;
+    }
+
+  return class_get_class_name (cls);
 }
