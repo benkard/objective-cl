@@ -241,11 +241,16 @@
       (case lisp-type
         ((objc-id objc-class objc-selector)
          (make-instance lisp-type :pointer value))
-        (otherwise      value)))))
+        (otherwise value)))))
 
 
 (defun objcl-find-class (class-name)
   (let ((obj-data (%objcl-find-class class-name)))
     (prog1
-        (obj-data->lisp obj-data)
+        (if (null-pointer-p (foreign-slot-value
+                             (foreign-slot-value obj-data 'obj-data 'data)
+                             'obj-data-union
+                             'id-val))
+            nil
+            (obj-data->lisp obj-data))
       (dealloc-obj-data obj-data))))
