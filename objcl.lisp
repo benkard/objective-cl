@@ -344,9 +344,12 @@
 
 (defmethod print-object ((object objc-id) stream)
   (print-unreadable-object (object stream)
-    (format stream "~A {~X}"
+    (format stream "~A `~A' {~X}"
             (objcl-class-name
              (objcl-invoke-class-method object "class"))
+            (objcl-invoke-class-method
+             (objcl-invoke-class-method object "description")
+             "UTF8String")
             (objcl-invoke-class-method object "hash"))))
 
 
