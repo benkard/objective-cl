@@ -2,6 +2,7 @@
 
 
 (defun install-reader-syntax ()
+  "FIXME"
   (set-macro-character #\] (get-macro-character #\)))
 
   (set-macro-character #\[ #'(lambda (stream char)

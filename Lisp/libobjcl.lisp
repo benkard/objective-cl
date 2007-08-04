@@ -7,8 +7,10 @@
 (use-foreign-library libobjcl)
 
 
+;; FIXME: docs
 (defcfun ("objcl_initialise_runtime" initialise-runtime) :void)
 
+;; FIXME: docs
 (defcfun ("objcl_shutdown_runtime" shutdown-runtime) :void)
 
 (defcfun ("objcl_invoke_instance_method"

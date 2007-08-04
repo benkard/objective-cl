@@ -3,4 +3,6 @@
 
 (defvar *skip-finalization*  nil)
 (defvar *skip-retaining*     nil)
-(defvar *trace-method-calls* nil)
+
+(defvar *trace-method-calls* nil
+  "FIXME")
