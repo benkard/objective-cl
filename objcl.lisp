@@ -368,9 +368,11 @@
   (with-foreign-slots ((type data) obj-data obj-data)
     (let* ((type-name (type-id->type-name (foreign-string-to-lisp type)))
            (lisp-type (type-name->lisp-type type-name))
-           (value     (foreign-slot-value data
-                                          'obj-data-union
-                                          (type-name->slot-name type-name))))
+           (value     (if (eq 'void type-name)
+                          (values)
+                          (foreign-slot-value data
+                                              'obj-data-union
+                                              (type-name->slot-name type-name)))))
       (case lisp-type
         ((objc-id objc-class objc-selector objc-exception)
          (make-instance lisp-type :pointer value))
