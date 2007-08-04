@@ -4,14 +4,26 @@
   :author "Matthias Benkard <matthias@benkard.de>"
   :licence "GNU General Public License, version 3 or higher"
   :depends-on (#:cffi #:trivial-garbage)
-  :components ((:file "defpackage")
-               (:file "constant-data")
-               (:file "data-types")
-               (:file "libobjcl")
-               (:file "utilities")
-               (:file "weak-hash-tables")
-               (:file "memory-management")
-               (:file "method-invocation")
-               (:file "reader-syntax")
-               (:file "objcl"))
+  :components
+  ((:module "Lisp"
+    :components ((:file "defpackage")
+                 (:file "constant-data"     :depends-on ("defpackage"))
+                 (:file "data-types"        :depends-on ("defpackage"))
+                 (:file "type-conversion"   :depends-on ("defpackage"
+                                                         "data-types"))
+                 (:file "libobjcl"          :depends-on ("defpackage"
+                                                         "data-types"
+                                                         "type-conversion"))
+                 (:file "utilities"         :depends-on ("defpackage"))
+                 (:file "weak-hash-tables"  :depends-on ("defpackage"))
+                 (:file "memory-management" :depends-on ("defpackage"
+                                                         "weak-hash-tables"
+                                                         "data-types"
+                                                         "method-invocation"))
+                 (:file "method-invocation" :depends-on ("defpackage"
+                                                         "type-conversion"
+                                                         "libobjcl"
+                                                         "utilities"))
+                 (:file "reader-syntax"     :depends-on ("defpackage"
+                                                         "method-invocation")))))
   :serial t)
