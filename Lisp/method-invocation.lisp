@@ -2,7 +2,15 @@
 
 
 ;;; (@* "Method invocation")
-(defun objcl-invoke-class-method (receiver method-name &rest args)
+(defun invoke (receiver message-start &rest message-components)
+  "FIXME"
+  (flet ((message-component->string (component)
+           ()))
+  (do ((message-string ())))))
+
+
+(defun invoke-by-name (receiver method-name &rest args)
+  "FIXME"
   (let* ((arglist (arglist-intersperse-types
                    (mapcar #'lisp->obj-data args)))
          (return-value (apply-macro '%objcl-invoke-class-method
@@ -10,7 +18,8 @@
                                     method-name
                                     (length args)
                                     arglist)))
-    (format t "~&Invoking [~A].~%" method-name)
+    (when *trace-method-calls*
+      (format t "~&Invoking [~A].~%" method-name))
     (unwind-protect
          (let ((value
                 (let ((*skip-retaining* (or *skip-retaining*
@@ -23,7 +32,7 @@
 
 
 #+nil
-(defun objcl-invoke-class-method (receiver method-name &rest args)
+(defun invoke-instance-method-by-name (receiver method-name &rest args)
   (let* ((arglist (arglist-intersperse-types
                    (mapcar #'lisp->obj-data args)))
          (return-value (apply-macro '%objcl-invoke-instance-method

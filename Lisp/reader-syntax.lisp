@@ -28,7 +28,7 @@
                            (let ((*readtable* (copy-readtable)))
                              (setf class-method-p t)
                              (setf (readtable-case *readtable*) :preserve)
-                             `(objcl-find-class
+                             `(find-objc-class
                                ,(symbol-name (read stream t nil t))))
                            ;; Something else.
                            (read stream t nil t)))
@@ -49,9 +49,9 @@
         (assert (char= #\] (read-char)))
         (setf args (nreverse args))
         `(,(if class-method-p
-               'objcl-invoke-class-method
+               'invoke-by-name
                #+nil 'objcl-invoke-instance-method
-               #-nil 'objcl-invoke-class-method)
+               #-nil 'invoke-by-name)
            ,receiver
            ,(make-array (list (length message))
                         :element-type 'character

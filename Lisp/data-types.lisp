@@ -54,11 +54,11 @@
                      "The Objective C runtime has issued an exception of ~
                       type `~A'.~&~
                       Reason: ~A."
-                     (objcl-invoke-class-method
-                      (objcl-invoke-class-method condition "name")
+                     (invoke-by-name
+                      (invoke-by-name condition "name")
                       "UTF8String")
-                     (objcl-invoke-class-method
-                      (objcl-invoke-class-method condition "reason")
+                     (invoke-by-name
+                      (invoke-by-name condition "reason")
                       "UTF8String")))))
 
 
@@ -79,11 +79,11 @@
   (print-unreadable-object (object stream)
     (format stream "~A `~A' {~X}"
             (objcl-class-name
-             (objcl-invoke-class-method object "class"))
-            (objcl-invoke-class-method
-             (objcl-invoke-class-method object "description")
+             (invoke-by-name object "class"))
+            (invoke-by-name
+             (invoke-by-name object "description")
              "UTF8String")
-            (objcl-invoke-class-method object "hash"))))
+            (invoke-by-name object "hash"))))
 
 
 (defmethod print-object ((object objc-class) stream)

@@ -1,9 +1,6 @@
 (in-package #:mulk.objective-cl)
 
 
-(defvar *skip-finalization* nil)
-(defvar *skip-retaining*    nil)
-
 (defvar *id-objects* (make-weak-value-hash-table))
 (defvar *class-objects* (make-weak-value-hash-table))
 (defvar *exception-objects* (make-weak-value-hash-table))
@@ -63,7 +60,7 @@
                            :incomplete)
                      (let ((new-obj (call-next-method)))
                        (unless *skip-retaining*
-                         (objcl-invoke-class-method new-obj "retain"))
+                         (invoke-by-name new-obj "retain"))
                        (unless *skip-finalization*
                          ;; We only put the new object into the hash
                          ;; table if it is a regular wrapper object
@@ -89,7 +86,7 @@
                                                       (*skip-retaining*    t))
                                                   (make-instance saved-type
                                                                  :pointer saved-pointer))))
-                                      (objcl-invoke-class-method temp "release"))))
+                                      (invoke-by-name temp "release"))))
                              (trivial-garbage:finalize new-obj #'finalizer))))
                        new-obj))
                (t obj))))
