@@ -29,7 +29,8 @@
 (defclass c-pointer-wrapper ()
   ((pointer :type     c-pointer
             :reader   pointer-to
-            :initarg  :pointer)))
+            :initarg  :pointer
+            :initform nil)))
 
 
 (defclass objc-selector (c-pointer-wrapper) ())
@@ -56,28 +57,57 @@
 (defvar *skip-finalization* nil)
 (defvar *skip-retaining*    nil)
 
+(defvar *id-objects*
+  (trivial-garbage:make-weak-hash-table :weakness :value
+                                        :test 'eql))
+
+(defvar *class-objects*
+  (trivial-garbage:make-weak-hash-table :weakness :value
+                                        :test 'eql))
+
+(defvar *exception-objects*
+  (trivial-garbage:make-weak-hash-table :weakness :value
+                                        :test 'eql))
+
 ;; We call the `retain' method on every object that is garbage collected
 ;; on our side.  Upon finalization, wie `release' it.
 (eval-when (:load-toplevel)
   (dolist (type '(objc-id objc-class objc-exception))
     (funcall
-     (compile nil
-              `(lambda ()
-                 (defmethod initialize-instance ((obj ,type) &key)
-                   (call-next-method)
-                   (unless *skip-retaining*
-                     (let ((*skip-retaining* t))
-                       (objcl-invoke-class-method obj "retain")))
-                   (unless *skip-finalization*
-                     (assert (not (null (pointer-to obj))))
-                     (let ((saved-pointer (pointer-to obj))
-                           (saved-type    (type-of obj)))
-                       (flet ((finalizer ()
-                                (let ((temp (let ((*skip-finalization* t))
-                                              (make-instance saved-type
-                                                             :pointer saved-pointer))))
-                                  (objcl-invoke-class-method temp "release"))))
-                         (trivial-garbage:finalize obj #'finalizer))))))))))
+     (compile
+      nil
+      `(lambda ()
+         (defmethod make-instance ((class (eql ',type)) &rest initargs &key)
+           (let* ((hash-table ,(case type
+                                 ((objc-id)        '*id-objects*)
+                                 ((objc-class)     '*class-objects*)
+                                 ((objc-exception) '*exception-objects*)))
+                  (hash-key (pointer-address (getf initargs :pointer)))
+                  (obj (gethash hash-key hash-table nil)))
+             (typecase obj
+               (keyword (assert (eq :incomplete obj))
+                        (call-next-method))
+               (null (setf (gethash hash-key hash-table)
+                           :incomplete)
+                     (let ((new-obj (call-next-method)))
+                       (setf (gethash hash-key hash-table) new-obj)
+                       (unless *skip-retaining*
+                         (objcl-invoke-class-method new-obj "retain"))
+                       (unless *skip-finalization*
+                         (assert (not (null (pointer-to new-obj))))
+                         (let ((saved-pointer (pointer-to new-obj))
+                               (saved-type    (type-of new-obj)))
+                           (flet ((finalizer ()
+                                    (let ((temp (let ((*skip-finalization* t))
+                                                  (make-instance saved-type
+                                                                 :pointer saved-pointer))))
+                                      (objcl-invoke-class-method temp "release"))))
+                             (trivial-garbage:finalize new-obj #'finalizer))))
+                       new-obj))
+               (t obj))))
+
+         (defmethod initialize-instance ((obj ,type) &key)
+           (call-next-method)))))))
 
 
 (defgeneric objcl-eql (obj1 obj2))
@@ -330,8 +360,7 @@
               (string    (foreign-string-alloc value))
               (otherwise value)))
       (setf type
-            (foreign-string-alloc (type-name->type-id type-name)))
-      #+nil (print (foreign-string-to-lisp type)))
+            (foreign-string-alloc (type-name->type-id type-name))))
     obj-data))
 
 

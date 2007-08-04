@@ -178,7 +178,7 @@ objcl_invoke_instance_method (OBJCL_OBJ_DATA receiver,
 
   NS_DURING
     {
-      fprintf (stderr, "! ---------> %s <--------\n", receiver->type);
+      /* fprintf (stderr, "! ---------> %s <--------\n", receiver->type); */
       assert (receiver->type[0] == '#'
               || receiver->type[0] == '@'
               || receiver->type[0] == 'E');
@@ -225,6 +225,7 @@ objcl_invoke_class_method (OBJCL_OBJ_DATA class,
 
   NS_DURING
     {
+      /* fprintf (stderr, "? ---------> %s <--------\n", class->type); */
       assert (class->type[0] == '#'
               || class->type[0] == '@'
               || class->type[0] == 'E');
@@ -278,7 +279,7 @@ objcl_class_name (OBJCL_OBJ_DATA class)
 {
   Class cls = NULL;
 
-  fprintf (stderr, "---------> %s <--------\n", class->type);
+  /* fprintf (stderr, "---------> %s <--------\n", class->type); */
   fflush (stderr);
   assert (class->type[0] == '#'
           || class->type[0] == '@'
