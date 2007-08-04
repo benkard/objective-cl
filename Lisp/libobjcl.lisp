@@ -1,8 +1,19 @@
 (in-package #:mulk.objective-cl)
 
 
+(pushnew
+  (merge-pathnames (make-pathname :directory '(:relative "Objective-C"
+                                                         "shared_obj")
+                                  :type :unspecific
+                                  :name :unspecific)
+                   (asdf:component-pathname (asdf:find-system
+                                             '#:objective-cl)))
+   cffi:*foreign-library-directories*)
+
 (define-foreign-library libobjcl
-  (unix "/home/mulk/Dokumente/Projekte/Objective-CL/Objective-C/shared_obj/libobjcl.so"))
+  (:unix (:or "libobjcl.so"
+              "libobjcl.so.0"))
+  (t (:default "libobjcl")))
 
 (use-foreign-library libobjcl)
 
