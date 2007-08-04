@@ -1,11 +1,10 @@
 include $(GNUSTEP_MAKEFILES)/common.make
 
-LIBRARY_NAME = libobjcl
-VERSION = 0.0.1
+include version.make
 
+PACKAGE_NAME = Objective-CL
 RPM_DISABLE_RELOCATABLE = YES
-ADDITIONAL_OBJCFLAGS = -Wall -g -DVERSION=\"$(VERSION)\"
-libobjcl_OBJC_FILES = libobjcl.m
-LIBRARIES_DEPEND_UPON  =  $(FND_LIBS) $(GUI_LIBS) $(OBJC_LIBS) $(SYSTEM_LIBS) $(CONFIG_SYSTEM_LIBS)
 
-include $(GNUSTEP_MAKEFILES)/library.make
+SUBPROJECTS = Objective-C
+
+include $(GNUSTEP_MAKEFILES)/aggregate.make
