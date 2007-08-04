@@ -4,8 +4,8 @@
 (pushnew
   (merge-pathnames (make-pathname :directory '(:relative "Objective-C"
                                                          "shared_obj")
-                                  :type :unspecific
-                                  :name :unspecific)
+                                  :type ""
+                                  :name "")
                    (asdf:component-pathname (asdf:find-system
                                              '#:objective-cl)))
    cffi:*foreign-library-directories*)
