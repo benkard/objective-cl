@@ -123,7 +123,7 @@ conventional case for namespace identifiers in Objective C."
   (declare (type (or objc-class objc-id objc-exception) class))
   (let ((obj-data (foreign-alloc 'obj-data)))
     (with-foreign-slots ((type data) obj-data obj-data)
-      (setf (foreign-slot-value obj-data
+      (setf (foreign-slot-value data
                                 'obj-data-union
                                 (etypecase class
                                   (objc-class     'class-val)
