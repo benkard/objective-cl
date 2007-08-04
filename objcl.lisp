@@ -5,9 +5,6 @@
 
 (use-foreign-library libobjcl)
 
-(defctype pointer-array :pointer
-  "An array of void pointers.")
-
 
 (deftype c-pointer ()
   '(satisfies pointerp))
@@ -98,7 +95,8 @@
                          (let ((saved-pointer (pointer-to new-obj))
                                (saved-type    (type-of new-obj)))
                            (flet ((finalizer ()
-                                    (let ((temp (let ((*skip-finalization* t))
+                                    (let ((temp (let ((*skip-finalization* t)
+                                                      (*skip-retaining*    t))
                                                   (make-instance saved-type
                                                                  :pointer saved-pointer))))
                                       (objcl-invoke-class-method temp "release"))))
