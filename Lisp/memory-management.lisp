@@ -62,10 +62,15 @@
                (null (setf (weak-gethash hash-key hash-table)
                            :incomplete)
                      (let ((new-obj (call-next-method)))
-                       (setf (weak-gethash hash-key hash-table) new-obj)
                        (unless *skip-retaining*
                          (objcl-invoke-class-method new-obj "retain"))
                        (unless *skip-finalization*
+                         ;; We only put the new object into the hash
+                         ;; table if it is a regular wrapper object
+                         ;; rather than a temporary one, else the object
+                         ;; pointed to might be released prematurely
+                         ;; because of the lack of memory management.
+                         (setf (weak-gethash hash-key hash-table) new-obj)
                          (assert (not (null (pointer-to new-obj))))
                          (let ((saved-pointer (pointer-to new-obj))
                                (saved-type    (type-of new-obj)))
