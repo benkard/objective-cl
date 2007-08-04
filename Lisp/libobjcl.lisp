@@ -137,4 +137,3 @@ conventional case for namespace identifiers in Objective C."
     (prog1
         (%objcl-class-name obj-data)
       (dealloc-obj-data obj-data))))
-

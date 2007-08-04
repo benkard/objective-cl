@@ -23,11 +23,13 @@
 
 #-cmu
 (progn
-  (declaim (inline make-weak-value-hash-table))
+  (declaim (inline make-weak-value-hash-table (setf weak-gethash)))
 
   (defun make-weak-value-hash-table ()
     (trivial-garbage:make-weak-hash-table :weakness :value
                                           :test 'eql))
 
-  (setf (fdefinition 'weak-gethash)        (fdefinition 'gethash)
-        (fdefinition '(setf weak-gethash)) (fdefinition '(setf gethash))))
+  (setf (fdefinition 'weak-gethash) (fdefinition 'gethash))
+
+  (defun (setf weak-gethash) (value key hash-table)
+    (setf (gethash key hash-table) value)))

@@ -4,6 +4,11 @@
 ;;;; (@* "Foreign data types")
 (defctype char-pointer :pointer)
 
+;; Let us just hope that two longs make a long long, space-wise.
+(defcstruct double-long
+  (left :long)
+  (right :long))
+
 (defcunion obj-data-union
   (id-val :pointer)
   (class-val :pointer)
@@ -13,7 +18,8 @@
   (short-val :short)
   (int-val :int)
   (long-val :long)
-  (long-long-val :long-long)
+  #-cffi-features:no-long-long (long-long-val :long-long)
+  #+cffi-features:no-long-long (double-long-val double-long)
   (float-val :float)
   (double-val :double)
   (bool-val :boolean)
