@@ -73,14 +73,16 @@ converted into a string according to the following rules:
  2. Any additional components have all of their letters converted to
  lower case, except for their first letters, which are left intact.
 
-After this, the components are concatenated in order and the resulting
+After that, the components are concatenated in order and the resulting
 string used as if directly given as an argument to FIND-OBJC-CLASS.
+
 
 Examples:
 
  (find-objc-class \"NSObject\")   ;=> #<OBJC-CLASS NSObject>
  (find-objc-class 'ns-object)     ;=> #<OBJC-CLASS NSObject>
  (find-objc-class 'nsobject)      ;=> NIL
+
 
 Rationale:
 
