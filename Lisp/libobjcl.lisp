@@ -90,9 +90,9 @@ string used as if directly given as an argument to FIND-OBJC-CLASS.
 
 Examples:
 
- (find-objc-class \"NSObject\")   ;=> #<OBJC-CLASS NSObject>
- (find-objc-class 'ns-object)     ;=> #<OBJC-CLASS NSObject>
- (find-objc-class 'nsobject)      ;=> NIL
+    (find-objc-class \"NSObject\")   ;=> #<OBJC-CLASS NSObject>
+    (find-objc-class 'ns-object)     ;=> #<OBJC-CLASS NSObject>
+    (find-objc-class 'nsobject)      ;=> NIL
 
 
 Rationale:

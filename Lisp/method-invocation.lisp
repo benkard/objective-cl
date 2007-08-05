@@ -5,59 +5,61 @@
 (defun invoke (receiver message-start &rest message-components)
   "Send a message to an Objective C instance.
 
-RECEIVER: an Objective C wrapper object.
+*receiver* --- an Objective C wrapper object.
 
-MESSAGE-START: a symbol.
+*message-start* --- a symbol.
 
-MESSAGE-COMPONENTS: an alternating list of arguments and message name
-component symbols.
+*message-components* --- an alternating list of arguments and message
+name component symbols.
 
-Returns: the return value of the method invocation.
+Returns: *result* --- the return value of the method invocation.
 
 
 Each message name component is first split into parts seperated by
 hyphens and each part is converted into a string according to the
 following rules:
 
- 1. The first part is fully converted to lower case.
+1. The first part is fully converted to lower case.
 
- 2. Any additional parts are also fully converted to lower case except
- for their first letters, which are left intact.
+2. Any additional parts are also fully converted to lower case except
+   for their first letters, which are left intact.
 
- 3. If the symbol is a keyword symbol, the resulting string is suffixed
- by a colon (`:').
+3. If the symbol is a keyword symbol, the resulting string is suffixed
+   by a colon (`:').
 
 After that, all parts are concatenated in order to form a single message
 component.  The message components are in turn concatenated in order to
 form the message name which is used as if the second argument to a call
-to INVOKE-BY-NAME.
+to _invoke-by-name_.
 
 The message components that are not message name components are
 collected in order and the resulting list used as if as additional
-arguments to INVOKE-BY-NAME.
+arguments to _invoke-by-name_.
 
 
-Examples:
+## Examples:
 
- (invoke (find-objc-class 'ns-string)
-         :string-with-c-string \"Mulk.\")
-   ;=> #<GSCBufferString `Mulk.' {5B36087}>
+    (invoke (find-objc-class 'ns-string)
+            :string-with-c-string \"Mulk.\")
+      ;=> #<GSCBufferString `Mulk.' {5B36087}>
 
- (invoke (find-objc-class 'ns-object)
-         'self)                           
-   ;=> #<NSObject `NSObject' {16ECF598}>
+    (invoke (find-objc-class 'ns-object)
+            'self)                           
+      ;=> #<NSObject `NSObject' {16ECF598}>
 
- (invoke (find-objc-class 'ns-object)
-         'name)                           
-   ;=> \"NSObject\"
+    (invoke (find-objc-class 'ns-object)
+            'name)                           
+      ;=> \"NSObject\"
 
- (invoke (find-objc-class 'ns-string)
-         :string-with-c-string \"Mulk.\"
-         :encoding 4)
-   ;=> #<GSCBufferString `Mulk.' {5B36087}>
+    (invoke (find-objc-class 'ns-string)
+            :string-with-c-string \"Mulk.\"
+            :encoding 4)
+      ;=> #<GSCBufferString `Mulk.' {5B36087}>
 
 
-See also: INVOKE-BY-NAME"
+## See also:
+
+INVOKE-BY-NAME"
 
   (flet ((message-component->string (symbol)
            (let* ((components (split-sequence #\- (symbol-name symbol)
