@@ -5,36 +5,40 @@
 (defun invoke (receiver message-start &rest message-components)
   "Send a message to an Objective C instance.
 
+## Arguments and Values:
+
 *receiver* --- an Objective C wrapper object.
 
-*message-start* --- a symbol.
+*message-start* --- a **symbol**.
 
-*message-components* --- an alternating list of arguments and message
-name component symbols.
+*message-components* --- an alternating **list** of **object**s and
+**symbol**s.
 
 Returns: *result* --- the return value of the method invocation.
 
 
-Each message name component is first split into parts seperated by
-hyphens and each part is converted into a string according to the
-following rules:
+## Description:
 
-1. The first part is fully converted to lower case.
+All even-numbered *message components* are collected in order and the
+resulting **list** used as if as additional **argument**s to
+__invoke-by-name__.
 
-2. Any additional parts are also fully converted to lower case except
+All uneven-numbered *message components*, which must be **symbol**s, are
+first split into parts separated by hyphens and each part converted into
+a **string** according to the following rules:
+
+1. The first part is fully converted to **lowercase**.
+
+2. Any additional parts are also fully converted to **lowercase** except
    for their first letters, which are left intact.
 
-3. If the symbol is a keyword symbol, the resulting string is suffixed
-   by a colon (`:').
+3. If the symbol is a **keyword**, the resulting **string** is suffixed
+   by a **colon** (`:').
 
-After that, all parts are concatenated in order to form a single message
-component.  The message components are in turn concatenated in order to
-form the message name which is used as if the second argument to a call
-to _invoke-by-name_.
-
-The message components that are not message name components are
-collected in order and the resulting list used as if as additional
-arguments to _invoke-by-name_.
+After that, all parts are concatenated in order to form a
+single *message name component*.  The *message name components* are in
+turn concatenated in order to form the *message name* which is used as
+if as the second **argument** to __invoke-by-name__.
 
 
 ## Examples:
@@ -59,7 +63,7 @@ arguments to _invoke-by-name_.
 
 ## See also:
 
-INVOKE-BY-NAME"
+  __invoke-by-name__"
 
   (flet ((message-component->string (symbol)
            (let* ((components (split-sequence #\- (symbol-name symbol)
@@ -95,33 +99,37 @@ INVOKE-BY-NAME"
 (defun invoke-by-name (receiver method-name &rest args)
   "Send a message to an Objective C object by the name of the method.
 
-RECEIVER: an Objective C wrapper object.
+## Arguments and Values:
 
-METHOD-NAME: a string.
+*receiver* --- an Objective C wrapper object.
 
-ARGS: a list of objects.
+*method-name* --- a **string**.
 
-Returns: the return value of the method invocation.
+*args* --- a list of **object**s.
 
-
-Examples:
-
- (invoke-by-name (find-objc-class 'ns-string)
-                 \"stringWithCString:\" \"Mulk.\")
-   ;=> #<GSCBufferString `Mulk.' {5B36087}>
-
- (invoke-by-name (find-objc-class 'ns-object)
-                 \"self\")
-   ;=> #<NSObject `NSObject' {16ECF598}>
-
- (invoke-by-name (find-objc-class 'ns-string)
-                 \"stringWithCString:encoding:\"
-                 \"Mulk.\"
-                 4)
-   ;=> #<GSCBufferString `Mulk.' {5B36087}>
+Returns: *result* --- the return value of the method invocation.
 
 
-See also: INVOKE"
+## Examples:
+
+    (invoke-by-name (find-objc-class 'ns-string)
+                    \"stringWithCString:\" \"Mulk.\")
+      ;=> #<GSCBufferString `Mulk.' {5B36087}>
+
+    (invoke-by-name (find-objc-class 'ns-object)
+                    \"self\")
+      ;=> #<NSObject `NSObject' {16ECF598}>
+
+    (invoke-by-name (find-objc-class 'ns-string)
+                    \"stringWithCString:encoding:\"
+                    \"Mulk.\"
+                    4)
+      ;=> #<GSCBufferString `Mulk.' {5B36087}>
+
+
+## See also:
+
+  __invoke__"
 
   (let* ((arglist (arglist-intersperse-types
                    (mapcar #'lisp->obj-data args)))

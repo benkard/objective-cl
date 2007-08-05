@@ -63,43 +63,48 @@
 (defun find-objc-class (class-name)
   "Retrieve an Objective C class by name.
 
-CLASS-NAME: a symbol or a string.
+## Arguments and Values:
 
-Returns: an OBJC-CLASS object representing the class whose name is
-CLASS-NAME.
+*class-name* --- a **symbol** or a **string**.
+
+Returns: *class* --- an __objc-class__ object representing the Objective
+C class whose name is *class-name*.
 
 
-If CLASS-NAME is a symbol which does not contain a hyphen, its symbol
-name is converted to lower case except for the first letter, which is
-left intact, and the resulting string used as if directly given as an
-argument to FIND-OBJC-CLASS.
+## Description:
 
-If CLASS-NAME is a symbol which containts a hyphen, its symbol name is
-split into components seperated by hyphens and each component is
-converted into a string according to the following rules:
+If *class-name* is a **symbol** which does not contain a hyphen, its
+**name** is converted to **lowercase** except for the first letter,
+which is left intact, and the resulting **string** used as if directly
+given as an **argument** to __find-objc-class__.
 
- 1. The first component is fully converted to upper case except for its
- first letter, which is left intact.
+If *class-name* is a **symbol** which containts a hyphen, its **name**
+is split into components separated by hyphens and each component
+converted into a **string** according to the following rules:
 
- 2. Any additional components have all of their letters converted to
- lower case, except for their first letters, which are left intact.
+1. The first component is fully converted to **uppercase** except for
+   its first letter, which is left intact.
+
+2. Any additional components have all of their letters converted to
+   **lowercase**, except for their first letters, which are left intact.
 
 After that, the components are concatenated in order and the resulting
-string used as if directly given as an argument to FIND-OBJC-CLASS.
+**string** used as if directly given as an **argument** to
+__find-objc-class__.
 
 
-Examples:
+## Examples:
 
-    (find-objc-class \"NSObject\")   ;=> #<OBJC-CLASS NSObject>
+    (find-objc-class \"NSObject\")     ;=> #<OBJC-CLASS NSObject>
     (find-objc-class 'ns-object)     ;=> #<OBJC-CLASS NSObject>
     (find-objc-class 'nsobject)      ;=> NIL
 
 
-Rationale:
+## Rationale:
 
 The first component of an Objective C class name is conventionally
 thought of as a namespace identifier.  It is therefore sensible to
-expect it to be converted to upper case by default, which is the
+expect it to be converted to **uppercase** by default, which is the
 conventional case for namespace identifiers in Objective C."
 
   (typecase class-name
