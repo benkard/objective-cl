@@ -78,7 +78,7 @@ If *class-name* is a **symbol** which does not contain a hyphen, its
 which is left intact, and the resulting **string** used as if directly
 given as an **argument** to __find-objc-class__.
 
-If *class-name* is a **symbol** which containts a hyphen, its **name**
+If *class-name* is a **symbol** which contains a hyphen, its **name**
 is split into components separated by hyphens and each component
 converted into a **string** according to the following rules:
 
