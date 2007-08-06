@@ -33,3 +33,16 @@
          (make-instance lisp-type :pointer value))
         ((string)  (foreign-string-to-lisp value))
         (otherwise value)))))
+
+
+(defmacro with-foreign-objects (bindings &body body)
+  `(let ,(mapcar #'(lambda (name-value-pair)
+                     (destructuring-bind (name value)
+                         name-value-pair
+                       `(,name (lisp->obj-data ,value))))
+                 bindings)
+     (unwind-protect
+          (progn ,@body)
+       ,@(mapcar #'(lambda (name-value-pair)
+                     `(dealloc-obj-data ,(first name-value-pair)))
+                 bindings))))

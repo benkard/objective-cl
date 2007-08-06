@@ -63,3 +63,6 @@ objcl_query_arglist_info (void *receiver,
 
 const char *
 objcl_class_name (OBJCL_OBJ_DATA class);
+
+const char *
+objcl_selector_name (OBJCL_OBJ_DATA class);

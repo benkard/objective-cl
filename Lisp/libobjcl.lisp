@@ -90,6 +90,9 @@ objects or classes, let alone send messages to them.
 (defcfun ("objcl_find_selector" %objcl-find-selector) :pointer
   (selector-name :string))
 
+(defcfun ("objcl_selector_name" %objcl-selector-name) :string
+  (selector obj-data))
+
 
 (defun find-objc-class (class-name)
   "Retrieve an Objective C class by name.
@@ -145,34 +148,26 @@ conventional case for namespace identifiers in Objective C."
 
 (defun find-objc-class-by-name (class-name)
   (let ((obj-data (%objcl-find-class class-name)))
-    (prog1
-        (if (null-pointer-p (foreign-slot-value
-                             (foreign-slot-value obj-data 'obj-data 'data)
-                             'obj-data-union
-                             'class-val))
-            nil
-            (obj-data->lisp obj-data))
+    (unwind-protect
+         (if (null-pointer-p (foreign-slot-value
+                              (foreign-slot-value obj-data 'obj-data 'data)
+                              'obj-data-union
+                              'class-val))
+             nil
+             (obj-data->lisp obj-data))
       (dealloc-obj-data obj-data))))
 
 
 (defun objcl-class-name (class)
   (declare (type (or objc-class id exception) class))
-  (let ((obj-data (foreign-alloc 'obj-data)))
-    (with-foreign-slots ((type data) obj-data obj-data)
-      (setf (foreign-slot-value data
-                                'obj-data-union
-                                (etypecase class
-                                  (objc-class     'class-val)
-                                  (id        'id-val)
-                                  (exception 'exc-val)))
-            (pointer-to class))
-      (setf type (foreign-string-alloc (etypecase class
-                                         (objc-class "#")
-                                         (id         "@")
-                                         (exception  "E")))))
-    (prog1
-        (%objcl-class-name obj-data)
-      (dealloc-obj-data obj-data))))
+  (with-foreign-objects ((obj-data class))
+    (%objcl-class-name obj-data)))
+
+
+(defun selector-name (selector)
+  (declare (type selector selector))
+  (with-foreign-objects ((obj-data selector))
+    (%objcl-selector-name obj-data)))
 
 
 (defun find-selector (selector-name)

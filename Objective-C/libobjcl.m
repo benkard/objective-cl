@@ -293,10 +293,10 @@ objcl_find_selector (const char *class_name)
 const char *
 objcl_class_name (OBJCL_OBJ_DATA class)
 {
+  const char *ns_name;
+  char *name;
   Class cls = NULL;
 
-  /* fprintf (stderr, "---------> %s <--------\n", class->type); */
-  fflush (stderr);
   assert (class->type[0] == '#'
           || class->type[0] == '@'
           || class->type[0] == 'E');
@@ -307,5 +307,25 @@ objcl_class_name (OBJCL_OBJ_DATA class)
     case 'E': cls = (id) class->data.exc_val;
     }
 
-  return class_get_class_name (cls);
+  ns_name = [(NSStringFromClass (cls)) UTF8String];
+  name = malloc (strlen (ns_name) + 1);
+  strcpy (name, ns_name);
+
+  return name;
+}
+
+
+const char *
+objcl_selector_name (OBJCL_OBJ_DATA selector)
+{
+  const char *ns_name;
+  char *name;
+
+  assert (selector->type[0] == ':');
+  ns_name = [(NSStringFromSelector (selector->data.sel_val))
+              UTF8String];
+  name = malloc (strlen (ns_name) + 1);
+  strcpy (name, ns_name);
+
+  return name;
 }

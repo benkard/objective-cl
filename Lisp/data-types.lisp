@@ -98,6 +98,13 @@
             (invoke-by-name class "hash"))))
 
 
+(defmethod print-object ((selector selector) stream)
+  (print-unreadable-object (selector stream)
+    (format stream "~S `~A'"
+            'selector
+            (selector-name selector))))
+
+
 (defmethod print-object ((exception exception) stream)
   (print-unreadable-object (exception stream)
     (format stream "~S ~A {~X}"
