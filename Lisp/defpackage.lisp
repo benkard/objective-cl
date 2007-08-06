@@ -7,4 +7,5 @@
            #:invoke-by-name
            #:invoke
            #:find-objc-class
+           #:find-selector
            #:*trace-method-calls*))

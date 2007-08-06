@@ -18,7 +18,6 @@
 (use-foreign-library libobjcl)
 
 
-;; FIXME: docs
 (defcfun ("objcl_initialise_runtime" initialise-runtime) :void)
 (setf (documentation #'initialise-runtime 'function)
       "Initialise the Objective C runtime.
@@ -45,7 +44,6 @@ before making any other Objective C calls.
   __shutdown-runtime__")
 
 
-;; FIXME: docs
 (defcfun ("objcl_shutdown_runtime" shutdown-runtime) :void)
 (setf (documentation #'shutdown-runtime 'function)
       "Shut the Objective C runtime down.
@@ -88,6 +86,9 @@ objects or classes, let alone send messages to them.
 
 (defcfun ("objcl_class_name" %objcl-class-name) :string
   (class obj-data))
+
+(defcfun ("objcl_find_selector" %objcl-find-selector) :pointer
+  (selector-name :string))
 
 
 (defun find-objc-class (class-name)
@@ -166,9 +167,76 @@ conventional case for namespace identifiers in Objective C."
                                   (exception 'exc-val)))
             (pointer-to class))
       (setf type (foreign-string-alloc (etypecase class
-                                         (objc-class     "#")
-                                         (id        "@")
-                                         (exception "E")))))
+                                         (objc-class "#")
+                                         (id         "@")
+                                         (exception  "E")))))
     (prog1
         (%objcl-class-name obj-data)
+      (dealloc-obj-data obj-data))))
+
+
+(defun find-selector (selector-name)
+  "Retrieve a method selector by name.
+
+## Arguments and Values:
+
+*selector-name* --- a **string** or a **list** of **symbol**s.
+
+Returns: *selector* --- a __selector__ object, or __nil__.
+
+
+## Description:
+
+If *selector-name* is a **string**, the __selector__ named by that
+string is returned.  If no __selector__ with the given name exists,
+__nil__ is returned.
+
+If *selector-name* is a **list** of **symbol**s, all **symbol**s are
+first split into parts separated by hyphens and each part converted into
+a **string** according to the following rules:
+
+1. The first part is fully converted to **lowercase**.
+
+2. Any additional parts are also fully converted to **lowercase** except
+   for their first letters, which are left intact.
+
+3. If the symbol is a **keyword**, the resulting **string** is suffixed
+   by a **colon** (`:').
+
+After that, all parts are concatenated in order to form a
+single *selector name component*.  The *selector name components* are in
+turn concatenated in order to form the **string** that identifies the
+selector, which is used as if given directly as an argument to a call to
+__find-selector__.
+
+Note that the conversion rules for selector names are identical to those
+by which __invoke__ converts its arguments into a *message name*.
+
+
+## Examples:
+
+    (find-selector \"self\")       ;=> #<SELECTOR `self'>
+    (find-selector '(self))      ;=> #<SELECTOR `self'>
+
+    (find-selector \"stringWithCString:encoding:\")
+      ;=> #<SELECTOR `stringWithCString:encoding:'>
+
+    (find-selector '(:string-with-c-string :encoding))
+      ;=> #<SELECTOR `stringWithCString:encoding:'>"
+
+  (typecase selector-name
+    (string (find-selector-by-name selector-name))
+    (list   (find-selector-by-name (symbol-list->message-name
+                                    selector-name)))))
+
+
+(defun find-selector-by-name (selector-name)
+  (let ((obj-data (%objcl-find-selector selector-name)))
+    (prog1
+        (if (null-pointer-p (foreign-slot-value
+                             (foreign-slot-value obj-data 'obj-data 'data)
+                             'obj-data-union
+                             'sel-val))
+            nil
+            (obj-data->lisp obj-data))
       (dealloc-obj-data obj-data))))

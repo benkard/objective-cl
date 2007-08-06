@@ -164,7 +164,7 @@ _objcl_invoke_method (id self_,
 }
 
 
-void *
+OBJCL_OBJ_DATA
 objcl_invoke_instance_method (OBJCL_OBJ_DATA receiver,
                               const char *method_name,
                               int argc,
@@ -211,7 +211,7 @@ objcl_invoke_instance_method (OBJCL_OBJ_DATA receiver,
 }
 
 
-void *
+OBJCL_OBJ_DATA
 objcl_invoke_class_method (OBJCL_OBJ_DATA class,
                            const char *method_name,
                            int argc,
@@ -258,7 +258,7 @@ objcl_invoke_class_method (OBJCL_OBJ_DATA class,
 }
 
 
-void *
+OBJCL_OBJ_DATA
 objcl_find_class (const char *class_name)
 {
   Class class =
@@ -269,6 +269,22 @@ objcl_find_class (const char *class_name)
   result->type = malloc (strlen (typespec) + 1);
   strcpy (result->type, typespec);
   result->data.class_val = class;
+
+  return result;
+}
+
+
+OBJCL_OBJ_DATA
+objcl_find_selector (const char *class_name)
+{
+  SEL selector =
+    NSSelectorFromString ([NSString stringWithUTF8String: class_name]);
+  OBJCL_OBJ_DATA result = malloc (sizeof (struct objcl_object));
+  const char *const typespec = ":";
+
+  result->type = malloc (strlen (typespec) + 1);
+  strcpy (result->type, typespec);
+  result->data.sel_val = selector;
 
   return result;
 }

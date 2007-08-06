@@ -36,20 +36,23 @@ objcl_initialise_runtime (void);
 void
 objcl_shutdown_runtime (void);
 
-void *
+OBJCL_OBJ_DATA
 objcl_invoke_instance_method (OBJCL_OBJ_DATA receiver,
                               const char *method_name,
                               int argc,
                               ...);
 
-void *
+OBJCL_OBJ_DATA
 objcl_invoke_class_method (OBJCL_OBJ_DATA class,
                            const char *method_name,
                            int argc,
                            ...);
 
-void *
+OBJCL_OBJ_DATA
 objcl_find_class (const char *class_name);
+
+OBJCL_OBJ_DATA
+objcl_find_selector (const char *selector_name);
 
 /* Return a null-terminated list of type information strings.
    The first entry describes the type of the method's return value. */
