@@ -20,9 +20,54 @@
 
 ;; FIXME: docs
 (defcfun ("objcl_initialise_runtime" initialise-runtime) :void)
+(setf (documentation #'initialise-runtime 'function)
+      "Initialise the Objective C runtime.
+
+## Description:
+
+The function __initialise-runtime__ makes all the necessary arrangements
+for object instantiation and method calls to work.  In particular, it
+creates an autorelease pool in order to make the use of Objective C's
+semiautomatic reference counting memory management possible, which is
+used internally by Objective CL.
+
+Note that, as the autorelease pool created by __initialise-runtime__ is
+currently only deallocated and its containees released when
+__shutdown-runtime__ is called, it is generally advisable to make use of
+AppKit's automatic creation and deletion auf autorelease pools, if
+possible.  Naturally, AppKit-based applications need not worry about
+this, but be aware that they do need to call __initialise-runtime__
+before making any other Objective C calls.
+
+
+## See also:
+
+  __shutdown-runtime__")
+
 
 ;; FIXME: docs
 (defcfun ("objcl_shutdown_runtime" shutdown-runtime) :void)
+(setf (documentation #'shutdown-runtime 'function)
+      "Shut the Objective C runtime down.
+
+## Description:
+
+The function __shutdown-runtime__ cleans the environment up.  In
+particular, it tries to release all the objects retained in any
+autorelease pools created by __initialise-runtime__.
+
+Note that even if you make use of AppKit, which manages its own
+autorelease pools, you must call __initialise-runtime__ before making
+any Objective C calls, and you should call __shutdown-runtime__ when you
+are finished with Objective C, since Objective CL makes use of
+autoreleased objects internally before you are even able to retrieve any
+objects or classes, let alone send messages to them.
+
+
+## See also:
+
+  __initialise-runtime__")
+
 
 (defcfun ("objcl_invoke_instance_method"
           %objcl-invoke-instance-method) obj-data
