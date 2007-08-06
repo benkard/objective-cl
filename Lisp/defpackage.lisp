@@ -1,6 +1,8 @@
 (defpackage #:mulk.objective-cl
-  (:nicknames #:objcl)
+  (:nicknames #:objcl #:objective-cl #:mulk.objcl)
   (:use #:cl #:cffi #:split-sequence)
+
+           ;; Functions
   (:export #:initialise-runtime
            #:shutdown-runtime
            #:install-reader-syntax
@@ -8,4 +10,14 @@
            #:invoke
            #:find-objc-class
            #:find-selector
-           #:*trace-method-calls*))
+
+           ;; Special variables
+           #:*trace-method-calls*
+
+           ;; Classes
+           #:id
+           #:selector
+           #:exception
+
+           ;; Metaclasses
+           #:objective-c-class))

@@ -45,16 +45,65 @@
             :initform nil)))
 
 
-(defclass selector   (c-pointer-wrapper) ())
-(defclass id         (c-pointer-wrapper) ())
-(defclass objc-class (c-pointer-wrapper) ())
+(defclass selector   (c-pointer-wrapper) ()
+  (:documentation "An Objective C method selector.
+
+## Description:
+
+Method selectors are Objective C's equivalent to what Common Lisp calls
+**symbols**.  Their use is restricted to retrieving methods by name.
+
+__selector__ objects cannot be created by means of __make-instance__.
+Use __find-selector__ instead.
+
+
+## See also:
+
+  __find-selector__"))
+
+
+(defclass id         (c-pointer-wrapper) ()
+  (:documentation "An instance of an Objective C class.
+
+## Description:
+
+The class __id__ serves as a general-purpose container for all kinds of
+Objective C objects that are instances of some Objective C class, that
+is, neither primitive C values nor __selector__, __class__ or
+__exception__ objects.
+
+__id__ objects cannot be created by means of __make-instance__.  Use
+a suitable class method instead as you would in Objective C.
+
+
+## Examples:
+
+    (invoke (find-objc-class 'ns-object)
+            'self)
+      ;=> #<NSObject `NSObject' {16ECF598}>
+
+    (invoke (find-objc-class 'ns-string)
+            :string-with-c-string \"Mulk.\")
+      ;=> #<GSCBufferString `Mulk.' {5B36087}>
+
+    (invoke (find-objc-class 'ns-string)
+            'new)
+      ;=> #<GSCBufferString `' {FFFFFFE}>
+
+
+## See also:
+
+  __invoke__, __invoke-by-name__, __exception__"))
+
+
+(defclass objc-class (c-pointer-wrapper) ()
+  (:documentation ""))
 
 
 (define-condition exception (error)
   ((pointer :type     c-pointer
             :accessor pointer-to
             :initarg  :pointer))
-  (:documentation "The condition type for Objective C exceptions.")
   (:report (lambda (condition stream)
              (format stream
                      "The Objective C runtime has issued an exception of ~
@@ -65,7 +114,44 @@
                       "UTF8String")
                      (invoke-by-name
                       (invoke-by-name condition "reason")
-                      "UTF8String")))))
+                      "UTF8String"))))
+  (:documentation "The condition type for Objective C exceptions.
+
+## Description:
+
+Whenever an Objective C call made by means of __invoke__ or
+__invoke-by-name__ raises an exception, the exception is propagated to
+the Lisp side by being encapsulated in an __exception__ object and
+signaled.
+
+Note that it is currently impossible to directly extract the original
+Objective C exception from an __exception__ object, although it might
+arguably be desirable to do so.  As __exception__ objects behave just
+like __id__ objects in almost all circumstances, this is not much of a
+problem, though.  If you really do need an __id__ instance rather than
+an __exception__, you can simply send it the `self' message.
+
+
+## Examples:
+
+\(With __install-reader-syntax__ enabled.)
+
+    (handler-case
+        [NSArray selph]   ; oops, typo
+      (exception (e)
+        e))
+      ;=> #<MULK.OBJECTIVE-CL:EXCEPTION NSInvalidArgumentException {1048D63}>
+
+    (class-of *)
+      ;=> #<CONDITION-CLASS EXCEPTION>
+
+    (class-of [** self])
+      ;=> #<STANDARD-CLASS ID>
+
+
+## See also:
+
+  __id__"))
 
 
 (defgeneric objcl-eql (obj1 obj2))
