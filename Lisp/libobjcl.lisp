@@ -84,13 +84,13 @@ objects or classes, let alone send messages to them.
 (defcfun ("objcl_find_class" %objcl-find-class) :pointer
   (class-name :string))
 
-(defcfun ("objcl_class_name" %objcl-class-name) :string
+(defcfun ("objcl_class_name" %objcl-class-name) :pointer
   (class obj-data))
 
 (defcfun ("objcl_find_selector" %objcl-find-selector) :pointer
   (selector-name :string))
 
-(defcfun ("objcl_selector_name" %objcl-selector-name) :string
+(defcfun ("objcl_selector_name" %objcl-selector-name) :pointer
   (selector obj-data))
 
 
@@ -169,13 +169,13 @@ conventional case for namespace identifiers in Objective C."
 (defun objcl-class-name (class)
   (declare (type (or objc-class id exception) class))
   (with-foreign-conversion ((obj-data class))
-    (%objcl-class-name obj-data)))
+    (foreign-string-to-lisp/dealloc (%objcl-class-name obj-data))))
 
 
 (defun selector-name (selector)
   (declare (type selector selector))
   (with-foreign-conversion ((obj-data selector))
-    (%objcl-selector-name obj-data)))
+    (foreign-string-to-lisp/dealloc (%objcl-selector-name obj-data))))
 
 
 (defun find-selector (selector-name)

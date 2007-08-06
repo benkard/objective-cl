@@ -56,3 +56,12 @@
        ,@(mapcar #'(lambda (name-value-pair)
                      `(dealloc-obj-data ,(first name-value-pair)))
                  bindings))))
+
+
+(defun foreign-string-to-lisp/dealloc (foreign-string)
+  "Convert a (possibly freshly allocated) C string into a Lisp string
+and free the C string afterwards."
+
+  (unwind-protect
+       (foreign-string-to-lisp foreign-string)
+    (foreign-string-free foreign-string)))
