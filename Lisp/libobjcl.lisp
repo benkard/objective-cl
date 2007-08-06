@@ -90,21 +90,6 @@ objects or classes, let alone send messages to them.
   (class obj-data))
 
 
-(defun symbol->objc-class-name (symbol)
-  (let ((components (split-sequence #\- (symbol-name symbol)
-                                    :remove-empty-subseqs t)))
-    (reduce #'(lambda (x y) (concatenate 'string x y))
-            (mapcar #'(lambda (x)
-                        (concatenate 'string
-                                     (string (char x 0))
-                                     (string-downcase (subseq x 1))))
-                    (subseq components 1))
-            :initial-value (concatenate 'string
-                                        (string (char (first components) 0))
-                                        (string-upcase
-                                         (subseq (first components) 1))))))
-
-
 (defun find-objc-class (class-name)
   "Retrieve an Objective C class by name.
 

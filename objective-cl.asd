@@ -10,10 +10,12 @@
                  (:file "constant-data"     :depends-on ("defpackage"))
                  (:file "data-types"        :depends-on ("defpackage"))
                  (:file "parameters"        :depends-on ("defpackage"))
+                 (:file "name-conversion"   :depends-on ("defpackage"))
                  (:file "type-conversion"   :depends-on ("defpackage"
                                                          "data-types"))
                  (:file "libobjcl"          :depends-on ("defpackage"
                                                          "data-types"
+                                                         "name-conversion"
                                                          "type-conversion"))
                  (:file "utilities"         :depends-on ("defpackage"))
                  (:file "weak-hash-tables"  :depends-on ("defpackage"))
@@ -23,6 +25,7 @@
                                                          "method-invocation"
                                                          "parameters"))
                  (:file "method-invocation" :depends-on ("defpackage"
+                                                         "name-conversion"
                                                          "type-conversion"
                                                          "libobjcl"
                                                          "utilities"

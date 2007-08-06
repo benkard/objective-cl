@@ -65,35 +65,21 @@ if as the second **argument** to __invoke-by-name__.
 
   __invoke-by-name__"
 
-  (flet ((message-component->string (symbol)
-           (let* ((components (split-sequence #\- (symbol-name symbol)
-                                              :remove-empty-subseqs t))
-                  (acc-string
-                   (reduce #'(lambda (x y) (concatenate 'string x y))
-                           (mapcar #'(lambda (x)
-                                       (concatenate 'string
-                                                    (string (char x 0))
-                                                    (string-downcase (subseq x 1))))
-                                   (subseq components 1))
-                           :initial-value (string-downcase (first components)))))
-             (if (eql (find-package '#:keyword)
-                      (symbol-package symbol))
-                 (concatenate 'string acc-string ":")
-                 acc-string))))
-    (do* ((components-left (cons message-start message-components)
-                           (cddr components-left))
-          (message-string (message-component->string message-start)
-                          (concatenate 'string
-                                       message-string
-                                       (message-component->string (first components-left))))
-          (arglist        (if (null (rest components-left))
-                              nil
-                              (list (second components-left)))
-                          (if (null (rest components-left))
-                              arglist
-                              (cons (second components-left) arglist))))
-        ((null (cddr components-left))
-         (apply #'invoke-by-name receiver message-string (nreverse arglist))))))
+  (do* ((components-left (cons message-start message-components)
+                         (cddr components-left))
+        (message-list    (list message-start)
+                         (cons (first components-left) message-list))
+        (arglist         (if (null (rest components-left))
+                             nil
+                             (list (second components-left)))
+                         (if (null (rest components-left))
+                             arglist
+                             (cons (second components-left) arglist))))
+       ((null (cddr components-left))
+        (apply #'invoke-by-name
+               receiver
+               (symbol-list->message-name (nreverse message-list))
+               (nreverse arglist)))))
 
 
 (defun invoke-by-name (receiver method-name &rest args)
