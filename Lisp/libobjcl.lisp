@@ -170,20 +170,20 @@ conventional case for namespace identifiers in Objective C."
 
 
 (defun objcl-class-name (class)
-  (declare (type (or objc-class objc-id objc-exception) class))
+  (declare (type (or objc-class id exception) class))
   (let ((obj-data (foreign-alloc 'obj-data)))
     (with-foreign-slots ((type data) obj-data obj-data)
       (setf (foreign-slot-value data
                                 'obj-data-union
                                 (etypecase class
                                   (objc-class     'class-val)
-                                  (objc-id        'id-val)
-                                  (objc-exception 'exc-val)))
+                                  (id        'id-val)
+                                  (exception 'exc-val)))
             (pointer-to class))
       (setf type (foreign-string-alloc (etypecase class
                                          (objc-class     "#")
-                                         (objc-id        "@")
-                                         (objc-exception "E")))))
+                                         (id        "@")
+                                         (exception "E")))))
     (prog1
         (%objcl-class-name obj-data)
       (dealloc-obj-data obj-data))))

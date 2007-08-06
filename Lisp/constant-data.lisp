@@ -61,10 +61,10 @@
 
 
 (defparameter *objcl-type-map*
-  '((id       . objc-id)
+  '((id       . id)
     (class    . objc-class)
-    (sel      . objc-selector)
-    (exc      . objc-exception)
+    (sel      . selector)
+    (exc      . exception)
     (chr      . character)
     (int      . integer)
     (uint     . integer)

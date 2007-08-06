@@ -45,12 +45,12 @@
             :initform nil)))
 
 
-(defclass objc-selector (c-pointer-wrapper) ())
-(defclass objc-id       (c-pointer-wrapper) ())
-(defclass objc-class    (c-pointer-wrapper) ())
+(defclass selector   (c-pointer-wrapper) ())
+(defclass id         (c-pointer-wrapper) ())
+(defclass objc-class (c-pointer-wrapper) ())
 
 
-(define-condition objc-exception (error)
+(define-condition exception (error)
   ((pointer :type     c-pointer
             :accessor pointer-to
             :initarg  :pointer))
@@ -81,21 +81,30 @@
   (foreign-free obj-data))
 
 
-(defmethod print-object ((object objc-id) stream)
+(defmethod print-object ((object id) stream)
   (print-unreadable-object (object stream)
     (format stream "~A `~A' {~X}"
-            (objcl-class-name
-             (invoke-by-name object "class"))
-            (invoke-by-name
-             (invoke-by-name object "description")
-             "UTF8String")
+            (objcl-class-name (invoke-by-name object "class"))
+            (invoke-by-name (invoke-by-name object "description")
+                            "UTF8String")
             (invoke-by-name object "hash"))))
 
 
-(defmethod print-object ((object objc-class) stream)
-  (print-unreadable-object (object stream)
-    (format stream "OBJC-CLASS ~A"
-            (objcl-class-name object))))
+(defmethod print-object ((class objc-class) stream)
+  (print-unreadable-object (class stream)
+    (format stream "~S ~A {~X}"
+            'objc-class
+            (objcl-class-name class)
+            (invoke-by-name class "hash"))))
+
+
+(defmethod print-object ((exception exception) stream)
+  (print-unreadable-object (exception stream)
+    (format stream "~S ~A {~X}"
+            'exception
+            (invoke-by-name (invoke-by-name exception "name")
+                            "UTF8String")
+            (invoke-by-name exception "hash"))))
 
 
 ;;;; (@* "Convenience types")

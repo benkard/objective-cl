@@ -10,7 +10,7 @@
                                 'obj-data-union
                                 (type-name->slot-name type-name))
             (typecase value
-              ((or objc-id objc-class objc-selector objc-exception)
+              ((or id objc-class selector exception)
                (pointer-to value))
               (string    (foreign-string-alloc value))
               (otherwise value)))
@@ -29,7 +29,7 @@
                                               'obj-data-union
                                               (type-name->slot-name type-name)))))
       (case lisp-type
-        ((objc-id objc-class objc-selector objc-exception)
+        ((id objc-class selector exception)
          (make-instance lisp-type :pointer value))
         ((string)  (foreign-string-to-lisp value))
         (otherwise value)))))

@@ -11,16 +11,16 @@
 ;; (i.e. those whose name starts with `alloc' or `new').  Upon
 ;; Lisp-side finalization of an object, wie `release' it.
 (eval-when (:load-toplevel)
-  (dolist (type '(objc-id objc-class objc-exception))
+  (dolist (type '(id objc-class exception))
     (funcall
      (compile
       nil
       `(lambda ()
          (defmethod make-instance ((class (eql ',type)) &rest initargs &key)
            (let* ((hash-table ,(ecase type
-                                 ((objc-id)        '*id-objects*)
+                                 ((id)        '*id-objects*)
                                  ((objc-class)     '*class-objects*)
-                                 ((objc-exception) '*exception-objects*)))
+                                 ((exception) '*exception-objects*)))
                   (hash-key (pointer-address (getf initargs :pointer)))
                   (obj (weak-gethash hash-key hash-table nil)))
              (typecase obj
