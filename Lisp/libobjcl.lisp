@@ -148,13 +148,22 @@ conventional case for namespace identifiers in Objective C."
 
 (defun find-objc-class-by-name (class-name)
   (with-foreign-objects ((obj-data (%objcl-find-class class-name)))
-    (unwind-protect
-         (if (null-pointer-p (foreign-slot-value
-                              (foreign-slot-value obj-data 'obj-data 'data)
-                              'obj-data-union
-                              'class-val))
-             nil
-             (obj-data->lisp obj-data)))))
+    (if (null-pointer-p (foreign-slot-value
+                         (foreign-slot-value obj-data 'obj-data 'data)
+                         'obj-data-union
+                         'class-val))
+        nil
+        (obj-data->lisp obj-data))))
+
+
+(defun find-selector-by-name (selector-name)
+  (with-foreign-objects ((obj-data (%objcl-find-selector selector-name)))
+    (if (null-pointer-p (foreign-slot-value
+                         (foreign-slot-value obj-data 'obj-data 'data)
+                         'obj-data-union
+                         'sel-val))
+        nil
+        (obj-data->lisp obj-data))))
 
 
 (defun objcl-class-name (class)
@@ -222,15 +231,3 @@ by which __invoke__ converts its arguments into a *message name*.
     (string (find-selector-by-name selector-name))
     (list   (find-selector-by-name (symbol-list->message-name
                                     selector-name)))))
-
-
-(defun find-selector-by-name (selector-name)
-  (let ((obj-data (%objcl-find-selector selector-name)))
-    (prog1
-        (if (null-pointer-p (foreign-slot-value
-                             (foreign-slot-value obj-data 'obj-data 'data)
-                             'obj-data-union
-                             'sel-val))
-            nil
-            (obj-data->lisp obj-data))
-      (dealloc-obj-data obj-data))))
