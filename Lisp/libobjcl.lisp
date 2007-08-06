@@ -147,26 +147,25 @@ conventional case for namespace identifiers in Objective C."
 
 
 (defun find-objc-class-by-name (class-name)
-  (let ((obj-data (%objcl-find-class class-name)))
+  (with-foreign-objects ((obj-data (%objcl-find-class class-name)))
     (unwind-protect
          (if (null-pointer-p (foreign-slot-value
                               (foreign-slot-value obj-data 'obj-data 'data)
                               'obj-data-union
                               'class-val))
              nil
-             (obj-data->lisp obj-data))
-      (dealloc-obj-data obj-data))))
+             (obj-data->lisp obj-data)))))
 
 
 (defun objcl-class-name (class)
   (declare (type (or objc-class id exception) class))
-  (with-foreign-objects ((obj-data class))
+  (with-foreign-conversion ((obj-data class))
     (%objcl-class-name obj-data)))
 
 
 (defun selector-name (selector)
   (declare (type selector selector))
-  (with-foreign-objects ((obj-data selector))
+  (with-foreign-conversion ((obj-data selector))
     (%objcl-selector-name obj-data)))
 
 

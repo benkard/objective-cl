@@ -35,11 +35,21 @@
         (otherwise value)))))
 
 
+(defmacro with-foreign-conversion (bindings &body body)
+  `(with-foreign-objects
+       ,(mapcar #'(lambda (name-value-pair)
+                     (destructuring-bind (name value)
+                         name-value-pair
+                       `(,name (lisp->obj-data ,value))))
+                bindings)
+     ,@body))
+
+
 (defmacro with-foreign-objects (bindings &body body)
   `(let ,(mapcar #'(lambda (name-value-pair)
                      (destructuring-bind (name value)
                          name-value-pair
-                       `(,name (lisp->obj-data ,value))))
+                       `(,name ,value)))
                  bindings)
      (unwind-protect
           (progn ,@body)
