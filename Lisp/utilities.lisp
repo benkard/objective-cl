@@ -11,8 +11,11 @@
 
 
 (defun id-equal (x y)
-  (declare (type (or id objc-class exception) x y))
-  (truep (invoke x :is-equal y)))
+  (truep (if (typep x '(or id objc-class exception))
+             (invoke x :is-equal y)
+             (progn
+               (assert (typep y '(or id objc-class exception)))
+               (invoke y :is-equal x)))))
 
 
 (defmethod equal (x y)
