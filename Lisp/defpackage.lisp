@@ -1,6 +1,8 @@
 (defpackage #:mulk.objective-cl
   (:nicknames #:objcl #:objective-cl #:mulk.objcl)
   (:use #:cl #:cffi #:split-sequence)
+  (:shadow #:equal
+           #:equalp)
 
            ;; Functions
   (:export #:initialise-runtime
@@ -10,6 +12,10 @@
            #:invoke
            #:find-objc-class
            #:find-selector
+
+           ;; Generic functions
+           #:equal
+           #:equalp
 
            ;; Special variables
            #:*trace-method-calls*
