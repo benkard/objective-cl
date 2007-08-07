@@ -10,7 +10,7 @@
 The **reader macro** installed by __install-reader-syntax__ closely
 resembles the conventional method call syntax of Objective C.  In fact,
 any differences between standard Objective C method call syntax and this
-**reader macro** that are not documented here is probably a bug and
+**reader macro** that are not documented here are probably bugs and
 should be reported to the maintainer.
 
 
@@ -29,7 +29,7 @@ message-name-arg-pair ::= *message-name-part argument*
 
 *message-name-part* --- a **symbol** (not evaluated).
 
-*argument* -- an **object**.
+*argument* --- an **object**.
 
 Returns: *result* --- the result of the method invocation.
 
