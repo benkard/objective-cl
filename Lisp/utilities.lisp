@@ -1,13 +1,17 @@
 (in-package #:mulk.objective-cl)
 
 
-(defgeneric equal (x y))
-(defgeneric equalp (x y))
+(defgeneric objc-eql (x y))
+(defgeneric objc-equal (x y))
 
 
 (defun truep (b)
   (not (or (zerop b)
            (null b))))
+
+
+(defun id-eql (x y)
+  (pointer-eq (pointer-to x) (pointer-to y)))
 
 
 (defun id-equal (x y)
@@ -18,64 +22,63 @@
                (invoke y :is-equal x)))))
 
 
-(defmethod equal (x y)
+(defmethod objc-eql (x y)
+  (cl:eql x y))
+
+(defmethod objc-eql ((x id) y)
+  (id-eql x y))
+
+(defmethod objc-eql (x (y id))
+  (id-eql x y))
+
+(defmethod objc-eql ((x objc-class) y)
+  (id-eql x y))
+
+(defmethod objc-eql (x (y objc-class))
+  (id-eql x y))
+
+(defmethod objc-eql ((x exception) y)
+  (id-eql x y))
+
+(defmethod objc-eql (x (y exception))
+  (id-eql x y))
+
+(defmethod objc-eql ((x selector) (y selector))
+  (eql (selector-name x) (selector-name y)))
+
+(defmethod objc-eql ((x selector) (y string))
+  (eql (selector-name x) y))
+
+(defmethod objc-eql ((x string) (y selector))
+  (eql x (selector-name y)))
+
+
+(defmethod objc-equal (x y)
   (cl:equal x y))
 
-(defmethod equal ((x id) y)
+(defmethod objc-equal ((x id) y)
   (id-equal x y))
 
-(defmethod equal (x (y id))
+(defmethod objc-equal (x (y id))
   (id-equal x y))
 
-(defmethod equal ((x objc-class) y)
+(defmethod objc-equal ((x objc-class) y)
   (id-equal x y))
 
-(defmethod equal (x (y objc-class))
+(defmethod objc-equal (x (y objc-class))
   (id-equal x y))
 
-(defmethod equal ((x exception) y)
+(defmethod objc-equal ((x exception) y)
   (id-equal x y))
 
-(defmethod equal (x (y exception))
+(defmethod objc-equal (x (y exception))
   (id-equal x y))
 
-(defmethod equal ((x selector) (y selector))
+(defmethod objc-equal ((x selector) (y selector))
   (equal (selector-name x) (selector-name y)))
 
-(defmethod equal ((x selector) (y string))
+(defmethod objc-equal ((x selector) (y string))
   (equal (selector-name x) y))
 
-(defmethod equal ((x string) (y selector))
+(defmethod objc-equal ((x string) (y selector))
   (equal x (selector-name y)))
-
-
-(defmethod equalp (x y)
-  (cl:equalp x y))
-
-(defmethod equalp ((x id) y)
-  (equal x y))
-
-(defmethod equalp (x (y id))
-  (equal x y))
-
-(defmethod equalp ((x objc-class) y)
-  (equal x y))
-
-(defmethod equalp (x (y objc-class))
-  (equal x y))
-
-(defmethod equalp ((x exception) y)
-  (equal x y))
-
-(defmethod equalp (x (y exception))
-  (equal x y))
-
-;; FIXME: Does this even make sense?
-(defmethod equalp ((x selector) (y selector))
-  (equalp (selector-name x) (selector-name y)))
-
-(defmethod equalp ((x selector) (y string))
-  (equalp (selector-name x) y))
-
-(defmethod equalp ((x string) (y selector))
-  (equalp x (selector-name y)))

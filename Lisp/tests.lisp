@@ -1,5 +1,5 @@
 (defpackage #:mulk.objective-cl.tests
-  (:use #:cl #:lift #:mulk.objective-cl))
+  (:use #:lift #:mulk.objective-cl #:cl))
 (in-package #:mulk.objective-cl.tests)
 
 
