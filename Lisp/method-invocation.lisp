@@ -65,6 +65,8 @@ if as the second **argument** to __invoke-by-name__.
 
   __invoke-by-name__"
 
+  (check-type receiver (or id objc-class exception)
+              "an Objective C instance (ID, OBJC-CLASS or EXCEPTION)")
   (do* ((components-left (cons message-start message-components)
                          (cddr components-left))
         (message-list    (list message-start)
@@ -117,6 +119,8 @@ Returns: *result* --- the return value of the method invocation.
 
   __invoke__"
 
+  (check-type receiver (or id objc-class exception)
+              "an Objective C instance (ID, OBJC-CLASS or EXCEPTION)")
   (let* ((arglist (arglist-intersperse-types
                    (mapcar #'lisp->obj-data args)))
          (return-value (apply-macro '%objcl-invoke-class-method
