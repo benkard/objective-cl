@@ -17,7 +17,9 @@
                                                           "data-types"
                                                           "name-conversion"
                                                           "type-conversion"))
-                 (:file "utilities"          :depends-on ("defpackage"))
+                 (:file "utilities"          :depends-on ("defpackage"
+                                                          "method-invocation"
+                                                          "data-types"))
                  (:file "internal-utilities" :depends-on ("defpackage"))
                  (:file "weak-hash-tables"   :depends-on ("defpackage"))
                  (:file "memory-management"  :depends-on ("defpackage"
