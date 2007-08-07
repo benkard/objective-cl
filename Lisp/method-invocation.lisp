@@ -123,7 +123,7 @@ Returns: *result* --- the return value of the method invocation.
               "an Objective C instance (ID, OBJC-CLASS or EXCEPTION)")
   (let* ((arglist (arglist-intersperse-types
                    (mapcar #'lisp->obj-data args)))
-         (return-value (apply-macro '%objcl-invoke-class-method
+         (return-value (apply-macro '%objcl-invoke-method
                                     (lisp->obj-data receiver)
                                     method-name
                                     (length args)
@@ -136,7 +136,7 @@ Returns: *result* --- the return value of the method invocation.
                                             (constructor-name-p method-name))))
                   (obj-data->lisp return-value))))
            (if (typep value 'condition)
-               (cerror "Return NIL from OBJCL-INVOKE-CLASS-METHOD" value)
+               (cerror "Return NIL from OBJCL-INVOKE-METHOD" value)
                value))
       (dealloc-obj-data return-value))))
 

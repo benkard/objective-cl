@@ -74,8 +74,8 @@ objects or classes, let alone send messages to them.
   (argc :int)
   &rest)
 
-(defcfun ("objcl_invoke_class_method"
-          %objcl-invoke-class-method) obj-data
+(defcfun ("objcl_invoke_method"
+          %objcl-invoke-method) obj-data
   (receiver obj-data)
   (method-name :string)
   (argc :int)

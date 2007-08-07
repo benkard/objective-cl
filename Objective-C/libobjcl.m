@@ -165,10 +165,10 @@ _objcl_invoke_method (id self_,
 
 
 OBJCL_OBJ_DATA
-objcl_invoke_instance_method (OBJCL_OBJ_DATA receiver,
-                              const char *method_name,
-                              int argc,
-                              ...)
+objcl_invoke_method (OBJCL_OBJ_DATA receiver,
+                     const char *method_name,
+                     int argc,
+                     ...)
 {
   va_list arglist;
   id self_ = NULL;
@@ -178,7 +178,6 @@ objcl_invoke_instance_method (OBJCL_OBJ_DATA receiver,
 
   NS_DURING
     {
-      /* fprintf (stderr, "! ---------> %s <--------\n", receiver->type); */
       assert (receiver->type[0] == '#'
               || receiver->type[0] == '@'
               || receiver->type[0] == 'E');
@@ -186,54 +185,7 @@ objcl_invoke_instance_method (OBJCL_OBJ_DATA receiver,
         {
         case '#': self_ = receiver->data.class_val;
         case '@': self_ = receiver->data.id_val;
-        case 'E': self_ = receiver->data.exc_val;                
-        }
-
-      selector = NSSelectorFromString ([NSString
-                                         stringWithUTF8String: method_name]);
-
-      signature = [self_ instanceMethodSignatureForSelector: selector];
-
-      va_start (arglist, argc);
-      _objcl_invoke_method (self_, result, signature, selector, argc, arglist);
-      va_end (arglist);
-    }
-  NS_HANDLER
-    {
-      result->type = malloc (strlen (EXCEPTION_TYPESPEC) + 1);
-      strcpy (result->type, EXCEPTION_TYPESPEC);
-      result->data.exc_val = localException;
-      NS_VALUERETURN (result, void *);
-    }
-  NS_ENDHANDLER
-
-  return result;
-}
-
-
-OBJCL_OBJ_DATA
-objcl_invoke_class_method (OBJCL_OBJ_DATA class,
-                           const char *method_name,
-                           int argc,
-                           ...)
-{
-  va_list arglist;
-  id self_ = NULL;
-  SEL selector;
-  NSMethodSignature *signature;
-  OBJCL_OBJ_DATA result = malloc (sizeof (struct objcl_object));
-
-  NS_DURING
-    {
-      /* fprintf (stderr, "? ---------> %s <--------\n", class->type); */
-      assert (class->type[0] == '#'
-              || class->type[0] == '@'
-              || class->type[0] == 'E');
-      switch (class->type[0])
-        {
-        case '#': self_ = class->data.class_val;
-        case '@': self_ = class->data.id_val;
-        case 'E': self_ = class->data.exc_val;
+        case 'E': self_ = receiver->data.exc_val;
         }
 
       selector = NSSelectorFromString ([NSString

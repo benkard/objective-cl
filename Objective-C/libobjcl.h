@@ -37,16 +37,10 @@ void
 objcl_shutdown_runtime (void);
 
 OBJCL_OBJ_DATA
-objcl_invoke_instance_method (OBJCL_OBJ_DATA receiver,
-                              const char *method_name,
-                              int argc,
-                              ...);
-
-OBJCL_OBJ_DATA
-objcl_invoke_class_method (OBJCL_OBJ_DATA class,
-                           const char *method_name,
-                           int argc,
-                           ...);
+objcl_invoke_method (OBJCL_OBJ_DATA receiver,
+                     const char *method_name,
+                     int argc,
+                     ...);
 
 OBJCL_OBJ_DATA
 objcl_find_class (const char *class_name);
