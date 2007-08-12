@@ -12,7 +12,7 @@
             (typecase value
               ((or id objc-class selector exception)
                (pointer-to value))
-              (string    (foreign-string-alloc value))
+              (string (foreign-string-alloc value))
               (otherwise value)))
       (setf type
             (foreign-string-alloc (type-name->type-id type-name))))
@@ -31,7 +31,7 @@
       (case lisp-type
         ((id objc-class selector exception)
          (make-instance lisp-type :pointer value))
-        ((string)  (foreign-string-to-lisp value))
+        ((string) (foreign-string-to-lisp value))
         (otherwise value)))))
 
 

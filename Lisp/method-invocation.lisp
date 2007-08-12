@@ -121,45 +121,30 @@ Returns: *result* --- the return value of the method invocation.
 
   (check-type receiver (or id objc-class exception)
               "an Objective C instance (ID, OBJC-CLASS or EXCEPTION)")
-  (let* ((arglist (arglist-intersperse-types
-                   (mapcar #'lisp->obj-data args)))
-         (return-value (apply-macro '%objcl-invoke-method
-                                    (lisp->obj-data receiver)
-                                    method-name
-                                    (length args)
-                                    arglist)))
-    (when *trace-method-calls*
-      (format t "~&Invoking [~A].~%" method-name))
-    (unwind-protect
-         (let ((value
-                (let ((*skip-retaining* (or *skip-retaining*
-                                            (constructor-name-p method-name))))
-                  (obj-data->lisp return-value))))
-           (if (typep value 'condition)
-               (cerror "Return NIL from OBJCL-INVOKE-METHOD" value)
-               value))
-      (dealloc-obj-data return-value))))
-
-
-#+nil
-(defun invoke-instance-method-by-name (receiver method-name &rest args)
-  (let* ((arglist (arglist-intersperse-types
-                   (mapcar #'lisp->obj-data args)))
-         (return-value (apply-macro '%objcl-invoke-instance-method
-                                    (lisp->obj-data receiver)
-                                    method-name
-                                    (length args)
-                                    arglist)))
-    (format t "~&Invoking <~A>.~%" method-name)
-    (unwind-protect
-         (let ((value
-                (let ((*skip-retaining* (or *skip-retaining*
-                                            (constructor-name-p method-name))))
-                  (obj-data->lisp return-value))))
-           (if (typep value 'condition)
-               (cerror "Return NIL from OBJCL-INVOKE-INSTANCE-METHOD" value)
-               value))
-      (dealloc-obj-data return-value))))
+  (when *trace-method-calls*
+    (format t "~&Invoking [~A].~%" method-name))
+  (flet ((convert/signal (foreign-value)
+           ;; Convert a foreign value into a Lisp value.  If the value
+           ;; to be converted represents an exception, signal it instead
+           ;; of returning it as a value.
+           (let ((lisp-value (obj-data->lisp foreign-value)))
+             (if (typep lisp-value 'condition)
+                 (cerror "Return NIL from OBJCL-INVOKE-METHOD." lisp-value)
+                 lisp-value))))
+    (let* ((objc-args (mapcar #'lisp->obj-data args))
+           (arglist (arglist-intersperse-types objc-args)))
+      (unwind-protect
+           (with-foreign-conversion ((objc-receiver receiver))
+             (with-foreign-objects ((return-value
+                                     (apply-macro '%objcl-invoke-method
+                                                  objc-receiver
+                                                  method-name
+                                                  (length args)
+                                                  arglist)))
+               (let ((*skip-retaining* (or *skip-retaining*
+                                           (constructor-name-p method-name))))
+                 (convert/signal return-value))))
+        (mapc #'dealloc-obj-data objc-args)))))
 
 
 ;;; (@* "Helper functions")

@@ -18,6 +18,12 @@
   ())
 
 
+(defrandom-instance double objective-cl
+  (if (zerop (random 2))
+      (random most-positive-double-float)
+      (- (random (abs most-negative-double-float)))))
+
+
 (deftestsuite base-functions (objective-cl)
   ()
   (:equality-test #'objc-equal)
@@ -70,6 +76,18 @@
                  [NSString respondsToSelector: "new"]))
    ((ensure (typep [NSString isEqual: [NSString self]] 'boolean)))
    ((ensure (typep [NSString isEqual: [NSObject self]] 'boolean)))))
+
+
+(deftestsuite numbers (objective-cl)
+  ()
+  (:equality-test #'objc-equal)
+  (:tests
+   ((ensure-same [[NSDecimalNumber
+                   decimalNumberWithString:
+                     [NSString stringWithCString:
+                        "-12345"]]
+                  doubleValue]
+                 -12345d0))))
 
 
 (deftestsuite exception-handling (objective-cl)
