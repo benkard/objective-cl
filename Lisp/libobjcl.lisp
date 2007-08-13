@@ -67,13 +67,6 @@ objects or classes, let alone send messages to them.
   __initialise-runtime__")
 
 
-(defcfun ("objcl_invoke_instance_method"
-          %objcl-invoke-instance-method) obj-data
-  (receiver obj-data)
-  (method-name :string)
-  (argc :int)
-  &rest)
-
 (defcfun ("objcl_invoke_method"
           %objcl-invoke-method) obj-data
   (receiver obj-data)
@@ -94,18 +87,24 @@ objects or classes, let alone send messages to them.
   (selector obj-data))
 
 
-(defun find-objc-class (class-name)
+(defun find-objc-class (class-name &optional errorp)
   "Retrieve an Objective C class by name.
 
 ## Arguments and Values:
 
 *class-name* --- a **symbol** or a **string**.
 
+*errorp* --- a **generalized boolean**.
+
 Returns: *class* --- an __objc-class__ object representing the Objective
 C class whose name is *class-name*.
 
 
 ## Description:
+
+If no Objective C class named by *class-name* is found, the behaviour
+depends on *errorp*: If *errorp* is **true**, an error is signaled.  If
+*errorp* is **false** (which is the default), __nil__ is returned.
 
 If *class-name* is a **symbol** which does not contain a hyphen, its
 **name** is converted to **lowercase** except for the first letter,
@@ -141,9 +140,15 @@ thought of as a namespace identifier.  It is therefore sensible to
 expect it to be converted to **uppercase** by default, which is the
 conventional case for namespace identifiers in Objective C."
 
-  (typecase class-name
-    (string (find-objc-class-by-name class-name))
-    (symbol (find-objc-class-by-name (symbol->objc-class-name class-name)))))
+  (let ((class
+         (typecase class-name
+           (string (find-objc-class-by-name class-name))
+           (symbol (find-objc-class-by-name
+                    (symbol->objc-class-name class-name))))))
+    (or class (if errorp
+                  (error "Found no Objective C class named ~S."
+                         class-name)
+                  nil))))
 
 
 (defun find-objc-class-by-name (class-name)
