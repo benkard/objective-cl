@@ -60,7 +60,7 @@
                       [NSString stringWithCString: "Klum."]))
    ((ensure [NSString isSubclassOfClass: [NSObject class]]))
    ((ensure [NSString performSelector:
-                        (find-selector "isSubclassOfClass:")
+                        (selector "isSubclassOfClass:")
                       withObject: [NSObject class]]))))
 
 
@@ -70,9 +70,9 @@
   (:tests
    ((ensure-same [NSString stringWithCString: "Mulk."]
                  [NSString stringWithCString: "Mulk." encoding: 4]))
-   ((ensure-same [NSString respondsToSelector: (find-selector "new")]
+   ((ensure-same [NSString respondsToSelector: (selector "new")]
                  [NSString respondsToSelector: 'new]))
-   ((ensure-same [NSString respondsToSelector: (find-selector "new")]
+   ((ensure-same [NSString respondsToSelector: (selector "new")]
                  [NSString respondsToSelector: "new"]))
    ((ensure (typep [NSString isEqual: [NSString self]] 'boolean)))
    ((ensure (typep [NSString isEqual: [NSObject self]] 'boolean)))))
@@ -113,8 +113,10 @@
                  (invoke (find-objc-class 'ns-string)
                          :string-with-c-string "Mulk." :encoding 4)))
    ((ensure-same [NSString performSelector:
-                             (find-selector "isSubclassOfClass:")
-                           withObject: [NSObject class]]
+                             (selector "isSubclassOfClass:")
+                           withObject: [NSObject self]]
                  (invoke (find-objc-class 'ns-string)
-                         :performSelector (find-selector "isSubclassOfClass")
-                         :with-object (find-objc-class 'ns-object))))))
+                         :perform-selector (selector "isSubclassOfClass:")
+                         :with-object (invoke
+                                       (find-objc-class 'ns-object)
+                                       'self))))))

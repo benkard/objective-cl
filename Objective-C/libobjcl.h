@@ -38,7 +38,7 @@ objcl_shutdown_runtime (void);
 
 OBJCL_OBJ_DATA
 objcl_invoke_method (OBJCL_OBJ_DATA receiver,
-                     const char *method_name,
+                     SEL method_selector,
                      int argc,
                      ...);
 

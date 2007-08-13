@@ -131,23 +131,34 @@ Returns: *result* --- the return value of the method invocation.
              (if (typep lisp-value 'condition)
                  (cerror "Return NIL from OBJCL-INVOKE-METHOD." lisp-value)
                  lisp-value))))
-    (let* ((objc-args (mapcar #'lisp->obj-data args))
-           (arglist (arglist-intersperse-types objc-args)))
+    (let ((objc-arglist (arglist->objc-arglist args))
+          (selector (selector method-name)))
       (unwind-protect
            (with-foreign-conversion ((objc-receiver receiver))
              (with-foreign-objects ((return-value
                                      (apply-macro '%objcl-invoke-method
                                                   objc-receiver
-                                                  method-name
+                                                  (pointer-to selector)
                                                   (length args)
-                                                  arglist)))
+                                                  objc-arglist)))
                (let ((*skip-retaining* (or *skip-retaining*
                                            (constructor-name-p method-name))))
                  (convert/signal return-value))))
-        (mapc #'dealloc-obj-data objc-args)))))
+        (dealloc-objc-arglist objc-arglist)))))
 
 
 ;;; (@* "Helper functions")
+(defun arglist->objc-arglist (arglist)
+  (arglist-intersperse-types (mapcar #'lisp->obj-data arglist)))
+
+
+(defun dealloc-objc-arglist (objc-arglist)
+  (do ((objc-arglist objc-arglist (cddr objc-arglist)))
+      ((null objc-arglist))
+    ;; (first objc-arglist) is a CFFI type name.
+    (dealloc-obj-data (second objc-arglist))))
+
+
 (defun arglist-intersperse-types (arglist)
   (mapcan #'(lambda (arg)
               (list :pointer arg))

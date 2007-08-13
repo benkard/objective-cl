@@ -166,13 +166,12 @@ _objcl_invoke_method (id self_,
 
 OBJCL_OBJ_DATA
 objcl_invoke_method (OBJCL_OBJ_DATA receiver,
-                     const char *method_name,
+                     SEL method_selector,
                      int argc,
                      ...)
 {
   va_list arglist;
   id self_ = NULL;
-  SEL selector;
   NSMethodSignature *signature;
   OBJCL_OBJ_DATA result = malloc (sizeof (struct objcl_object));
 
@@ -188,13 +187,16 @@ objcl_invoke_method (OBJCL_OBJ_DATA receiver,
         case 'E': self_ = receiver->data.exc_val;
         }
 
-      selector = NSSelectorFromString ([NSString
-                                         stringWithUTF8String: method_name]);
 
-      signature = [self_ methodSignatureForSelector: selector];
+      signature = [self_ methodSignatureForSelector: method_selector];
 
       va_start (arglist, argc);
-      _objcl_invoke_method (self_, result, signature, selector, argc, arglist);
+      _objcl_invoke_method (self_,
+                            result,
+                            signature,
+                            method_selector,
+                            argc,
+                            arglist);
       va_end (arglist);
     }
   NS_HANDLER

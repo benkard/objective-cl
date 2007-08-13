@@ -70,7 +70,7 @@ objects or classes, let alone send messages to them.
 (defcfun ("objcl_invoke_method"
           %objcl-invoke-method) obj-data
   (receiver obj-data)
-  (method-name :string)
+  (method-selector obj-data)
   (argc :int)
   &rest)
 
@@ -181,6 +181,55 @@ conventional case for namespace identifiers in Objective C."
   (declare (type selector selector))
   (with-foreign-conversion ((obj-data selector))
     (foreign-string-to-lisp/dealloc (%objcl-selector-name obj-data))))
+
+
+(defun selector (designator)
+  "Convert an object into a selector.
+
+## Arguments and Values:
+
+*designator* --- a *selector designator*.
+
+
+## Description:
+
+*selector-designator* must be a valid *selector designator*, that is:
+either a __selector__ object or one of a **symbol**, a **string**, or a
+**list** of **symbol**s representing a __selector__.
+
+If *selector-designator* is a **string** or a **list** of **symbol**s,
+__find-selector__ is called and the value returned, except that if
+__find-selector__ returns __nil__, an **error** is **signal**ed.
+
+If *selector-designator* is a single **symbol**, it is treated as if it
+were a **list** whose **car** is the **symbol** and whose **cdr** is
+__nil__.
+
+If *selector-designator* is a __selector__, it is simply returned.
+
+
+## Examples:
+
+    (selector \"self\")       ;=> #<SELECTOR `self'>
+    (selector '(self))      ;=> #<SELECTOR `self'>
+    (selector 'self)        ;=> #<SELECTOR `self'>
+    (selector *)            ;=> #<SELECTOR `self'>
+
+    (selector 'selph)       ; error
+
+    (selector \"stringWithCString:encoding:\")
+      ;=> #<SELECTOR `stringWithCString:encoding:'>
+
+    (selector '(:string-with-c-string :encoding))
+      ;=> #<SELECTOR `stringWithCString:encoding:'>"
+
+  (ctypecase designator
+    (selector designator)
+    (symbol (selector (list designator)))
+    ((or string list)
+     (or (find-selector designator)
+         (error "Could not find the selector designated by ~S."
+                designator)))))
 
 
 (defun find-selector (selector-name)

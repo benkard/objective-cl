@@ -10,6 +10,7 @@
                                 'obj-data-union
                                 (type-name->slot-name type-name))
             (typecase value
+              (symbol (selector value))
               ((or id objc-class selector exception)
                (pointer-to value))
               (string (foreign-string-alloc value))

@@ -10,6 +10,7 @@
            #:invoke
            #:find-objc-class
            #:find-selector
+           #:selector
 
            ;; Generic functions
            #:objc-eql
