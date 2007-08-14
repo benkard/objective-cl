@@ -26,3 +26,5 @@
 
            ;; Metaclasses
            #:objective-c-class))
+
+#-(or cmu sbcl) (declaim (declaration values))

@@ -102,22 +102,28 @@
 
 
 ;;;; (@* "Constant accessors")
+(declaim (ftype (function (*) symbol) lisp-value->type-name))
 (defun lisp-value->type-name (value)
   (car (rassoc-if #'(lambda (type)
                       (typep value type))
                   *objcl-type-map*)))
 
+(declaim (ftype (function (symbol) symbol) type-name->lisp-type))
 (defun type-name->lisp-type (type-name)
   (cdr (assoc type-name *objcl-type-map*)))
 
+(declaim (ftype (function (symbol) symbol) type-name->slot-name))
 (defun type-name->slot-name (type-name)
   (cdr (assoc type-name *objcl-data-map*)))
 
+(declaim (ftype (function (symbol) string) type-name->type-id))
 (defun type-name->type-id (type-name)
   (string (cdr (assoc type-name *objcl-api-type-names*))))
 
+(declaim (ftype (function (string) symbol) type-id->type-name))
 (defun type-id->type-name (type-id)
   (car (rassoc (char type-id 0) *objcl-api-type-names*)))
 
+(declaim (ftype (function (symbol) symbol) type-name->c-type))
 (defun type-name->c-type (type-name)
   (cdr (assoc type-name *objcl-c-type-map*)))

@@ -87,6 +87,8 @@ objects or classes, let alone send messages to them.
   (selector obj-data))
 
 
+(declaim (ftype (function ((or string symbol)) (or null objc-class))
+                find-objc-class-by-name))
 (defun find-objc-class (class-name &optional errorp)
   "Retrieve an Objective C class by name.
 
@@ -141,7 +143,7 @@ expect it to be converted to **uppercase** by default, which is the
 conventional case for namespace identifiers in Objective C."
 
   (let ((class
-         (typecase class-name
+         (etypecase class-name
            (string (find-objc-class-by-name class-name))
            (symbol (find-objc-class-by-name
                     (symbol->objc-class-name class-name))))))
@@ -151,6 +153,8 @@ conventional case for namespace identifiers in Objective C."
                   nil))))
 
 
+(declaim (ftype (function (string) (or null objc-class))
+                find-objc-class-by-name))
 (defun find-objc-class-by-name (class-name)
   (with-foreign-objects ((obj-data (%objcl-find-class class-name)))
     (if (null-pointer-p (foreign-slot-value
@@ -158,9 +162,11 @@ conventional case for namespace identifiers in Objective C."
                          'obj-data-union
                          'class-val))
         nil
-        (obj-data->lisp obj-data))))
+        (the objc-class (obj-data->lisp obj-data)))))
 
 
+(declaim (ftype (function (string) (or null selector))
+                find-selector-by-name))
 (defun find-selector-by-name (selector-name)
   (with-foreign-objects ((obj-data (%objcl-find-selector selector-name)))
     (if (null-pointer-p (foreign-slot-value
@@ -168,21 +174,25 @@ conventional case for namespace identifiers in Objective C."
                          'obj-data-union
                          'sel-val))
         nil
-        (obj-data->lisp obj-data))))
+        (the selector (obj-data->lisp obj-data)))))
 
 
+(declaim (ftype (function (objc-class) string) objcl-class-name))
 (defun objcl-class-name (class)
   (declare (type (or objc-class id exception) class))
   (with-foreign-conversion ((obj-data class))
     (foreign-string-to-lisp/dealloc (%objcl-class-name obj-data))))
 
 
+(declaim (ftype (function (selector) string) selector-name))
 (defun selector-name (selector)
   (declare (type selector selector))
   (with-foreign-conversion ((obj-data selector))
     (foreign-string-to-lisp/dealloc (%objcl-selector-name obj-data))))
 
 
+(declaim (ftype (function ((or selector string list)) selector)
+                selector))
 (defun selector (designator)
   "Convert an object into a selector.
 
@@ -223,7 +233,7 @@ If *selector-designator* is a __selector__, it is simply returned.
     (selector '(:string-with-c-string :encoding))
       ;=> #<SELECTOR `stringWithCString:encoding:'>"
 
-  (ctypecase designator
+  (etypecase designator
     (selector designator)
     (symbol (selector (list designator)))
     ((or string list)
@@ -232,6 +242,8 @@ If *selector-designator* is a __selector__, it is simply returned.
                 designator)))))
 
 
+(declaim (ftype (function ((or selector string list)) (or null selector))
+                find-selector))
 (defun find-selector (selector-name)
   "Retrieve a method selector by name.
 

@@ -2,6 +2,9 @@
 
 
 ;;; (@* "Low-level Data Conversion")
+(declaim (ftype (function (*)
+                          (values foreign-pointer &rest nil))
+                obj-data->lisp))
 (defun lisp->obj-data (value)
   (let ((obj-data (foreign-alloc 'obj-data))
         (type-name (lisp-value->type-name value)))
@@ -20,6 +23,11 @@
     obj-data))
 
 
+(declaim (ftype (function (foreign-pointer)
+                          (values (or number string symbol selector id
+                                      objc-class boolean foreign-pointer)
+                                  &rest nil))
+                obj-data->lisp))
 (defun obj-data->lisp (obj-data)
   (with-foreign-slots ((type data) obj-data obj-data)
     (let* ((type-name (type-id->type-name (foreign-string-to-lisp type)))
@@ -59,6 +67,8 @@
                  bindings))))
 
 
+(declaim (ftype (function (foreign-pointer) (values string &rest nil))
+                foreign-string-to-lisp/dealloc))
 (defun foreign-string-to-lisp/dealloc (foreign-string)
   "Convert a (possibly freshly allocated) C string into a Lisp string
 and free the C string afterwards."
