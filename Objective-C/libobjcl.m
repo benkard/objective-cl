@@ -177,8 +177,8 @@ objcl_invoke_method (OBJCL_OBJ_DATA receiver,
 
   NS_DURING
     {
-      assert (receiver->type[0] == '#'
-              || receiver->type[0] == '@'
+      assert (strcmp (receiver->type, @encode (Class)) == 0
+              || strcmp (receiver->type, @encode (id)) == 0
               || receiver->type[0] == 'E');
       switch (receiver->type[0])
         {
@@ -218,7 +218,7 @@ objcl_find_class (const char *class_name)
   Class class =
     NSClassFromString ([NSString stringWithUTF8String: class_name]);
   OBJCL_OBJ_DATA result = malloc (sizeof (struct objcl_object));
-  const char *const typespec = "#8@0:4";
+  const char *const typespec = @encode (Class);
 
   result->type = malloc (strlen (typespec) + 1);
   strcpy (result->type, typespec);
@@ -234,7 +234,7 @@ objcl_find_selector (const char *class_name)
   SEL selector =
     NSSelectorFromString ([NSString stringWithUTF8String: class_name]);
   OBJCL_OBJ_DATA result = malloc (sizeof (struct objcl_object));
-  const char *const typespec = ":";
+  const char *const typespec = @encode (SEL);
 
   result->type = malloc (strlen (typespec) + 1);
   strcpy (result->type, typespec);
@@ -251,8 +251,8 @@ objcl_class_name (OBJCL_OBJ_DATA class)
   char *name;
   Class cls = NULL;
 
-  assert (class->type[0] == '#'
-          || class->type[0] == '@'
+  assert (strcmp (class->type, @encode (Class)) == 0
+          || strcmp (class->type, @encode (id)) == 0
           || class->type[0] == 'E');
   switch (class->type[0])
     {
@@ -275,7 +275,7 @@ objcl_selector_name (OBJCL_OBJ_DATA selector)
   const char *ns_name;
   char *name;
 
-  assert (selector->type[0] == ':');
+  assert (strcmp (selector->type, @encode (SEL)) == 0);
   ns_name = [(NSStringFromSelector (selector->data.sel_val))
               UTF8String];
   name = malloc (strlen (ns_name) + 1);
