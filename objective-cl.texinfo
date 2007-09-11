@@ -5,9 +5,9 @@
 @c %**end of header
 
 @c The time stamp is automatically maintained by Emacs.
-@c Time-stamp: <2007-09-12 01:24:21 mulk>
+@c Time-stamp: <2007-09-12 01:42:17 mulk>
 @set VERSION 0.0.1
-@set UPDATED 11. September 2007
+@set UPDATED 12. September 2007
 
 @c vr
 @c fn
@@ -108,34 +108,34 @@ Copyright @copyright{} 2007 Matthias Benkard.
 
 Details:
 
-* Function @code{initialise-runtime}::
-* Function @code{shutdown-runtime}::
+* Function `initialise-runtime'::
+* Function `shutdown-runtime'::
 @end menu
 
 
 @node Calling Objective-C, Defining Classes, Initialisation and Shutdown, Interacting with Objective-C
 @section Calling Objective-C
 @menu
-* Using the @code{invoke} function::    The primitive, but safe way of doing things.
+* Using the `invoke' function::    The primitive, but safe way of doing things.
 * Objective-C-style invocations::  Invoking methods in a syntactically pleasant
                                      way.
 
 Details:
 
-* Function @code{invoke}::
-* Function @code{invoke-by-name}::
-* Function @code{install-reader-syntax}::
+* Function `invoke'::
+* Function `invoke-by-name'::
+* Function `install-reader-syntax'::
 
 Convenience functions:
 
-* Function @code{objc-eql}::
-* Function @code{objc-equal}::
+* Function `objc-eql'::
+* Function `objc-equal'::
 @end menu
 
-@node Using the @code{invoke} function, Objective-C-style invocations,, Calling Objective-C
-@subsection Using the @code{invoke} macro
+@node Using the `invoke' function, Objective-C-style invocations,, Calling Objective-C
+@subsection Using the @code{invoke} function
 
-@node Objective-C-style invocations, Function @code{invoke}, Using the @code{invoke} function, Calling Objective-C
+@node Objective-C-style invocations, Function `invoke', Using the `invoke' function, Calling Objective-C
 @subsection Objective-C-style invocations
 
 
