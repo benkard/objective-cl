@@ -1,0 +1,213 @@
+\input texinfo   @c -*- texinfo; coding: utf-8 -*-
+@c %**start of header
+@setfilename objective-cl.info
+@settitle Objective-CL
+@c %**end of header
+
+@c The time stamp is automatically maintained by Emacs.
+@c Time-stamp: <2007-09-12 01:24:21 mulk>
+@set VERSION 0.0.1
+@set UPDATED 11. September 2007
+
+@c vr
+@c fn
+@c cp
+@defindex mc
+@defindex cl
+@defindex sym
+
+@copying
+This is the official manual for Objective-CL
+(version @value{VERSION}, @value{UPDATED}),
+a portable Objective-C bridge for Common Lisp.
+
+Copyright @copyright{} 2007 Matthias Benkard.
+
+@quotation
+@end quotation
+@end copying
+
+@dircategory Lisp Programming
+@direntry
+* Objective-CL: (Objective-CL)A portable Objective-C bridge for Common Lisp.
+@end direntry
+
+@dircategory Common Lisp
+@direntry
+* Objective-CL: (Objective-CL)A portable Objective-C bridge for Common Lisp.
+@end direntry
+
+
+@titlepage
+@title Objective-CL User Manual
+@subtitle for version @value{VERSION}, @value{UPDATED}
+@author Matthias Andreas Benkard (@email{matthias@@benkard.de})
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@contents
+
+@ifnottex
+@node Top
+@top Objective-CL
+
+@insertcopying
+@end ifnottex
+
+@menu
+* Introduction::                  A quick-start guide to Objective-CL.
+* Objective-CL Concepts::         Selectors, class instances, and method
+                                    invocations.
+* Interacting with Objective-C::  Invoking methods, creating instances, defining
+                                    classes, and converting data.
+* Reference Manual::              A reference of the Objective-CL API.
+* Concept Index::                 A menu covering many concepts.
+* Symbol Index::                  A list of symbols defined by Objective-CL.
+* Copying This Manual::           The GNU General Public License, Version 3.
+@end menu
+
+
+@node Introduction, Objective-CL Concepts,, Top
+@chapter Introduction
+@menu
+* Purpose::             Whom Objective-CL is for and why it exists.
+* A Simple Example::    Using Objective-CL to invoke methods.
+* History::             How the project came to be.
+@end menu
+
+
+@node Objective-CL Concepts, Interacting with Objective-C, Introduction, Top
+@chapter Objective-CL Concepts
+@menu
+@end menu
+
+
+@node Interacting with Objective-C, Reference Manual, Interacting with Objective-C, Top
+@chapter Interacting with Objective-C
+@menu
+* Initialisation and Shutdown::  Initialising the Objective-C runtime and
+                                   shutting it down cleanly.
+* Calling Objective-C::          Instantiating and retrieving classes and
+                                   objects, and ways of sending messages to
+                                   them.
+* Defining Classes::             Defining classes and making them accessible to
+                                   Objective-C code.
+* Data Conversion::              How conversion between Lisp and Objective-C data
+                                   types works.
+* Special Data Types::           Data types that are handled specially in order
+                                   to improve integration.
+@end menu
+
+@node Initialisation and Shutdown, Calling Objective-C,, Interacting with Objective-C
+@section Initialisation and Shutdown
+@menu
+* Initialising the runtime::
+* Shutting the runtime down::
+
+Details:
+
+* Function @code{initialise-runtime}::
+* Function @code{shutdown-runtime}::
+@end menu
+
+
+@node Calling Objective-C, Defining Classes, Initialisation and Shutdown, Interacting with Objective-C
+@section Calling Objective-C
+@menu
+* Using the @code{invoke} function::    The primitive, but safe way of doing things.
+* Objective-C-style invocations::  Invoking methods in a syntactically pleasant
+                                     way.
+
+Details:
+
+* Function @code{invoke}::
+* Function @code{invoke-by-name}::
+* Function @code{install-reader-syntax}::
+
+Convenience functions:
+
+* Function @code{objc-eql}::
+* Function @code{objc-equal}::
+@end menu
+
+@node Using the @code{invoke} function, Objective-C-style invocations,, Calling Objective-C
+@subsection Using the @code{invoke} macro
+
+@node Objective-C-style invocations, Function @code{invoke}, Using the @code{invoke} function, Calling Objective-C
+@subsection Objective-C-style invocations
+
+
+@ignore
+@include fun_invoke.texinfo
+@include fun_invoke-by-name.texinfo
+@include fun_objc-eql.texinfo
+@include fun_objc-equal.texinfo
+@end ignore
+
+
+@node Reference Manual
+@chapter Reference Manual
+@menu
+* Functions::           Details about some functions.
+@c * Macros::              Details about some macros.
+* Variables::           Details about some special variables.
+* Classes::             Details about some classes.
+
+* Function Index::      A list of all functions.
+@c * Macro Index::         A list of all macros.
+* Variable Index::      A list of all special variables.
+* Class Index::         A list of all classes.
+@end menu
+
+
+@ignore
+@include extracted-docs.texinfo
+
+@node Macro @code{invoke}
+@chapter Macro @code{invoke}
+
+@findex invoke
+@symindex invoke
+@cindex invoking methods via @code{invoke}
+@include m_invoke.texinfo
+@end ignore
+
+@node Copying This Manual
+@appendix Copying This Manual
+
+@menu
+* GNU General Public License::  The license for copying this manual.
+@end menu
+
+@c @include fdl.texi
+
+
+@node Function Index
+@unnumbered Index of Functions
+@printindex fn
+
+@ignore
+@node Macro Index
+@unnumbered Index of Macros
+@printindex mc
+@end ignore
+
+@node Variable Index
+@unnumbered Index of Special Variables
+@printindex vr
+
+@node Class Index
+@unnumbered Index of Classes
+@printindex cl
+
+@node Symbol Index
+@unnumbered Index of Symbols
+@printindex sym
+
+@node Concept Index
+@unnumbered Index of Concepts
+@printindex cp
+
+@bye
