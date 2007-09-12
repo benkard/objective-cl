@@ -5,9 +5,18 @@
 @c %**end of header
 
 @c The time stamp is automatically maintained by Emacs.
-@c Time-stamp: <2007-09-12 01:42:17 mulk>
+@c Time-stamp: <2007-09-12 02:42:55 mulk>
 @set VERSION 0.0.1
 @set UPDATED 12. September 2007
+
+@c Wichtige Emacsbefehle:
+@c C-c C-c n
+@c C-c C-u C-n
+@c C-c C-u C-m
+@c C-c C-u C-e
+@c C-c C-u C-a
+@c C-c C-u m
+
 
 @c vr
 @c fn
@@ -100,7 +109,7 @@ Copyright @copyright{} 2007 Matthias Benkard.
                                    to improve integration.
 @end menu
 
-@node Initialisation and Shutdown, Calling Objective-C,, Interacting with Objective-C
+@node Initialisation and Shutdown, Calling Objective-C, Interacting with Objective-C, Interacting with Objective-C
 @section Initialisation and Shutdown
 @menu
 * Initialising the runtime::
@@ -132,19 +141,31 @@ Convenience functions:
 * Function `objc-equal'::
 @end menu
 
-@node Using the `invoke' function, Objective-C-style invocations,, Calling Objective-C
+@node Using the `invoke' function, Objective-C-style invocations, Calling Objective-C, Calling Objective-C
 @subsection Using the @code{invoke} function
 
 @node Objective-C-style invocations, Function `invoke', Using the `invoke' function, Calling Objective-C
 @subsection Objective-C-style invocations
 
+@node Function `invoke', Function `invoke-by-name', Objective-C-style invocations, Calling Objective-C
+@subsection Function @code{invoke}
+@c @include fun_invoke.texinfo
 
-@ignore
-@include fun_invoke.texinfo
-@include fun_invoke-by-name.texinfo
-@include fun_objc-eql.texinfo
-@include fun_objc-equal.texinfo
-@end ignore
+@node Function `invoke-by-name', Function `install-reader-syntax', Function `invoke', Calling Objective-C
+@subsection Function @code{invoke-by-name}
+@c @include fun_invoke-by-name.texinfo
+
+@node Function `install-reader-syntax', Function `objc-eql', Function `invoke-by-name', Calling Objective-C
+@subsection Function @code{install-reader-syntax}
+@c @include fun_install-reader-syntax.texinfo
+
+@node Function `objc-eql', Function `objc-equal', Function `install-reader-syntax', Calling Objective-C
+@subsection Function @code{objc-eql}
+@c @include fun_objc-eql.texinfo
+
+@node Function `objc-equal',  , Function `objc-eql', Calling Objective-C
+@subsection Function @code{objc-equal}
+@c @include fun_objc-equal.texinfo
 
 
 @node Reference Manual
