@@ -5,7 +5,7 @@
 @c %**end of header
 
 @c The time stamp is automatically maintained by Emacs.
-@c Time-stamp: <2007-09-12 02:42:55 mulk>
+@c Time-stamp: <2007-09-12 02:51:54 mulk>
 @set VERSION 0.0.1
 @set UPDATED 12. September 2007
 
@@ -78,7 +78,7 @@ Copyright @copyright{} 2007 Matthias Benkard.
 @end menu
 
 
-@node Introduction, Objective-CL Concepts,, Top
+@node Introduction
 @chapter Introduction
 @menu
 * Purpose::             Whom Objective-CL is for and why it exists.
@@ -87,13 +87,13 @@ Copyright @copyright{} 2007 Matthias Benkard.
 @end menu
 
 
-@node Objective-CL Concepts, Interacting with Objective-C, Introduction, Top
+@node Objective-CL Concepts
 @chapter Objective-CL Concepts
 @menu
 @end menu
 
 
-@node Interacting with Objective-C, Reference Manual, Interacting with Objective-C, Top
+@node Interacting with Objective-C
 @chapter Interacting with Objective-C
 @menu
 * Initialisation and Shutdown::  Initialising the Objective-C runtime and
@@ -109,7 +109,7 @@ Copyright @copyright{} 2007 Matthias Benkard.
                                    to improve integration.
 @end menu
 
-@node Initialisation and Shutdown, Calling Objective-C, Interacting with Objective-C, Interacting with Objective-C
+@node Initialisation and Shutdown
 @section Initialisation and Shutdown
 @menu
 * Initialising the runtime::
@@ -122,7 +122,7 @@ Details:
 @end menu
 
 
-@node Calling Objective-C, Defining Classes, Initialisation and Shutdown, Interacting with Objective-C
+@node Calling Objective-C
 @section Calling Objective-C
 @menu
 * Using the `invoke' function::    The primitive, but safe way of doing things.
@@ -141,29 +141,29 @@ Convenience functions:
 * Function `objc-equal'::
 @end menu
 
-@node Using the `invoke' function, Objective-C-style invocations, Calling Objective-C, Calling Objective-C
+@node Using the `invoke' function
 @subsection Using the @code{invoke} function
 
-@node Objective-C-style invocations, Function `invoke', Using the `invoke' function, Calling Objective-C
+@node Objective-C-style invocations
 @subsection Objective-C-style invocations
 
-@node Function `invoke', Function `invoke-by-name', Objective-C-style invocations, Calling Objective-C
+@node Function `invoke'
 @subsection Function @code{invoke}
 @c @include fun_invoke.texinfo
 
-@node Function `invoke-by-name', Function `install-reader-syntax', Function `invoke', Calling Objective-C
+@node Function `invoke-by-name'
 @subsection Function @code{invoke-by-name}
 @c @include fun_invoke-by-name.texinfo
 
-@node Function `install-reader-syntax', Function `objc-eql', Function `invoke-by-name', Calling Objective-C
+@node Function `install-reader-syntax'
 @subsection Function @code{install-reader-syntax}
 @c @include fun_install-reader-syntax.texinfo
 
-@node Function `objc-eql', Function `objc-equal', Function `install-reader-syntax', Calling Objective-C
+@node Function `objc-eql'
 @subsection Function @code{objc-eql}
 @c @include fun_objc-eql.texinfo
 
-@node Function `objc-equal',  , Function `objc-eql', Calling Objective-C
+@node Function `objc-equal'
 @subsection Function @code{objc-equal}
 @c @include fun_objc-equal.texinfo
 
