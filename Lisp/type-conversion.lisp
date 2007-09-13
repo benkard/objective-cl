@@ -96,7 +96,8 @@ Returns: (VALUES typespec byte-position string-position)"
                                    (#\N 'inout)
                                    (#\o 'out)
                                    (#\O 'bycopy)
-                                   (#\V 'oneway))))
+                                   (#\V 'oneway)
+                                   (#\R 'byref))))
                   (and qualifier
                        (incf string-position)
                        (push qualifier qualifiers))))

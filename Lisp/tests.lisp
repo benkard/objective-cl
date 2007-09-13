@@ -5,7 +5,7 @@
   (:shadowing-import-from #:objcl
                           #:struct #:union #:pointer #:oneway #:out #:in
                           #:inout #:const #:parse-typespec #:objc-class
-                          #:bit-field #:opaque))
+                          #:bit-field #:opaque #:bycopy #:byref))
 (in-package #:mulk.objective-cl.tests)
 
 
@@ -81,12 +81,16 @@
                    (:unsigned-int ())
                    (:unsigned-int ()))))
    ((ensure-same (parse-typespec "rnNoV^V[10rjd]4")
-                 ;; Actually, the order of the qualifiers is not
-                 ;; important, which means that this test is too dumb.
+                 ;; Actually, the order of the qualifiers doesn't
+                 ;; matter, which means that this test is dumber than
+                 ;; it ought to be.
                  '(pointer (oneway out inout in const)
                    (array (oneway)
                     10
                     (complex (const) (:double nil))))))
+   ((ensure-same (parse-typespec "ROi")
+                 ;; Here, too, the order of the qualifiers is irrelevant.
+                 '(:int (bycopy byref))))
    ((ensure-same (parse-typespec "(?=)")
                  '(union () "?")))
    ((ensure-same (parse-typespec "{?=rb123rjf456iii}")
