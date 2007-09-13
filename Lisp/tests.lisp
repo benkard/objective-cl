@@ -5,7 +5,7 @@
   (:shadowing-import-from #:objcl
                           #:struct #:union #:pointer #:oneway #:out #:in
                           #:inout #:const #:parse-typespec #:objc-class
-                          #:bit-field))
+                          #:bit-field #:opaque))
 (in-package #:mulk.objective-cl.tests)
 
 
@@ -123,7 +123,11 @@
                    (:string ())
                    (struct () "Untermulk"
                     (struct () "Unteruntermulk"))
-                   (:int ()))))))
+                   (:int ()))))
+   ((ensure-same (parse-typespec "^^{OpaqueStruct}")
+                 '(pointer ()
+                   (pointer ()
+                    (struct (opaque) "OpaqueStruct")))))))
 
 
 (deftestsuite data-coercion (objective-cl)

@@ -102,14 +102,33 @@ Returns: (VALUES typespec byte-position string-position)"
                        (push qualifier qualifiers))))
     (values (case init-char
               ((#\{ #\()
-               (let ((name-end (position #\= typestring :start start)))
+               (let* ((=-token (position #\= typestring :start start))
+                      (name-end (or =-token
+                                    ;; An opaque struct whose contents
+                                    ;; we don't know.
+                                    (position (ecase init-char
+                                               (#\{ #\})
+                                               (#\( #\)))
+                                              typestring
+                                              :start start)
+                                    (error "Premature end of file in~
+                                            typespec: ~A."
+                                           typestring)))
+                      (struct-name (subseq typestring
+                                           (1+ string-position)
+                                           name-end)))
                  (list* (ecase init-char
                           (#\{ 'struct)
                           (#\( 'union))
-                        qualifiers
-                        (subseq typestring (1+ start) name-end)
+                        (if =-token
+                            qualifiers
+                            (cons 'opaque qualifiers))
+                        struct-name
                         (progn
-                          (setq string-position (1+ name-end)) ; skip #\=
+                          (setq string-position
+                                (if =-token
+                                    (1+ name-end) ; skip #\=
+                                    name-end))
                           (loop until (char= (char typestring string-position)
                                              (ecase init-char
                                                (#\{ #\})
