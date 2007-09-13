@@ -1,7 +1,11 @@
 (defpackage #:mulk.objective-cl.tests
   (:nicknames #:objcl-tests #:objective-cl-tests #:mulk.objcl-tests)
   (:use #:lift #:mulk.objective-cl #:cl)
-  (:export #:run-all-tests))
+  (:export #:run-all-tests)
+  (:shadowing-import-from #:objcl
+                          #:struct #:union #:pointer #:oneway #:out #:in
+                          #:inout #:const #:parse-typespec #:objc-class
+                          #:bit-field))
 (in-package #:mulk.objective-cl.tests)
 
 
@@ -62,6 +66,64 @@
    ((ensure [NSString performSelector:
                         (selector "isSubclassOfClass:")
                       withObject: [NSObject class]]))))
+
+
+(deftestsuite parsing-typespecs (objective-cl)
+  ()
+  (:equality-test #'equal)
+  (:tests
+   ((ensure-same (parse-typespec "@0:4{_NSRange=II}8")
+                 '(id ())))
+   ((ensure-same (parse-typespec ":4{_NSRange=II}8")
+                 '(selector ())))
+   ((ensure-same (parse-typespec "{_NSRange=II}8")
+                 '(struct () "_NSRange"
+                   (:unsigned-int ())
+                   (:unsigned-int ()))))
+   ((ensure-same (parse-typespec "rnNoV^V[10rjd]4")
+                 ;; Actually, the order of the qualifiers is not
+                 ;; important, which means that this test is too dumb.
+                 '(pointer (oneway out inout in const)
+                   (array (oneway)
+                    10
+                    (complex (const) (:double nil))))))
+   ((ensure-same (parse-typespec "(?=)")
+                 '(union () "?")))
+   ((ensure-same (parse-typespec "{?=rb123rjf456iii}")
+                 '(struct () "?"
+                   (bit-field (const) 123 456
+                    (complex (const) (:float ())))
+                   (:int ())
+                   (:int ())
+                   (:int ()))))
+   ((ensure-same (parse-typespec "^[100{?=ii}]")
+                 '(pointer ()
+                   (array () 100
+                    (struct () "?" (:int ()) (:int ()))))))
+   ((ensure-same (parse-typespec "{?=BcCsSiIlLqQfd@#:*?}")
+                 '(struct () "?"
+                   (:boolean ())
+                   (:char ())
+                   (:unsigned-char ())
+                   (:short ())
+                   (:unsigned-short ())
+                   (:int ())
+                   (:unsigned-int ())
+                   (:long ())
+                   (:unsigned-long ())
+                   (:long-long ())
+                   (:unsigned-long-long ())
+                   (:float ())
+                   (:double ())
+                   (id ()) (objc-class ()) (selector ())
+                   (:string ())
+                   (:unknown ()))))
+   ((ensure-same (parse-typespec "{Mulk=*{Untermulk={Unteruntermulk=}}i}")
+                 '(struct () "Mulk"
+                   (:string ())
+                   (struct () "Untermulk"
+                    (struct () "Unteruntermulk"))
+                   (:int ()))))))
 
 
 (deftestsuite data-coercion (objective-cl)
