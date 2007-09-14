@@ -5,57 +5,92 @@
 #include <stdarg.h>
 #include <objc/objc-api.h>
 
+#ifdef __NEXT_RUNTIME__
+#include <objc/objc-class.h>
+#endif
+
 
 static NSAutoreleasePool *objcl_autorelease_pool = NULL;
 
 
 void
-objcl_initialise_runtime ()
+objcl_initialise_runtime (void)
 {
   objcl_autorelease_pool = [[NSAutoreleasePool alloc] init];
 }
 
 
 void
-objcl_shutdown_runtime ()
+objcl_shutdown_runtime (void)
 {
   [objcl_autorelease_pool release];
 }
 
 
-#define _OBJCL_ARG_CASE(typespec, field_name)                           \
-  case typespec:                                                        \
-  memmove (buffer, &argdata->data.field_name##_val,                     \
-           objc_sizeof_type (argdata->type));                           \
-  break;
+#ifdef __NEXT_RUNTIME__
+size_t
+objc_sizeof_type (const char *typespec)
+{
+  switch (typespec[0])
+    {
+    case '@': return sizeof (id);
+    case '#': return sizeof (Class);
+    case ':': return sizeof (SEL);
+    case 'c': return sizeof (char);
+    case 'C': return sizeof (unsigned char);
+    case 's': return sizeof (short);
+    case 'S': return sizeof (unsigned short);
+    case 'i': return sizeof (int);
+    case 'I': return sizeof (unsigned int);
+    case 'l': return sizeof (long);
+    case 'L': return sizeof (unsigned long);
+    case 'q': return sizeof (long long);
+    case 'Q': return sizeof (unsigned long long);
+    case 'f': return sizeof (float);
+    case 'd': return sizeof (double);
+    case 'B': return sizeof (BOOL);
+    case '?':
+    case '^': return sizeof (void *);
+    case '*': return sizeof (char *);
+    default:
+      NSLog (@"Dammit.  What the heck is `%s' supposed to mean?",
+             typespec);
+      return 0;  /* FIXME: Should signal an error. */
+    }
+}
+#endif
 
 
 static void
 _objcl_get_arg_pointer (void *buffer, OBJCL_OBJ_DATA argdata)
 {
+  void *source = NULL;
+
   switch (argdata->type[0])
     {
-      _OBJCL_ARG_CASE(_C_ID, id);
-      _OBJCL_ARG_CASE(_C_CLASS, id);
-      _OBJCL_ARG_CASE(_C_SEL, sel);
-      _OBJCL_ARG_CASE(_C_CHR, char);
-      _OBJCL_ARG_CASE(_C_UCHR, char);
-      _OBJCL_ARG_CASE(_C_SHT, short);
-      _OBJCL_ARG_CASE(_C_USHT, short);
-      _OBJCL_ARG_CASE(_C_INT, int);
-      _OBJCL_ARG_CASE(_C_UINT, int);
-      _OBJCL_ARG_CASE(_C_LNG, long);
-      _OBJCL_ARG_CASE(_C_ULNG, long);
-      _OBJCL_ARG_CASE(_C_LNG_LNG, long_long);
-      _OBJCL_ARG_CASE(_C_ULNG_LNG, long_long);
-      _OBJCL_ARG_CASE(_C_FLT, float);
-      _OBJCL_ARG_CASE(_C_DBL, double);
-      _OBJCL_ARG_CASE(_C_BOOL, bool);
-      _OBJCL_ARG_CASE(_C_PTR, ptr);
-      _OBJCL_ARG_CASE(_C_CHARPTR, charptr);
+    case '@': source = &argdata->data.id_val; break;
+    case '#': source = &argdata->data.id_val; break;
+    case ':': source = &argdata->data.sel_val; break;
+    case 'c': source = &argdata->data.char_val; break;
+    case 'C': source = &argdata->data.char_val; break;
+    case 's': source = &argdata->data.short_val; break;
+    case 'S': source = &argdata->data.short_val; break;
+    case 'i': source = &argdata->data.int_val; break;
+    case 'I': source = &argdata->data.int_val; break;
+    case 'l': source = &argdata->data.long_val; break;
+    case 'L': source = &argdata->data.long_val; break;
+    case 'q': source = &argdata->data.long_long_val; break;
+    case 'Q': source = &argdata->data.long_long_val; break;
+    case 'f': source = &argdata->data.float_val; break;
+    case 'd': source = &argdata->data.double_val; break;
+    case 'B': source = &argdata->data.bool_val; break;
+/*    _OBJCL_ARG_CASE(_C_PTR, ptr); */
+    case '^': source = &argdata->data.ptr_val; break;
+    case '?': source = &argdata->data.ptr_val; break;
+    case '*': source = &argdata->data.charptr_val; break;
 /*
-      _OBJCL_ARG_CASE(_C_VOID, void);
-      _OBJCL_ARG_CASE(_C_BFLD, bitfield);
+  case 'v': source = &argdata->data.oid_val; break;
+  case 'b': source = &argdata->data.bitfield_val; break;
       _OBJCL_ARG_CASE(_C_ATOM, atom);
       _OBJCL_ARG_CASE(_C_ARY_B, );
       _OBJCL_ARG_CASE(_C_UNION_B, );
@@ -63,12 +98,14 @@ _objcl_get_arg_pointer (void *buffer, OBJCL_OBJ_DATA argdata)
       _OBJCL_ARG_CASE(_C_VECTOR, );
       _OBJCL_ARG_CASE(_C_COMPLEX, );
 */
-    case _C_UNDEF:
+/*  case '?': */
     default:
       NSLog (@"Dammit.  What the heck is `%s' supposed to mean?",
              argdata->type);
-      break;
+      return;  /* FIXME: Should signal an error. */
     }
+
+  memmove (buffer, source, objc_sizeof_type (argdata->type));
 }
 
 
@@ -98,24 +135,25 @@ _objcl_invoke_method (id self_,
   
   switch (type[0])
     {
-    case _C_ID: result_ptr = &(result->data.id_val); break;
-    case _C_CLASS: result_ptr = &result->data.id_val; break;
-    case _C_SEL: result_ptr = &result->data.sel_val; break;
-    case _C_CHR: result_ptr = &result->data.char_val; break;
-    case _C_UCHR: result_ptr = &result->data.char_val; break;
-    case _C_SHT: result_ptr = &result->data.short_val; break;
-    case _C_USHT: result_ptr = &result->data.short_val; break;
-    case _C_INT: result_ptr = &result->data.int_val; break;
-    case _C_UINT: result_ptr = &result->data.int_val; break;
-    case _C_LNG: result_ptr = &result->data.long_val; break;
-    case _C_ULNG: result_ptr = &result->data.long_val; break;
-    case _C_LNG_LNG: result_ptr = &result->data.long_long_val; break;
-    case _C_ULNG_LNG: result_ptr = &result->data.long_long_val; break;
-    case _C_FLT: result_ptr = &result->data.float_val; break;
-    case _C_DBL: result_ptr = &result->data.double_val; break;
-    case _C_BOOL: result_ptr = &result->data.bool_val; break;
-    case _C_PTR: result_ptr = &result->data.ptr_val; break;
-    case _C_CHARPTR: result_ptr = &result->data.charptr_val; break;
+    case '@': result_ptr = &(result->data.id_val); break;
+    case '#': result_ptr = &result->data.id_val; break;
+    case ':': result_ptr = &result->data.sel_val; break;
+    case 'c': result_ptr = &result->data.char_val; break;
+    case 'C': result_ptr = &result->data.char_val; break;
+    case 's': result_ptr = &result->data.short_val; break;
+    case 'S': result_ptr = &result->data.short_val; break;
+    case 'i': result_ptr = &result->data.int_val; break;
+    case 'I': result_ptr = &result->data.int_val; break;
+    case 'l': result_ptr = &result->data.long_val; break;
+    case 'L': result_ptr = &result->data.long_val; break;
+    case 'q': result_ptr = &result->data.long_long_val; break;
+    case 'Q': result_ptr = &result->data.long_long_val; break;
+    case 'f': result_ptr = &result->data.float_val; break;
+    case 'd': result_ptr = &result->data.double_val; break;
+    case 'B': result_ptr = &result->data.bool_val; break;
+    case '?':
+    case '^': result_ptr = &result->data.ptr_val; break;
+    case '*': result_ptr = &result->data.charptr_val; break;
       /*
     case _C_BFLD: result_ptr = &result->data._val; break;
     case _C_VOID: result_ptr = &result->data._val; break;
@@ -177,14 +215,19 @@ objcl_invoke_method (OBJCL_OBJ_DATA receiver,
 
   NS_DURING
     {
-      assert (strcmp (receiver->type, @encode (Class)) == 0
-              || strcmp (receiver->type, @encode (id)) == 0
-              || receiver->type[0] == 'E');
       switch (receiver->type[0])
         {
-        case '#': self_ = receiver->data.class_val;
-        case '@': self_ = receiver->data.id_val;
-        case 'E': self_ = receiver->data.exc_val;
+        case '#':
+          self_ = receiver->data.class_val;
+          break;
+        case '@':
+          self_ = receiver->data.id_val;
+          break;
+        case 'E':
+          self_ = receiver->data.exc_val;
+          break;
+        default:
+          return NULL;
         }
 
 
@@ -251,14 +294,19 @@ objcl_class_name (OBJCL_OBJ_DATA class)
   char *name;
   Class cls = NULL;
 
-  assert (strcmp (class->type, @encode (Class)) == 0
-          || strcmp (class->type, @encode (id)) == 0
-          || class->type[0] == 'E');
   switch (class->type[0])
     {
-    case '#': cls = class->data.class_val;
-    case '@': cls = class->data.id_val;
-    case 'E': cls = (id) class->data.exc_val;
+    case '#':
+      cls = class->data.class_val;
+      break;
+    case '@':
+      cls = class->data.id_val;
+      break;
+    case 'E':
+      cls = (id) class->data.exc_val;
+      break;
+    default:
+      return NULL;
     }
 
   ns_name = [(NSStringFromClass (cls)) UTF8String];
@@ -275,7 +323,9 @@ objcl_selector_name (OBJCL_OBJ_DATA selector)
   const char *ns_name;
   char *name;
 
-  assert (strcmp (selector->type, @encode (SEL)) == 0);
+  if (strcmp (selector->type, @encode (SEL)) != 0)
+    return NULL;
+
   ns_name = [(NSStringFromSelector (selector->data.sel_val))
               UTF8String];
   name = malloc (strlen (ns_name) + 1);
