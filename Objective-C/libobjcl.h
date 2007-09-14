@@ -60,3 +60,7 @@ objcl_class_name (OBJCL_OBJ_DATA class);
 
 const char *
 objcl_selector_name (OBJCL_OBJ_DATA class);
+
+IMP
+objcl_get_method_implementation (OBJCL_OBJ_DATA object,
+                                 OBJCL_OBJ_DATA selector);

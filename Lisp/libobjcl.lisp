@@ -86,9 +86,16 @@ objects or classes, let alone send messages to them.
 (defcfun ("objcl_selector_name" %objcl-selector-name) :pointer
   (selector obj-data))
 
+(defcfun ("objcl_get_method_implementation"
+          %objcl-get-method-implementation)
+    :pointer
+  (object obj-data)
+  (selector obj-data))
 
-(declaim (ftype (function ((or string symbol)) (or null objc-class))
-                find-objc-class-by-name))
+
+(declaim (ftype (function ((or string symbol) &optional t)
+                          (or null objc-class))
+                find-objc-class))
 (defun find-objc-class (class-name &optional errorp)
   "Retrieve an Objective C class by name.
 
@@ -177,7 +184,8 @@ conventional case for namespace identifiers in Objective C."
         (the selector (obj-data->lisp obj-data)))))
 
 
-(declaim (ftype (function (objc-class) string) objcl-class-name))
+(declaim (ftype (function ((or objc-class id exception)) string)
+                objcl-class-name))
 (defun objcl-class-name (class)
   (declare (type (or objc-class id exception) class))
   (with-foreign-conversion ((obj-data class))
@@ -189,6 +197,15 @@ conventional case for namespace identifiers in Objective C."
   (declare (type selector selector))
   (with-foreign-conversion ((obj-data selector))
     (foreign-string-to-lisp/dealloc (%objcl-selector-name obj-data))))
+
+
+(declaim (ftype (function ((or id objc-class exception) selector) *)
+                get-method-implementation))
+(defun get-method-implementation (object selector)
+  (declare (type selector selector))
+  (with-foreign-conversion ((sel-obj-data selector)
+                            (obj-obj-data object))
+    (%objcl-get-method-implementation obj-obj-data sel-obj-data)))
 
 
 (declaim (ftype (function ((or selector string list)) selector)

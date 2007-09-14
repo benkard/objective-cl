@@ -333,3 +333,36 @@ objcl_selector_name (OBJCL_OBJ_DATA selector)
 
   return name;
 }
+
+
+IMP
+objcl_get_method_implementation (OBJCL_OBJ_DATA object,
+                                 OBJCL_OBJ_DATA selector)
+{
+  id obj;
+
+  if (strcmp (selector->type, @encode (SEL)) != 0)
+    return NULL;
+
+  switch (object->type[0])
+    {
+    case '#':
+      obj = object->data.class_val;
+      break;
+    case '@':
+      obj = object->data.id_val;
+      break;
+    case 'E':
+      obj = (id) object->data.exc_val;
+      break;
+    default:
+      return NULL;
+    }
+
+#ifdef __NEXT_RUNTIME__
+  return class_getInstanceMethod ([obj class],
+                                  selector->data.sel_val)->method_imp;
+#else
+  return objc_msg_lookup (obj, selector->data.sel_val);
+#endif
+}
