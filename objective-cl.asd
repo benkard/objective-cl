@@ -11,27 +11,30 @@
                  (:file "data-types"         :depends-on ("defpackage"))
                  (:file "parameters"         :depends-on ("defpackage"))
                  (:file "name-conversion"    :depends-on ("defpackage"))
+                 (:file "internal-utilities" :depends-on ("defpackage"))
+                 (:file "weak-hash-tables"   :depends-on ("defpackage"))
                  (:file "libobjcl"           :depends-on ("defpackage"
                                                           "constant-data"
                                                           "data-types"
                                                           "name-conversion"
                                                           "internal-utilities"
                                                           "parameters"))
-                 (:file "utilities"          :depends-on ("defpackage"
-                                                          "method-invocation"
-                                                          "data-types"))
-                 (:file "internal-utilities" :depends-on ("defpackage"))
-                 (:file "weak-hash-tables"   :depends-on ("defpackage"))
-                 (:file "memory-management"  :depends-on ("defpackage"
-                                                          "weak-hash-tables"
-                                                          "data-types"
-                                                          "method-invocation"
-                                                          "parameters"))
+                 (:file "init"               :depends-on ("libobjcl"))
                  (:file "method-invocation"  :depends-on ("defpackage"
                                                           "name-conversion"
                                                           "libobjcl"
                                                           "internal-utilities"
                                                           "parameters"))
+                 (:file "memory-management"  :depends-on ("defpackage"
+                                                          "init"
+                                                          "weak-hash-tables"
+                                                          "data-types"
+                                                          "method-invocation"
+                                                          "parameters"))
                  (:file "reader-syntax"      :depends-on ("defpackage"
-                                                          "method-invocation")))))
+                                                          "method-invocation"))
+                 (:file "utilities"          :depends-on ("init"
+                                                          "defpackage"
+                                                          "method-invocation"
+                                                          "data-types")))))
   :serial t)

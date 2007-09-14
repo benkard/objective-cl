@@ -18,8 +18,8 @@
       `(lambda ()
          (defmethod make-instance ((class (eql ',type)) &rest initargs &key)
            (let* ((hash-table ,(ecase type
-                                 ((id)        '*id-objects*)
-                                 ((objc-class)     '*class-objects*)
+                                 ((id) '*id-objects*)
+                                 ((objc-class) '*class-objects*)
                                  ((exception) '*exception-objects*)))
                   (hash-key (pointer-address (getf initargs :pointer)))
                   (obj (weak-gethash hash-key hash-table nil)))
@@ -30,7 +30,7 @@
                            :incomplete)
                      (let ((new-obj (call-next-method)))
                        (unless *skip-retaining*
-                         (invoke-by-name new-obj "retain"))
+                         (primitive-invoke new-obj "retain" :id))
                        (unless *skip-finalization*
                          ;; We only put the new object into the hash
                          ;; table if it is a regular wrapper object
@@ -56,7 +56,7 @@
                                                       (*skip-retaining*    t))
                                                   (make-instance saved-type
                                                                  :pointer saved-pointer))))
-                                      (invoke-by-name temp "release"))))
+                                      (primitive-invoke temp "release" :id))))
                              (trivial-garbage:finalize new-obj #'finalizer))))
                        new-obj))
                (t obj))))
