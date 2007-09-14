@@ -163,7 +163,9 @@ an __exception__, you can simply send it the `self' message.
 
 (defun dealloc-obj-data (obj-data)
   (with-foreign-slots ((type data) obj-data obj-data)
-    (foreign-string-free type))
+    (when (and (pointerp type)
+               (not (null-pointer-p type)))
+      (foreign-string-free type)))
   (foreign-free obj-data))
 
 

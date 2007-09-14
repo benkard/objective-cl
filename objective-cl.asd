@@ -11,12 +11,12 @@
                  (:file "data-types"         :depends-on ("defpackage"))
                  (:file "parameters"         :depends-on ("defpackage"))
                  (:file "name-conversion"    :depends-on ("defpackage"))
-                 (:file "type-conversion"    :depends-on ("defpackage"
-                                                          "data-types"))
                  (:file "libobjcl"           :depends-on ("defpackage"
+                                                          "constant-data"
                                                           "data-types"
                                                           "name-conversion"
-                                                          "type-conversion"))
+                                                          "internal-utilities"
+                                                          "parameters"))
                  (:file "utilities"          :depends-on ("defpackage"
                                                           "method-invocation"
                                                           "data-types"))
@@ -29,7 +29,6 @@
                                                           "parameters"))
                  (:file "method-invocation"  :depends-on ("defpackage"
                                                           "name-conversion"
-                                                          "type-conversion"
                                                           "libobjcl"
                                                           "internal-utilities"
                                                           "parameters"))

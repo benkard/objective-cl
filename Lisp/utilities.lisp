@@ -22,6 +22,14 @@
                (invoke y :is-equal x)))))
 
 
+(defun objc-typep (x class-designator)
+  (objc-eql (invoke x 'class)
+            (etypecase x
+              (class x)
+              (id (invoke x 'class))
+              ((or string symbol) (find-objc-class class-designator t)))))
+
+
 (defmethod objc-eql (x y)
   (cl:eql x y))
 

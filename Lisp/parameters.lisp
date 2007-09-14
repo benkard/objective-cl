@@ -1,8 +1,10 @@
 (in-package #:mulk.objective-cl)
 
 
+(defvar *runtime-initialisation-level* 0)
+
 (defvar *skip-finalization*  nil)
-(defvar *skip-retaining*     nil)
+(defvar *skip-retaining* nil)
 
 (defvar *trace-method-calls* nil
   "Whether to print trace messages of all Objective C method calls.
