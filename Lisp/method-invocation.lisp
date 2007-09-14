@@ -178,43 +178,32 @@ Returns: *result* --- the return value of the method invocation.
 
 
 ;;; (@* "High-level Data Conversion")
-(defgeneric ->id (x))
-(defgeneric ->class (x))
-(defgeneric ->integer (x))
-(defgeneric ->selector (x))
-(defgeneric ->exception (x))
-(defgeneric ->character (x))
-(defgeneric ->float (x))
-(defgeneric ->double (x))
-(defgeneric ->bool (x))
-(defgeneric ->string (x))
-(defgeneric ->pointer (x))
+(defgeneric coerce-object (object type))
 
-
-(defmethod ->id ((x id))
+(defcoercion id ((x id))
   x)
 
-(defmethod ->id ((x class))
+(defcoercion id ((x class))
   (invoke x 'self))
 
-(defmethod ->id ((x exception))
+(defcoercion id ((x exception))
   (invoke x 'self))
 
-(defmethod ->id ((x integer))
+(defcoercion id ((x integer))
   (let ((id (invoke (find-class 'ns-number)
                     :number-with-long x)))
     (invoke id 'retain)
     (invoke id 'autorelease)
     id))
 
-(defmethod ->id ((x float))
+(defcoercion id ((x float))
   (let ((id (invoke (find-class 'ns-number)
                     :number-with-double x)))
     (invoke id 'retain)
     (invoke id 'autorelease)
     id))
 
-(defmethod ->id ((x string))
+(defcoercion id ((x string))
   (let ((id (invoke (find-class 'ns-string)
                     :string-with-c-string x)))
     (invoke id 'retain)
@@ -222,97 +211,97 @@ Returns: *result* --- the return value of the method invocation.
     id))
 
 
-(defmethod ->class ((x id))
+(defcoercion class ((x id))
   (invoke x 'class))
 
-(defmethod ->class ((x exception))
+(defcoercion class ((x exception))
   (invoke x 'class))
 
-(defmethod ->class ((x class))
+(defcoercion class ((x class))
   x)
 
-(defmethod ->class ((x string))
+(defcoercion class ((x string))
   (find-objc-class x t))
 
-(defmethod ->class ((x symbol))
+(defcoercion class ((x symbol))
   (find-objc-class x t))
 
 
-(defmethod ->integer ((x id))
+(defcoercion integer ((x id))
   (assert (objc-typep x 'ns-number))
   (invoke x 'long-value))
 
-(defmethod ->integer ((x number))
+(defcoercion integer ((x number))
   (truncate x))
 
-(defmethod ->integer ((x null))
+(defcoercion integer ((x null))
   0)
 
-(defmethod ->integer ((x symbol))
+(defcoercion integer ((x symbol))
   (assert (eq 't x))
   1)
 
 
-(defmethod ->selector ((x selector))
+(defcoercion selector ((x selector))
   x)
 
-(defmethod ->selector ((x symbol))
+(defcoercion selector ((x symbol))
   (selector x))
 
-(defmethod ->selector ((x string))
+(defcoercion selector ((x string))
   (selector x))
 
-(defmethod ->selector ((x cons))
+(defcoercion selector ((x cons))
   (selector x))
 
 
-(defmethod ->exception ((x exception))
+(defcoercion exception ((x exception))
   x)
 
 
-(defmethod ->character ((x character))
+(defcoercion character ((x character))
   x)
 
-(defmethod ->character ((x integer))
+(defcoercion character ((x integer))
   x)
 
 
-(defmethod ->float ((x number))
+(defcoercion float ((x number))
   (float x))
 
 
-(defmethod ->double ((x number))
+(defcoercion double ((x number))
   (float x))
 
 
-(defmethod ->bool ((x null))
+(defcoercion bool ((x null))
   x)
 
-(defmethod ->bool ((x symbol))
+(defcoercion bool ((x symbol))
   (assert (eq 't x))
   x)
 
-(defmethod ->bool ((x integer))
+(defcoercion bool ((x integer))
   x)
 
 
-(defmethod ->string ((x string))
+(defcoercion string ((x string))
   x)
 
-(defmethod ->string ((x foreign-pointer))
+(defcoercion string ((x foreign-pointer))
   (check-type x foreign-pointer)
   x)
 
 
-(defmethod ->pointer ((x foreign-pointer))
+(defcoercion pointer ((x foreign-pointer))
   (check-type x foreign-pointer)
   x)
 
-(defmethod ->pointer ((x exception))
+(defcoercion pointer ((x exception))
   (pointer-to x))
 
-(defmethod ->pointer ((x c-pointer-wrapper))
+(defcoercion pointer ((x c-pointer-wrapper))
   (pointer-to x))
 
-(defmethod ->pointer ((x number))
+(defcoercion pointer ((x number))
   (pointer-to (->id x)))
