@@ -172,10 +172,10 @@ an __exception__, you can simply send it the `self' message.
 (defmethod print-object ((object id) stream)
   (print-unreadable-object (object stream)
     (format stream "~A `~A' {~X}"
-            (objcl-class-name (invoke-by-name object "class"))
-            (invoke-by-name (invoke-by-name object "description")
-                            "UTF8String")
-            (invoke-by-name object "hash"))))
+            (objcl-class-name (primitive-invoke object "class" :id))
+            (primitive-invoke (primitive-invoke object "description" :id)
+                              "UTF8String" :string)
+            (primitive-invoke object "hash" :unsigned-int))))
 
 
 (defmethod print-object ((class objc-class) stream)
@@ -183,7 +183,7 @@ an __exception__, you can simply send it the `self' message.
     (format stream "~S ~A {~X}"
             'objc-class
             (objcl-class-name class)
-            (invoke-by-name class "hash"))))
+            (primitive-invoke class "hash" :unsigned-int))))
 
 
 (defmethod print-object ((selector selector) stream)
@@ -197,9 +197,9 @@ an __exception__, you can simply send it the `self' message.
   (print-unreadable-object (exception stream)
     (format stream "~S ~A {~X}"
             'exception
-            (invoke-by-name (invoke-by-name exception "name")
-                            "UTF8String")
-            (invoke-by-name exception "hash"))))
+            (primitive-invoke (primitive-invoke exception "name" :id)
+                              "UTF8String" :string)
+            (primitive-invoke exception "hash" :unsigned-int))))
 
 
 ;;;; (@* "Convenience types")

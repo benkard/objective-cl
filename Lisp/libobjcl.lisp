@@ -290,7 +290,7 @@ by which __invoke__ converts its arguments into a *message name*.
     '(satisfies cffi:pointerp)))
 
 
-(declaim (ftype (function ((or selector string list)) selector)
+(declaim (ftype (function ((or selector string symbol list)) selector)
                 selector))
 (defun selector (designator)
   "Convert an object into a selector.

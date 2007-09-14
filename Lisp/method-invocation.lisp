@@ -147,6 +147,40 @@ Returns: *result* --- the return value of the method invocation.
         (dealloc-objc-arglist objc-arglist)))))
 
 
+(defmacro primitive-invoke (receiver method-name return-type &rest args)
+  (let ((real-return-type (if (member return-type '(:id :class :exception))
+                              :pointer
+                              return-type))
+        (real-receiver (gensym))
+        (real-selector (gensym))
+        (selector (selector method-name)))
+    `(progn
+       (let ((,real-receiver ,receiver)
+             (,real-selector (selector ,method-name)))
+         (check-type ,real-receiver (or id objc-class exception)
+                     "an Objective C instance (ID, OBJC-CLASS or EXCEPTION)")
+         (let ((method (get-method-implementation ,real-receiver ,real-selector))
+               (objc-arglist (arglist->objc-arglist (list ,@args))))
+           (unwind-protect
+               (let ((return-value
+                      (apply-macro 'foreign-funcall-pointer method
+                                   ()
+                                   (append (list :pointer (pointer-to ,real-receiver))
+                                           (list :pointer (pointer-to ,real-selector))
+                                           objc-arglist
+                                           (list ,real-return-type)))))
+                 ,(if (member return-type '(:id :class :exception))
+                      `(let (,@(when (constructor-name-p (selector-name selector))
+                                 `((*skip-retaining* t))))
+                         (make-instance ',(case return-type
+                                            ((:id) 'id)
+                                            ((:class) 'objc-class)
+                                            ((:exception) 'exception))
+                            :pointer return-value))
+                      `return-value))
+             (dealloc-objc-arglist objc-arglist)))))))
+
+
 ;;; (@* "Helper functions")
 (defun arglist->objc-arglist (arglist)
   (arglist-intersperse-types (mapcar #'lisp->obj-data arglist)))
