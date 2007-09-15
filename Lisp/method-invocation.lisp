@@ -338,4 +338,4 @@ Returns: *result* --- the return value of the method invocation.
   (pointer-to x))
 
 (defcoercion pointer ((x number))
-  (pointer-to (->id x)))
+  (pointer-to (coerce-object x 'id)))
