@@ -5,9 +5,6 @@
 
 #ifdef USE_LIBFFI
 #include <ffi.h>
-#else
-#include <vacall.h>
-#include <avcall.h>
 #endif
 
 
@@ -54,7 +51,6 @@ void
 objcl_invoke_with_types (void *receiver,
                          SEL method_selector,
                          char *(types[]),
-                         size_t arg_sizes[],
                          id *exception,
                          void *return_value,
                          int argc,

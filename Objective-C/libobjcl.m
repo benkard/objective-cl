@@ -260,8 +260,7 @@ objcl_invoke_method (OBJCL_OBJ_DATA receiver,
 void
 objcl_invoke_with_types (void *receiver,
                          SEL method_selector,
-                         char *(types[]),
-                         size_t arg_sizes[],
+                         char *types[],
                          id *exception,
                          void *return_value,
                          int argc,
@@ -270,6 +269,9 @@ objcl_invoke_with_types (void *receiver,
   va_list arglist;
   IMP method;
   int i;
+
+  char *return_type = types[0];
+  char **arg_types = types + 1;
 
   *exception = NULL;
 
