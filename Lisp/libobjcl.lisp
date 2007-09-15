@@ -33,8 +33,6 @@
   &rest)
 
 (defcfun ("objcl_invoke_with_types" %objcl-invoke-with-types) :pointer
-  (receiver (:pointer :void))
-  (method_selector (:pointer :void))
   (argc :int)
   (return_typespec (:pointer :char))
   (arg_typespecs (:pointer (:pointer :char)))

@@ -268,9 +268,7 @@ objcl_invoke_method (OBJCL_OBJ_DATA receiver,
 
 #ifdef USE_LIBFFI
 id
-objcl_invoke_with_types (void *receiver,
-                         SEL method_selector,
-                         int argc,
+objcl_invoke_with_types (int argc,
                          char *return_typespec,
                          char *arg_typespecs[],
                          void *return_value,
@@ -283,6 +281,9 @@ objcl_invoke_with_types (void *receiver,
   ffi_type *arg_types[argc + 2];
   ffi_status status;
 
+  id receiver = (id) argv[0];
+  SEL method_selector = (SEL) argv[1];
+
   static ffi_type *id_type = NULL;
   static ffi_type *sel_type = NULL;
 
@@ -294,7 +295,7 @@ objcl_invoke_with_types (void *receiver,
   NS_DURING
     {
 #ifdef __NEXT_RUNTIME__
-      method = class_getInstanceMethod ([((id) receiver) class], method_selector)->method_imp;
+      method = class_getInstanceMethod ([receiver class], method_selector)->method_imp;
 #else
       method = objc_msg_lookup (receiver, method_selector);
 #endif
@@ -319,7 +320,7 @@ objcl_invoke_with_types (void *receiver,
                         userInfo: nil] raise];
         }
 
-      ffi_call (&cif, (void *) method, return_value, argv);
+      ffi_call (&cif, FFI_FN (method), return_value, argv);
     }
   NS_HANDLER
     {

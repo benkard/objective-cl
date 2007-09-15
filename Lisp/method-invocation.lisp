@@ -189,11 +189,15 @@ Returns: *result* --- the return value of the method invocation.
                            (type-name->type-id return-type)))
         (selector (selector method-name)))
     (cffi:with-foreign-objects ((arg-types '(:pointer :char) (length args))
-                                (objc-args '(:pointer :void) (length args))
+                                (objc-args '(:pointer :void) (+ (length args) 2))
                                 (return-value-cell return-c-type))
       (flet ((ad-hoc-arglist->objc-arglist! (args)
+               (setf (cffi:mem-aref objc-args '(:pointer :void) 0)
+                     (pointer-to receiver)
+                     (cffi:mem-aref objc-args '(:pointer :void) 1)
+                     (pointer-to selector))
                (loop for arg in args
-                     for i from 0
+                     for i from 2
                      do (let* ((type-name (lisp-value->type-name arg))
                                #+(or)
                                (cffi-type (type-name->lisp-type type-name)))
@@ -220,7 +224,7 @@ Returns: *result* --- the return value of the method invocation.
              (dealloc-ad-hoc-objc-arglist ()
                (dotimes (i (length args))
                  (cffi:foreign-free
-                  (cffi:mem-aref objc-args '(:pointer :void) i))
+                  (cffi:mem-aref objc-args '(:pointer :void) (+ i 2)))
                  (cffi:foreign-string-free
                   (cffi:mem-aref arg-types '(:pointer :char) i)))))
         (ad-hoc-arglist->objc-arglist! args)
