@@ -19,9 +19,6 @@ int PyObjCRT_SetupClass(
 )
 
 {
-	/* Preallocate en exception to throw when memory is all used up. */
-  static oom_exception = [NSException exceptionWithName: "MLKOutOfMemoryException"]
-
 	/* Initialize the structure */
 	memset(cls, 0, sizeof(*cls));
 	memset(metaCls, 0, sizeof(*cls));

@@ -8,6 +8,9 @@
 #endif
 
 
+extern NSException *objcl_oom_exception;
+
+
 typedef struct objcl_object
 {
   char* type;
