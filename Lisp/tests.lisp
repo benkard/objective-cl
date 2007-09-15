@@ -5,7 +5,8 @@
   (:shadowing-import-from #:objcl
                           #:struct #:union #:pointer #:oneway #:out #:in
                           #:inout #:const #:parse-typespec #:objc-class
-                          #:bit-field #:opaque #:bycopy #:byref))
+                          #:bit-field #:opaque #:bycopy #:byref
+                          #:primitive-invoke))
 (in-package #:mulk.objective-cl.tests)
 
 
@@ -44,6 +45,45 @@
                  (find-selector '(:string-with-c-string))))
    ((ensure-same (find-selector "stringWithCString:encoding:")
                  (find-selector '(:string-with-c-string :encoding))))))
+
+
+(deftestsuite primitive-method-invocation (objective-cl)
+  ()
+  (:equality-test #'objc-equal)
+  (:tests
+   ((ensure-error (primitive-invoke (find-objc-class 'ns-object)
+                                    'string 'id)))
+   ((ensure-error (primitive-invoke 300 'self 'id)))
+   ((ensure-error (primitive-invoke "abc" 'self 'id)))
+   ((ensure-error (primitive-invoke (find-objc-class 'ns-object)
+                                    'selph 'id)))
+   ((ensure-same (primitive-invoke (find-objc-class 'ns-object)
+                                   'self 'id)
+                 (primitive-invoke (find-objc-class 'ns-object)
+                                   'class 'class)))
+   ((ensure-different (primitive-invoke (find-objc-class 'ns-object)
+                                   'self 'id)
+                      (primitive-invoke (find-objc-class 'ns-number)
+                                   'self 'id)))
+   ((ensure-same (primitive-invoke (find-objc-class 'ns-string)
+                                   :string-with-c-string 'id
+                                   "Mulk.")
+                 (primitive-invoke (find-objc-class 'ns-string)
+                                   :string-with-c-string 'id
+                                   "Mulk.")))
+   ((ensure-different (primitive-invoke (find-objc-class 'ns-string)
+                                        :string-with-c-string 'id
+                                        "Mulk.")
+                      (primitive-invoke (find-objc-class 'ns-string)
+                                        :string-with-c-string 'id
+                                        "Klum.")))
+   ((ensure (primitive-invoke (find-objc-class 'ns-string)
+                              :is-subclass-of-class :boolean
+                              (find-objc-class 'ns-object))))
+   ((ensure (primitive-invoke (find-objc-class 'ns-string)
+                              '(:perform-selector :with-object) :boolean
+                              (selector "isSubclassOfClass:")
+                              (find-objc-class 'ns-object))))))
 
 
 (deftestsuite method-invocation (objective-cl)

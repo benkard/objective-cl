@@ -28,7 +28,7 @@
 (defcfun ("objcl_invoke_method"
           %objcl-invoke-method) obj-data
   (receiver obj-data)
-  (method-selector obj-data)
+  (method-selector :pointer)
   (argc :int)
   &rest)
 

@@ -135,7 +135,7 @@ Returns: *result* --- the return value of the method invocation.
           (selector (selector method-name)))
       (unwind-protect
            (with-foreign-conversion ((objc-receiver receiver))
-             (with-foreign-objects ((return-value
+             (with-obj-data-values ((return-value
                                      (apply-macro '%objcl-invoke-method
                                                   objc-receiver
                                                   (pointer-to selector)
@@ -230,9 +230,7 @@ Returns: *result* --- the return value of the method invocation.
         (ad-hoc-arglist->objc-arglist! args)
         (unwind-protect
             (let ((error-cell
-                   (%objcl-invoke-with-types (pointer-to receiver)
-                                             (pointer-to selector)
-                                             (length args)
+                   (%objcl-invoke-with-types (length args)
                                              return-type-cell
                                              arg-types
                                              return-value-cell
