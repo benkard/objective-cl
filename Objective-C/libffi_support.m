@@ -359,14 +359,14 @@ signature_to_ffi_type(const char* argtype)
 
 #ifdef __ppc__
 ffi_type*
-arg_signature_to_ffi_type(const char* argtype)
+objcl_pyobjc_arg_signature_to_ffi_type(const char* argtype)
 {
   return signature_to_ffi_type (argtype);
 }
 
 #else
 ffi_type*
-arg_signature_to_ffi_type(const char* argtype)
+objcl_pyobjc_arg_signature_to_ffi_type(const char* argtype)
 {
 	/* NOTE: This is the minimal change to pass the unittests, it is not
 	 * based on analysis of the calling conventions.
@@ -384,7 +384,7 @@ arg_signature_to_ffi_type(const char* argtype)
 #else /* GNUstep */
 
 ffi_type*
-arg_signature_to_ffi_type(const char* argtype)
+objcl_pyobjc_arg_signature_to_ffi_type(const char* argtype)
 {
 	/* NOTE: This is the minimal change to pass the unittests, it is not
 	 * based on analysis of the calling conventions.
