@@ -30,7 +30,7 @@
                            :incomplete)
                      (let ((new-obj (call-next-method)))
                        (unless *skip-retaining*
-                         (primitive-invoke new-obj "retain" :id))
+                         (unsafe-primitive-invoke new-obj "retain" id))
                        (unless *skip-finalization*
                          ;; We only put the new object into the hash
                          ;; table if it is a regular wrapper object
@@ -56,7 +56,7 @@
                                                       (*skip-retaining*    t))
                                                   (make-instance saved-type
                                                                  :pointer saved-pointer))))
-                                      (primitive-invoke temp "release" :id))))
+                                      (unsafe-primitive-invoke temp "release" id))))
                              (trivial-garbage:finalize new-obj #'finalizer))))
                        new-obj))
                (t obj))))

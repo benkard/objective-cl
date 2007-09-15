@@ -1,6 +1,7 @@
 (defpackage #:mulk.objective-cl
   (:nicknames #:objcl #:objective-cl #:mulk.objcl)
   (:use #:cl #:cffi #:split-sequence)
+  (:shadow #:foreign-pointer)
 
            ;; Functions
   (:export #:initialise-runtime

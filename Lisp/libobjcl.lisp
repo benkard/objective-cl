@@ -32,6 +32,15 @@
   (argc :int)
   &rest)
 
+(defcfun ("objcl_invoke_with_types" %objcl-invoke-with-types) :pointer
+  (receiver (:pointer :void))
+  (method_selector (:pointer :void))
+  (argc :int)
+  (return_typespec (:pointer :char))
+  (arg_typespecs (:pointer (:pointer :char)))
+  (return_value (:pointer :void))
+  (argv (:pointer (:pointer :void))))
+
 (defcfun ("objcl_find_class" %objcl-find-class) :pointer
   (class-name :string))
 
@@ -175,7 +184,7 @@ conventional case for namespace identifiers in Objective C."
 (declaim (ftype (function (string) (or null objc-class))
                 find-objc-class-by-name))
 (defun find-objc-class-by-name (class-name)
-  (with-foreign-objects ((obj-data (%objcl-find-class class-name)))
+  (with-obj-data-values ((obj-data (%objcl-find-class class-name)))
     (if (null-pointer-p (foreign-slot-value
                          (foreign-slot-value obj-data 'obj-data 'data)
                          'obj-data-union
@@ -187,7 +196,7 @@ conventional case for namespace identifiers in Objective C."
 (declaim (ftype (function (string) (or null selector))
                 find-selector-by-name))
 (defun find-selector-by-name (selector-name)
-  (with-foreign-objects ((obj-data (%objcl-find-selector selector-name)))
+  (with-obj-data-values ((obj-data (%objcl-find-selector selector-name)))
     (if (null-pointer-p (foreign-slot-value
                          (foreign-slot-value obj-data 'obj-data 'data)
                          'obj-data-union
@@ -285,9 +294,10 @@ by which __invoke__ converts its arguments into a *message name*.
   ;; to use CHECK-TYPE in the method body.
   (unless (find-class 'foreign-pointer nil)
     (setf (find-class 'foreign-pointer nil)
-          (class-of (make-pointer 0))))
-  (deftype foreign-pointer ()
-    '(satisfies cffi:pointerp)))
+          (class-of (make-pointer 0)))
+    (ignore-errors
+      (deftype foreign-pointer ()
+        '(satisfies cffi:pointerp)))))
 
 
 (declaim (ftype (function ((or selector string symbol list)) selector)
@@ -380,7 +390,13 @@ If *selector-designator* is a __selector__, it is simply returned.
                                               (type-name->slot-name type-name)))))
       (case lisp-type
         ((id objc-class selector exception)
-         (make-instance lisp-type :pointer value))
+         #-openmcl (make-instance lisp-type :pointer value)
+         #+openmcl (if (eq 'objc-class lisp-type)
+                       ;; God help me.
+                       (change-class (make-instance 'c-pointer-wrapper
+                                        :pointer value)
+                                     lisp-type)
+                       (make-instance lisp-type :pointer value)))
         ((string) (foreign-string-to-lisp value))
         (otherwise value)))))
 

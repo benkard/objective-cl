@@ -299,6 +299,11 @@ objcl_invoke_with_types (void *receiver,
       method = objc_msg_lookup (receiver, method_selector);
 #endif
 
+      if (method == NULL)
+        [[NSException exceptionWithName: @"MLKNoApplicableMethod"
+                      reason: @"Tried to call a non-existent method."
+                      userInfo: nil] raise];
+
       return_type = objcl_pyobjc_signature_to_ffi_return_type (return_typespec);
       arg_types[0] = id_type;
       arg_types[1] = sel_type;

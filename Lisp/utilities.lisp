@@ -96,8 +96,8 @@
 (defmethod print-object ((object id) stream)
   (print-unreadable-object (object stream)
     (format stream "~A `~A' {~X}"
-            (objcl-class-name (primitive-invoke object "class" :id))
-            (primitive-invoke (primitive-invoke object "description" :id)
+            (objcl-class-name (primitive-invoke object "class" 'id))
+            (primitive-invoke (primitive-invoke object "description" 'id)
                               "UTF8String" :string)
             (primitive-invoke object "hash" :unsigned-int))))
 
@@ -121,6 +121,6 @@
   (print-unreadable-object (exception stream)
     (format stream "~S ~A {~X}"
             'exception
-            (primitive-invoke (primitive-invoke exception "name" :id)
+            (primitive-invoke (primitive-invoke exception "name" 'id)
                               "UTF8String" :string)
             (primitive-invoke exception "hash" :unsigned-int))))

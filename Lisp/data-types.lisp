@@ -42,7 +42,7 @@
   ((pointer :type     c-pointer
             :reader   pointer-to
             :initarg  :pointer
-            :initform nil)))
+            :initform (cffi:null-pointer))))
 
 
 (defclass selector   (c-pointer-wrapper) ()

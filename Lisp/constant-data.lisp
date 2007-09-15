@@ -108,6 +108,10 @@
                       (typep value type))
                   *objcl-type-map*)))
 
+(declaim (ftype (function (symbol) symbol) lisp-type->type-name))
+(defun lisp-type->type-name (lisp-type)
+  (cdr (rassoc lisp-type *objcl-type-map*)))
+
 (declaim (ftype (function (symbol) symbol) type-name->lisp-type))
 (defun type-name->lisp-type (type-name)
   (cdr (assoc type-name *objcl-type-map*)))
