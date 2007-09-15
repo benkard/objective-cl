@@ -8,6 +8,7 @@
 #include "pyobjc.h"
 
 #if defined(GNU_RUNTIME)
+#include "objc-runtime-gnu.h"
 
 struct objc_protocol_list* PyObjCRT_AllocProtocolList(int numProtocols)
 {   

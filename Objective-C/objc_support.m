@@ -15,6 +15,9 @@
  * Created Tue Sep 10 14:16:02 1996.
  */
 
+#include "objc_support.h"
+#include "pyobjc.h"
+
 #include <objc/Protocol.h>
 
 #include <unistd.h>
@@ -34,6 +37,10 @@
 #ifdef MACOSX
 #include <CoreFoundation/CFNumber.h>
 #endif /* MACOSX */
+
+
+/* Define in order to throw exceptions when a typespec cannot be parsed. */
+#undef STRICT_TYPE_PARSING
 
 
 #ifndef MAX
@@ -169,8 +176,13 @@ PyObjCRT_SkipTypeSpec (const char *type)
 
 
 	default:
-		PyErr_Format(PyObjCExc_InternalError,
-			"PyObjCRT_SkipTypeSpec: Unhandled type '%#x'", *type); 
+#ifdef STRICT_TYPE_PARSING
+		[[NSException exceptionWithName: @"PyObjCRT_SkipTypeSpec"
+			      reason: [NSString stringWithFormat: @"Unhandled type: '%c'", *type]
+			      userInfo: NULL] raise];
+#else
+                NSLog (@"PyObjCRT_SkipTypeSpec: Unhandled type: '%c'", *type);
+#endif
 		return NULL;
 	}
 
@@ -335,8 +347,13 @@ PyObjCRT_AlignOfType (const char *type)
 		return PyObjCRT_AlignOfType(type+1);
 
 	default:
-		PyErr_Format(PyObjCExc_InternalError, 
-			"PyObjCRT_AlignOfType: Unhandled type '%#x'", *type);
+#ifdef STRICT_TYPE_PARSING
+		[[NSException exceptionWithName: @"PyObjCRT_SkipTypeSpec"
+			      reason: [NSString stringWithFormat: @"Unhandled type: '%c'", *type]
+			      userInfo: NULL] raise];
+#else
+                NSLog (@"PyObjCRT_SkipTypeSpec: Unhandled type: '%c'", *type);
+#endif
 		return -1;
 	}
 }
@@ -461,48 +478,15 @@ PyObjCRT_SizeOfType (const char *type)
 		return PyObjCRT_SizeOfType(type+1);
 
 	default:
-		PyErr_Format(PyObjCExc_InternalError, 
-			"PyObjCRT_SizeOfType: Unhandled type '%#x", *type);
+#ifdef STRICT_TYPE_PARSING
+		[[NSException exceptionWithName: @"PyObjCRT_SkipTypeSpec"
+			      reason: [NSString stringWithFormat: @"Unhandled type: '%c'", *type]
+			      userInfo: NULL] raise];
+#else
+                NSLog (@"PyObjCRT_SkipTypeSpec: Unhandled type: '%c'", *type);
+#endif
 		return -1;
 	}
-}
-
-
-/*#F Returns a tuple of objects representing the content of a C array
-of type @var{type} pointed by @var{datum}. */
-static PyObject *
-pythonify_c_array (const char *type, void *datum)
-{
-	PyObject *ret;
-	ssize_t nitems, itemidx, sizeofitem;
-	unsigned char* curdatum;
-
-	nitems = atoi (type+1);
-	while (isdigit (*++type))
-		;
-	sizeofitem = PyObjCRT_SizeOfType (type);
-	if (sizeofitem == -1) return NULL;
-
-	ret = PyTuple_New (nitems);
-	if (!ret) return NULL;
-
-	curdatum = datum;
-	for (itemidx=0; itemidx < nitems; itemidx++) {
-		PyObject *pyitem = NULL;
-
-		pyitem = pythonify_c_value (type, curdatum);
-
-		if (pyitem) {
-			PyTuple_SET_ITEM (ret, itemidx, pyitem);
-		} else {
-			Py_DECREF(ret);
-			return NULL;
-		}
-
-		curdatum += sizeofitem;
-	}
-
-	return ret;
 }
 
 

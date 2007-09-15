@@ -24,6 +24,11 @@
 #include <objc/objc-runtime.h>
 #include <objc/Protocol.h>
 
+#include <string.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <ctype.h>
+
 static inline int 
 PyObjCRT_SameSEL(SEL a, SEL b)
 {
@@ -70,8 +75,8 @@ PyObjCRT_ClassAddMethodList(Class cls, struct objc_method_list* lst)
 }
 
 
-extern struct objc_method_list* PyObjCRT_AllocMethodList(Py_ssize_t);
-extern struct objc_protocol_list* PyObjCRT_AllocProtocolList(Py_ssize_t);
+extern struct objc_method_list* PyObjCRT_AllocMethodList(ssize_t);
+extern struct objc_protocol_list* PyObjCRT_AllocProtocolList(ssize_t);
 
 typedef Method PyObjCRT_Method_t;
 typedef Ivar PyObjCRT_Ivar_t;

@@ -5,6 +5,7 @@
 #include "pyobjc.h"
 
 #if defined(APPLE_RUNTIME)
+#include "objc-runtime-apple.h"
 
 int PyObjCRT_SetupClass(
 	Class cls, 
@@ -12,12 +13,15 @@ int PyObjCRT_SetupClass(
 	const char*name, 
 	Class superCls,
 	Class rootCls,
-	Py_ssize_t ivarSize,
+	ssize_t ivarSize,
 	struct objc_ivar_list* ivarList,
 	struct objc_protocol_list* protocolList
 )
 
 {
+	/* Preallocate en exception to throw when memory is all used up. */
+  static oom_exception = [NSException exceptionWithName: "MLKOutOfMemoryException"]
+
 	/* Initialize the structure */
 	memset(cls, 0, sizeof(*cls));
 	memset(metaCls, 0, sizeof(*cls));
@@ -117,7 +121,7 @@ void PyObjCRT_ClearClass(Class cls)
 	}
 }
 
-struct objc_method_list *PyObjCRT_AllocMethodList(Py_ssize_t numMethods)
+struct objc_method_list *PyObjCRT_AllocMethodList(ssize_t numMethods)
 {
 	struct objc_method_list *mlist;
 
@@ -134,7 +138,7 @@ struct objc_method_list *PyObjCRT_AllocMethodList(Py_ssize_t numMethods)
 	return mlist;
 }
 
-struct objc_protocol_list* PyObjCRT_AllocProtocolList(Py_ssize_t numProtocols)
+struct objc_protocol_list* PyObjCRT_AllocProtocolList(ssize_t numProtocols)
 {
 	struct objc_protocol_list *plist;
 

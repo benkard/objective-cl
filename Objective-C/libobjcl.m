@@ -274,7 +274,7 @@ objcl_invoke_with_types (void *receiver,
   *exception = NULL;
 
 #ifdef __NEXT_RUNTIME__
-  method = class_getInstanceMethod ([obj class], method_selector)->method_imp;
+  method = class_getInstanceMethod ([((id) receiver) class], method_selector)->method_imp;
 #else
   method = objc_msg_lookup (receiver, method_selector);
 #endif

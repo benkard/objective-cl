@@ -32,61 +32,14 @@
 
 #endif 
 
-/*#F Takes a C value pointed by @var{datum} with its type encoded in
-  @var{type}, that should be coming from an ObjC @encode directive,
-  and returns an equivalent Python object where C structures and
-  arrays are represented as tuples. */
-extern PyObject *pythonify_c_value (const char *type,
-				    void *datum);
-extern PyObject *pythonify_c_return_value (const char *type,
-				    void *datum);
-
-/*#F Takes a Python object @var{arg} and translate it into a C value
-  pointed by @var{datum} accordingly with the type specification
-  encoded in @var{type}, that should be coming from an ObjC @encode
-  directive.
-  Returns NULL on success, or a static error string describing the
-  error. */
-extern int depythonify_c_value (const char *type,
-					PyObject *arg,
-					void *datum);
-extern int depythonify_c_return_value (const char *type,
-					PyObject *arg,
-					void *datum);
-
-extern Py_ssize_t PyObjCRT_SizeOfReturnType(const char* type);
-extern Py_ssize_t PyObjCRT_SizeOfType(const char *type);
-extern Py_ssize_t PyObjCRT_AlignOfType(const char *type);
+extern ssize_t PyObjCRT_SizeOfReturnType(const char* type);
+extern ssize_t PyObjCRT_SizeOfType(const char *type);
+extern ssize_t PyObjCRT_AlignOfType(const char *type);
 extern const char *PyObjCRT_SkipTypeSpec (const char *type);
 extern const char* PyObjCRT_SkipTypeQualifiers (const char* type);
 
-/*
- * Compatibility with pyobjc-api.h
- */
-static inline id PyObjC_PythonToId(PyObject* value)
-{
-	id res;
-	int r;
-
-	r = depythonify_c_value(@encode(id), value, &res);
-	if (r == -1) {
-		return NULL;
-	} else {
-		return res;
-	}
-}
-
-static inline PyObject* PyObjC_IdToPython(id value)
-{
-	PyObject* res;
-
-	res = pythonify_c_value(@encode(id), &value);
-	return res;
-}
-
-
 extern int PyObjCRT_SetupClass(
-	Class, Class, const char*, Class, Class, Py_ssize_t, struct objc_ivar_list*,
+	Class, Class, const char*, Class, Class, ssize_t, struct objc_ivar_list*,
 	struct objc_protocol_list*);
 extern void PyObjCRT_ClearClass(Class cls);
 
