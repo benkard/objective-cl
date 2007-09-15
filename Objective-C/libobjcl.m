@@ -199,6 +199,8 @@ _objcl_invoke_method (id self_,
   [invocation getReturnValue: result_ptr];
   if (result->type[0] == '#')
     NSLog (@"Returning: %@", result->data.id_val);
+  else
+    NSLog (@"Returning.");
 }
 
 
@@ -252,6 +254,46 @@ objcl_invoke_method (OBJCL_OBJ_DATA receiver,
   NS_ENDHANDLER
 
     return result;
+}
+
+
+void
+objcl_invoke_with_types (void *receiver,
+                         SEL method_selector,
+                         char *(types[]),
+                         size_t arg_sizes[],
+                         id *exception,
+                         void *return_value,
+                         int argc,
+                         ...)
+{
+  va_list arglist;
+  IMP method;
+  int i;
+
+  *exception = NULL;
+
+#ifdef __NEXT_RUNTIME__
+  method = class_getInstanceMethod ([obj class], method_selector)->method_imp;
+#else
+  method = objc_msg_lookup (receiver, method_selector);
+#endif
+
+  NS_DURING
+    {
+      va_start (arglist, argc);
+      for (i = 0; i < argc; i++)
+        {
+          va_arg (arglist, OBJCL_OBJ_DATA);
+        }
+      va_end (arglist);
+    }
+  NS_HANDLER
+    {
+      *exception = localException;
+      NS_VOIDRETURN;
+    }
+  NS_ENDHANDLER
 }
 
 

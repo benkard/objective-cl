@@ -3,6 +3,14 @@
 #import "Foundation/Foundation.h"
 #include <objc/objc-api.h>
 
+#ifdef USE_LIBFFI
+#include <ffi.h>
+#else
+#include <vacall.h>
+#include <avcall.h>
+#endif
+
+
 typedef struct objcl_object
 {
   char* type;
@@ -41,6 +49,16 @@ objcl_invoke_method (OBJCL_OBJ_DATA receiver,
                      SEL method_selector,
                      int argc,
                      ...);
+
+void
+objcl_invoke_with_types (void *receiver,
+                         SEL method_selector,
+                         char *(types[]),
+                         size_t arg_sizes[],
+                         id *exception,
+                         void *return_value,
+                         int argc,
+                         ...);
 
 OBJCL_OBJ_DATA
 objcl_find_class (const char *class_name);
