@@ -53,11 +53,12 @@ objcl_invoke_method (OBJCL_OBJ_DATA receiver,
 void
 objcl_invoke_with_types (void *receiver,
                          SEL method_selector,
-                         char *(types[]),
                          id *exception,
-                         void *return_value,
                          int argc,
-                         ...);
+                         char *return_typespec,
+                         char *arg_typespecs[],
+                         void *return_value,
+                         void **argv);
 
 OBJCL_OBJ_DATA
 objcl_find_class (const char *class_name);

@@ -1,7 +1,10 @@
 /* -*- mode: objc; coding: utf-8 -*- */
 
 #import "libobjcl.h"
-#import "Foundation/Foundation.h"
+#import "libffi_support.h"
+#import "objc_support.h"
+
+#import <Foundation/Foundation.h>
 #include <stdarg.h>
 #include <objc/objc-api.h>
 
@@ -263,38 +266,59 @@ objcl_invoke_method (OBJCL_OBJ_DATA receiver,
 }
 
 
+#ifdef USE_LIBFFI
 void
 objcl_invoke_with_types (void *receiver,
                          SEL method_selector,
-                         char *types[],
                          id *exception,
-                         void *return_value,
                          int argc,
-                         ...)
+                         char *return_typespec,
+                         char *arg_typespecs[],
+                         void *return_value,
+                         void **argv)
 {
   va_list arglist;
   IMP method;
   int i;
+  void *tmp_arg;
+  ffi_cif cif;
+  ffi_type *return_type;
+  ffi_type *arg_types[argc + 2];
+  ffi_status status;
 
-  char *return_type = types[0];
-  char **arg_types = types + 1;
+  static ffi_type *id_type = NULL;
+  static ffi_type *sel_type = NULL;
 
-  *exception = NULL;
-
-#ifdef __NEXT_RUNTIME__
-  method = class_getInstanceMethod ([((id) receiver) class], method_selector)->method_imp;
-#else
-  method = objc_msg_lookup (receiver, method_selector);
-#endif
+  if (!id_type)
+    id_type = objcl_pyobjc_arg_signature_to_ffi_type ("@");
+  if (!sel_type)
+    sel_type = objcl_pyobjc_arg_signature_to_ffi_type (":");
 
   NS_DURING
     {
-      va_start (arglist, argc);
+#ifdef __NEXT_RUNTIME__
+      method = class_getInstanceMethod ([((id) receiver) class], method_selector)->method_imp;
+#else
+      method = objc_msg_lookup (receiver, method_selector);
+#endif
+
+      *exception = NULL;
+      return_type = objcl_pyobjc_signature_to_ffi_return_type (return_typespec);
+      arg_types[0] = id_type;
+      arg_types[1] = sel_type;
+
       for (i = 0; i < argc; i++)
+        arg_types[i + 2] = objcl_pyobjc_arg_signature_to_ffi_type (arg_typespecs[i]);
+
+      status = ffi_prep_cif (&cif, FFI_DEFAULT_ABI, argc + 2, return_type, arg_types);
+      if (status != FFI_OK)
         {
-          va_arg_with_type (arglist, arg_types[i]);
+          [[NSException exceptionWithName: @"MLKInvalidFFITypeException"
+                        reason: @"FFI type is invalid (this is probably a bug)."
+                        userInfo: nil] raise];
         }
-      va_end (arglist);
+
+      ffi_call (&cif, (void *) method, return_value, argv);
     }
   NS_HANDLER
     {
@@ -303,6 +327,7 @@ objcl_invoke_with_types (void *receiver,
     }
   NS_ENDHANDLER
 }
+#endif
 
 
 OBJCL_OBJ_DATA
