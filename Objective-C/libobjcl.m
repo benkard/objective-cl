@@ -267,20 +267,17 @@ objcl_invoke_method (OBJCL_OBJ_DATA receiver,
 
 
 #ifdef USE_LIBFFI
-void
+id
 objcl_invoke_with_types (void *receiver,
                          SEL method_selector,
-                         id *exception,
                          int argc,
                          char *return_typespec,
                          char *arg_typespecs[],
                          void *return_value,
                          void **argv)
 {
-  va_list arglist;
   IMP method;
   int i;
-  void *tmp_arg;
   ffi_cif cif;
   ffi_type *return_type;
   ffi_type *arg_types[argc + 2];
@@ -302,7 +299,6 @@ objcl_invoke_with_types (void *receiver,
       method = objc_msg_lookup (receiver, method_selector);
 #endif
 
-      *exception = NULL;
       return_type = objcl_pyobjc_signature_to_ffi_return_type (return_typespec);
       arg_types[0] = id_type;
       arg_types[1] = sel_type;
@@ -322,10 +318,11 @@ objcl_invoke_with_types (void *receiver,
     }
   NS_HANDLER
     {
-      *exception = localException;
-      NS_VOIDRETURN;
+      NS_VALUERETURN (localException, id);
     }
   NS_ENDHANDLER
+
+  return NULL;
 }
 #endif
 

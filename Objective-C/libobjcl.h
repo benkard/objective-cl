@@ -50,10 +50,9 @@ objcl_invoke_method (OBJCL_OBJ_DATA receiver,
                      int argc,
                      ...);
 
-void
+id
 objcl_invoke_with_types (void *receiver,
                          SEL method_selector,
-                         id *exception,
                          int argc,
                          char *return_typespec,
                          char *arg_typespecs[],
