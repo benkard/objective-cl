@@ -182,92 +182,88 @@ Returns: *result* --- the return value of the method invocation.
 
 
 (defun primitive-invoke (receiver method-name return-type &rest args)
-  (flet ((make-void-pointer-pointer (ptr)
-           (cffi:foreign-alloc #+(or) cffi-type
-                               '(:pointer :void)
-                               :initial-element ptr)))
-    (let ((return-c-type (case return-type
-                           ((id objc-class exception selector) :pointer)
-                           (otherwise return-type)))
-          (return-type-cell (cffi:foreign-string-alloc
-                             (type-name->type-id return-type)))
-          (selector (selector method-name))
-          (temporary-foreign-objects (list))
-          (temporary-foreign-strings (list)))
-      (flet ((register-temporary-string (string)
-               (push string temporary-foreign-strings)
-               string)
+  (let ((return-c-type (case return-type
+                         ((id objc-class exception selector) :pointer)
+                         (otherwise return-type)))
+        (selector (selector method-name))
+        (temporary-foreign-objects (list))
+        (temporary-foreign-strings (list)))
+    (labels ((make-void-pointer-pointer (ptr)
+               (cffi:foreign-alloc '(:pointer :void)
+                                   :initial-element ptr))
              (register-temporary-object (object)
                (push object temporary-foreign-objects)
-               object))
-        (cffi:with-foreign-objects ((arg-types '(:pointer :char) (length args))
-                                    (objc-args '(:pointer :void) (+ (length args) 2))
-                                    (return-value-cell return-c-type))
-          (flet ((ad-hoc-arglist->objc-arglist! (args)
-                   (setf (cffi:mem-aref objc-args '(:pointer :void) 0)
-                         (register-temporary-object
-                          (make-void-pointer-pointer (pointer-to receiver)))
-                         (cffi:mem-aref objc-args '(:pointer :void) 1)
-                         (register-temporary-object
-                          (make-void-pointer-pointer (pointer-to selector))))
-                   (loop for arg in args
-                         for i from 0
-                         do (let* ((type-name (lisp-value->type-name arg))
-                                   #+(or)
-                                   (cffi-type (type-name->lisp-type type-name)))
-                              (setf (cffi:mem-aref objc-args
-                                                   '(:pointer :void)
-                                                   (+ i 2))
-                                    (typecase arg
-                                      #+(or)
-                                      (c-pointer
-                                       ;; Assume that arg points to a struct,
-                                       ;; and that the method wants a copy of
-                                       ;; that struct, not the pointer itself.
-                                       arg)
-                                      (string (register-temporary-object
-                                               (make-void-pointer-pointer
-                                                (register-temporary-string
-                                                 (cffi:foreign-string-alloc
-                                                  arg)))))
-                                      (t (register-temporary-object
-                                          (make-void-pointer-pointer
-                                           (typecase arg
-                                             (c-pointer-wrapper (pointer-to arg))
-                                             (t arg)))))))
-                              (setf (cffi:mem-aref arg-types '(:pointer :char) i)
-                                    (register-temporary-string
-                                     (cffi:foreign-string-alloc
-                                      (typecase arg
-                                        #+(or) (c-pointer "{?=}")
-                                        (t (type-name->type-id type-name)))))))))
-                 (dealloc-ad-hoc-objc-arglist ()
-                   (dolist (x temporary-foreign-objects)
-                     (cffi:foreign-free x))
-                   (dolist (x temporary-foreign-strings)
-                     (cffi:foreign-string-free x))))
-            (ad-hoc-arglist->objc-arglist! args)
-            (unwind-protect
-                (let ((error-cell
-                       (%objcl-invoke-with-types (length args)
-                                                 return-type-cell
-                                                 arg-types
-                                                 return-value-cell
-                                                 objc-args)))
-                  (unless (cffi:null-pointer-p error-cell)
-                    (error (make-instance 'exception :pointer error-cell)))
-                  (case return-type
-                    ((id objc-class exception selector)
-                     (let ((*skip-retaining*
-                            (or *skip-retaining*
-                                (constructor-name-p (selector-name selector)))))
-                       (make-instance return-type
-                          :pointer (cffi:mem-ref return-value-cell
-                                                 return-c-type))))
-                    (otherwise (cffi:mem-ref return-value-cell
-                                             return-c-type))))
-              (dealloc-ad-hoc-objc-arglist)
-              (foreign-string-free return-type-cell))))))))
+               object)
+             (register-temporary-string (string)
+               (push string temporary-foreign-strings)
+               string)
+             (alloc-pointer-and-register (target)
+               (register-temporary-object
+                (make-void-pointer-pointer target)))
+             (alloc-string-and-register (string)
+               (register-temporary-string
+                (cffi:foreign-string-alloc string))))
+      (cffi:with-foreign-objects ((arg-types '(:pointer :char) (length args))
+                                  (objc-args '(:pointer :void) (+ (length args) 2))
+                                  (return-value-cell return-c-type))
+        (flet ((ad-hoc-arglist->objc-arglist! (args)
+                 (setf (cffi:mem-aref objc-args '(:pointer :void) 0)
+                       (alloc-pointer-and-register (pointer-to receiver))
+                       (cffi:mem-aref objc-args '(:pointer :void) 1)
+                       (alloc-pointer-and-register (pointer-to selector)))
+                 (loop for arg in args
+                       for i from 0
+                       do (let* ((type-name (lisp-value->type-name arg)))
+                            (setf (cffi:mem-aref objc-args
+                                                 '(:pointer :void)
+                                                 (+ i 2))
+                                  (typecase arg
+                                    #+(or)
+                                    (c-pointer
+                                     ;; Assume that arg points to a struct,
+                                     ;; and that the method wants a copy of
+                                     ;; that struct, not the pointer itself.
+                                     arg)
+                                    (string (alloc-pointer-and-register
+                                             (alloc-string-and-register
+                                              arg)))
+                                    (t (alloc-pointer-and-register
+                                        (typecase arg
+                                          (c-pointer-wrapper (pointer-to arg))
+                                          (t arg))))))
+                            (setf (cffi:mem-aref arg-types '(:pointer :char) i)
+                                  (alloc-string-and-register
+                                   (typecase arg
+                                     #+(or) (c-pointer "{?=}")
+                                     (t (type-name->type-id type-name))))))))
+               (dealloc-registered-objects ()
+                 (dolist (x temporary-foreign-objects)
+                   (cffi:foreign-free x))
+                 (dolist (x temporary-foreign-strings)
+                   (cffi:foreign-string-free x))))
+          (ad-hoc-arglist->objc-arglist! args)
+          (unwind-protect
+              (let* ((return-type-cell (alloc-string-and-register
+                                        (type-name->type-id return-type)))
+                     (error-cell
+                      (%objcl-invoke-with-types (length args)
+                                                return-type-cell
+                                                arg-types
+                                                return-value-cell
+                                                objc-args)))
+                (unless (cffi:null-pointer-p error-cell)
+                  (error (make-instance 'exception :pointer error-cell)))
+                (case return-type
+                  ((id objc-class exception selector)
+                   (let ((*skip-retaining*
+                          (or *skip-retaining*
+                              (constructor-name-p (selector-name selector)))))
+                     (make-instance return-type
+                        :pointer (cffi:mem-ref return-value-cell
+                                               return-c-type))))
+                  (otherwise (cffi:mem-ref return-value-cell
+                                           return-c-type))))
+            (dealloc-registered-objects)))))))
 
 
 ;;; (@* "Helper functions")
