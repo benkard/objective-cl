@@ -221,10 +221,15 @@ Returns: *result* --- the return value of the method invocation.
                                         (string (alloc-pointer-and-register
                                                  (alloc-string-and-register
                                                   arg)))
-                                        (t (alloc-pointer-and-register
-                                            (typecase arg
-                                              (c-pointer-wrapper (pointer-to arg))
-                                              (t arg))))))
+                                        ((or c-pointer-wrapper
+                                             c-pointer)
+                                         (alloc-pointer-and-register
+                                          (typecase arg
+                                            (c-pointer-wrapper (pointer-to arg))
+                                            (t arg))))
+                                        (t (cffi:foreign-alloc (type-name->c-type
+                                                                type-name)
+                                                               :initial-element arg))))
                                 (setf (cffi:mem-aref arg-types '(:pointer :char) i)
                                       (alloc-string-and-register
                                        (typecase arg
