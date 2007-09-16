@@ -154,6 +154,52 @@ an __exception__, you can simply send it the `self' message.
   __id__"))
 
 
+(defclass opaque-struct (c-pointer-wrapper)
+  ((name :type (or null string)
+         :accessor struct-name
+         :initarg :name)))
+
+(defclass tagged-struct (c-pointer-wrapper)
+  ((name :type (or null string)
+         :accessor struct-name
+         :initarg :name)
+   (children :type list
+             :accessor struct-children
+             :initarg :children)))
+
+(defclass opaque-union (c-pointer-wrapper)
+  ((name :type (or null string)
+         :accessor struct-name
+         :initarg :name)))
+
+(defclass tagged-union (c-pointer-wrapper)
+  ((name :type (or null string)
+         :accessor struct-name
+         :initarg :name)
+   (children :type list
+             :accessor struct-children
+             :initarg :children)))
+
+(defclass tagged-array (c-pointer-wrapper)
+  ((element-type :type symbol
+                 :accessor tagged-array-element-type
+                 :initarg :element-type)))
+
+
+(defgeneric type-info (thing))
+
+(defmethod type-info ((thing opaque-struct))
+  (with-slots (name)
+        thing
+    (list* 'struct '(opaque) name)))
+
+(defmethod type-info ((thing tagged-struct))
+  (with-slots (name children)
+        thing
+    (list* 'struct '() name (mapcar #'type-info children))))
+
+
+
 (defgeneric objcl-eql (obj1 obj2))
 (defmethod objcl-eql ((obj1 c-pointer-wrapper) (obj2 c-pointer-wrapper))
   (pointer-eq (pointer-to obj1) (pointer-to obj2)))

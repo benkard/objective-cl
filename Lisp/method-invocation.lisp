@@ -182,6 +182,7 @@ Returns: *result* --- the return value of the method invocation.
 
 
 (defun primitive-invoke (receiver method-name return-type &rest args)
+  "An invocation mechanism with ad-hoc argument conversion."
   (with-foreign-string-pool (register-temporary-string)
     (with-foreign-object-pool (register-temporary-object)
       (let ((return-c-type (case return-type

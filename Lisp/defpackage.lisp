@@ -17,6 +17,10 @@
            #:objc-eql
            #:objc-equal
 
+           ;; Macros
+           #:define-objc-struct
+           #:define-objc-union
+
            ;; Special variables
            #:*trace-method-calls*
 

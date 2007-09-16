@@ -124,3 +124,53 @@
             (primitive-invoke (primitive-invoke exception "name" 'id)
                               "UTF8String" :string)
             (primitive-invoke exception "hash" :unsigned-int))))
+
+
+;;; (@* "Structure and Union Definition")
+(defun make-objc-struct/union-definer (type name-and-options c-names
+                                       doc-and-slots)
+  (let ((struct-name (ctypecase name-and-options
+                       (list (first name-and-options))
+                       (symbol name-and-options)))
+        (slots (typecase (first doc-and-slots)
+                 (string (rest doc-and-slots))
+                 (t doc-and-slots))))
+    `(progn
+       ,(if (eq type :struct)
+            `(defcstruct ,name-and-options ,@doc-and-slots)
+            `(defcunion ,name-and-options ,@doc-and-slots))
+       ,@(mapcar #'(lambda (slot)
+                     (let ((slot-name (first slot)))
+                       `(defun ,(intern (concatenate 'string
+                                                     (symbol-name struct-name)
+                                                     "-"
+                                                     (symbol-name slot-name))
+                                        (symbol-package slot-name))
+                            (struct)
+                          (check-type struct ,(if (eq type :struct)
+                                                  `(or c-pointer
+                                                       opaque-struct
+                                                       tagged-struct)
+                                                  `(or c-pointer
+                                                       opaque-union
+                                                       tagged-union)))
+                          (when (typep struct ,(if (eq type :struct)
+                                                   `'tagged-struct
+                                                   `'tagged-union))
+                            (assert (member (struct-name struct)
+                                            ',c-names
+                                            :test #'string=)))
+                          (cffi:foreign-slot-value struct
+                                                   ',struct-name
+                                                   ',slot-name))))
+                 slots))))
+
+(defmacro define-objc-struct (name-and-options c-names &rest doc-and-slots)
+  "Like CFFI:DEFCSTRUCT except that it provides accessors that check
+their arguments according to their struct names."
+  (make-objc-struct/union-definer :struct name-and-options c-names doc-and-slots))
+
+(defmacro define-objc-union (name-and-options c-names &rest doc-and-slots)
+  "Like CFFI:DEFCUNION except that it provides accessors that check
+their arguments according to their struct names."
+  (make-objc-struct/union-definer :union name-and-options c-names doc-and-slots))
