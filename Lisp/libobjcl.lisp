@@ -34,10 +34,10 @@
 
 (defcfun ("objcl_invoke_with_types" %objcl-invoke-with-types) :pointer
   (argc :int)
-  (return_typespec (:pointer :char))
-  (arg_typespecs (:pointer (:pointer :char)))
+  (return_typespec :string)
+  (arg_typespecs (:array :string))
   (return_value (:pointer :void))
-  (argv (:pointer (:pointer :void))))
+  (argv (:array (:pointer :void))))
 
 (defcfun ("objcl_find_class" %objcl-find-class) :pointer
   (class-name :string))

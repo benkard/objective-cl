@@ -218,3 +218,7 @@ an __exception__, you can simply send it the `self' message.
 ;;;; (@* "Convenience types")
 (deftype c-pointer ()
   '(satisfies pointerp))
+
+
+(deftype argument-number ()
+  `(integer 0 ,call-arguments-limit))

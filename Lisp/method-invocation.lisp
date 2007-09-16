@@ -184,67 +184,75 @@ Returns: *result* --- the return value of the method invocation.
 (defun primitive-invoke (receiver method-name return-type &rest args)
   "An invocation mechanism with ad-hoc argument conversion."
   (with-foreign-string-pool (register-temporary-string)
-    (with-foreign-object-pool (register-temporary-object)
-      (let ((return-c-type (case return-type
-                             ((id objc-class exception selector) :pointer)
-                             (otherwise return-type)))
-            (selector (selector method-name)))
-        (labels ((make-void-pointer-pointer (ptr)
-                   (cffi:foreign-alloc '(:pointer :void)
-                                       :initial-element ptr))
-                 (alloc-pointer-and-register (target)
-                   (register-temporary-object
-                    (make-void-pointer-pointer target)))
-                 (alloc-string-and-register (string)
-                   (register-temporary-string
-                    (cffi:foreign-string-alloc string))))
-          (cffi:with-foreign-objects ((arg-types '(:pointer :char) (length args))
-                                      (objc-args '(:pointer :void) (+ (length args) 2))
-                                      (return-value-cell return-c-type))
+    (let* ((raw-argc (the argument-number (length args)))
+           (real-argc (+ raw-argc 2))
+           (return-c-type (case return-type
+                            ((id objc-class exception selector) :pointer)
+                            (otherwise return-type)))
+           (selector (selector method-name)))
+      (labels ((alloc-string-and-register (string)
+                 (register-temporary-string
+                  (cffi:foreign-string-alloc string))))
+        ;; We allocate a conservatively-sized buffer for arguments of
+        ;; primitive types called OBJC-ARG-BUFFER.  Non-primitive types
+        ;; don't need allocation, anyway, because we can just pass the
+        ;; pointer directly.  It's unfortunate that we can't do this for
+        ;; `id' values, because we can't just pass a pointer to the `id'
+        ;; SAP (which would be highly implementation-dependent and might
+        ;; even change at any time, especially during GC).
+        ;;
+        ;; In any case, OBJC-ARGS-PTRS is the array of pointers which
+        ;; the libffi docs call AVALUES.  It must therefore contain
+        ;; pointers pointing into the argument buffer (or, in the case
+        ;; of a newly allocated C string, to that string).  This is what
+        ;; the DOTIMES form below tries to ensure.
+        (cffi:with-foreign-objects ((arg-types '(:pointer :char)
+                                               (the fixnum (length args)))
+                                    (objc-arg-ptrs '(:pointer :void)
+                                                   real-argc)
+                                    (return-value-cell return-c-type)
+                                    (objc-arg-buffer +pessimistic-allocation-type+
+                                                     real-argc))
+          (dotimes (i real-argc)
+            (setf (cffi:mem-aref objc-arg-ptrs '(:pointer :void) i)
+                  (cffi:inc-pointer objc-arg-buffer
+                                    (* i +pessimistic-allocation-size+))))
+          (macrolet ((argref (type num)
+                       `(cffi:mem-ref objc-arg-buffer ,type
+                                      (* ,num +pessimistic-allocation-size+))))
             (flet ((ad-hoc-arglist->objc-arglist! (args)
-                     (setf (cffi:mem-aref objc-args '(:pointer :void) 0)
-                           (alloc-pointer-and-register (pointer-to receiver))
-                           (cffi:mem-aref objc-args '(:pointer :void) 1)
-                           (alloc-pointer-and-register (pointer-to selector)))
+                     (setf (argref '(:pointer :void) 0)
+                           (pointer-to receiver)
+                           (argref '(:pointer :void) 1)
+                           (pointer-to selector))
                      (loop for arg in args
-                           for i from 0
+                           for i from 0 to raw-argc
                            do (let* ((type-name (lisp-value->type-name arg)))
-                                (setf (cffi:mem-aref objc-args
-                                                     '(:pointer :void)
-                                                     (+ i 2))
-                                      (typecase arg
-                                        #+(or)
-                                        (c-pointer
-                                         ;; Assume that arg points to a struct,
-                                         ;; and that the method wants a copy of
-                                         ;; that struct, not the pointer itself.
-                                         arg)
-                                        (string (alloc-pointer-and-register
-                                                 (alloc-string-and-register
-                                                  arg)))
-                                        ((or c-pointer-wrapper
-                                             c-pointer)
-                                         (alloc-pointer-and-register
-                                          (typecase arg
-                                            (c-pointer-wrapper (pointer-to arg))
-                                            (t arg))))
-                                        (t (cffi:foreign-alloc (type-name->c-type
-                                                                type-name)
-                                                               :initial-element arg))))
+                                (typecase arg
+                                  ((or c-pointer-wrapper
+                                       c-pointer)
+                                   (setf (argref :pointer (+ i 2))
+                                         (typecase arg
+                                           (c-pointer-wrapper (pointer-to arg))
+                                           (t arg))))
+                                  (string
+                                   (setf (argref :string (+ i 2))
+                                         (alloc-string-and-register arg)))
+                                  (t (setf (argref (type-name->c-type type-name)
+                                                   (+ i 2))
+                                           arg)))
                                 (setf (cffi:mem-aref arg-types '(:pointer :char) i)
                                       (alloc-string-and-register
-                                       (typecase arg
-                                         #+(or) (c-pointer "{?=}")
-                                         (t (type-name->type-id type-name)))))))))
+                                       (type-name->type-id type-name)))))))
               (ad-hoc-arglist->objc-arglist! args)
               (let* ((return-type-cell (alloc-string-and-register
                                         (type-name->type-id return-type)))
                      (error-cell
-                      (%objcl-invoke-with-types (length args)
+                      (%objcl-invoke-with-types raw-argc
                                                 return-type-cell
                                                 arg-types
                                                 return-value-cell
-                                                objc-args)))
+                                                objc-arg-ptrs)))
                 (unless (cffi:null-pointer-p error-cell)
                   (error (make-instance 'exception :pointer error-cell)))
                 (case return-type

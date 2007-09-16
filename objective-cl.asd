@@ -22,6 +22,7 @@
                  (:file "init"               :depends-on ("libobjcl"))
                  (:file "method-invocation"  :depends-on ("defpackage"
                                                           "name-conversion"
+                                                          "data-types"
                                                           "libobjcl"
                                                           "internal-utilities"
                                                           "parameters"))
