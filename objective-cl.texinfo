@@ -5,7 +5,7 @@
 @c %**end of header
 
 @c The time stamp is automatically maintained by Emacs.
-@c Time-stamp: <2007-09-12 02:51:54 mulk>
+@c Time-stamp: <2007-09-12 14:51:29 mulk>
 @set VERSION 0.0.1
 @set UPDATED 12. September 2007
 
@@ -66,15 +66,21 @@ Copyright @copyright{} 2007 Matthias Benkard.
 @end ifnottex
 
 @menu
-* Introduction::                  A quick-start guide to Objective-CL.
+* Introduction::                  What Objective-CL is all about.
+* Getting Started::               A quick-start guide to Objective-CL.
+* Installation::                
 * Objective-CL Concepts::         Selectors, class instances, and method
                                     invocations.
 * Interacting with Objective-C::  Invoking methods, creating instances, defining
                                     classes, and converting data.
 * Reference Manual::              A reference of the Objective-CL API.
-* Concept Index::                 A menu covering many concepts.
-* Symbol Index::                  A list of symbols defined by Objective-CL.
 * Copying This Manual::           The GNU General Public License, Version 3.
+* Function Index::              
+* Macro Index::                 
+* Variable Index::              
+* Class Index::                 
+* Symbol Index::                  A list of symbols defined by Objective-CL.
+* Concept Index::                 A menu covering many concepts.
 @end menu
 
 
@@ -82,9 +88,22 @@ Copyright @copyright{} 2007 Matthias Benkard.
 @chapter Introduction
 @menu
 * Purpose::             Whom Objective-CL is for and why it exists.
-* A Simple Example::    Using Objective-CL to invoke methods.
 * History::             How the project came to be.
 @end menu
+
+
+@node Getting Started
+@chapter Getting Started
+@menu
+* Installation::        How to acquire and install Objective-CL.
+* A Simple Example::    Using Objective-CL to invoke methods.
+@end menu
+
+
+@node Installation
+@chapter Installation
+
+
 
 
 @node Objective-CL Concepts
@@ -101,12 +120,6 @@ Copyright @copyright{} 2007 Matthias Benkard.
 * Calling Objective-C::          Instantiating and retrieving classes and
                                    objects, and ways of sending messages to
                                    them.
-* Defining Classes::             Defining classes and making them accessible to
-                                   Objective-C code.
-* Data Conversion::              How conversion between Lisp and Objective-C data
-                                   types works.
-* Special Data Types::           Data types that are handled specially in order
-                                   to improve integration.
 @end menu
 
 @node Initialisation and Shutdown
@@ -131,14 +144,12 @@ Details:
 
 Details:
 
-* Function `invoke'::
-* Function `invoke-by-name'::
-* Function `install-reader-syntax'::
+* Function `invoke'::           
+* Function `invoke-by-name'::   
+* Function `install-reader-syntax'::  Convenience functions:
 
-Convenience functions:
-
-* Function `objc-eql'::
-* Function `objc-equal'::
+* Function `objc-eql'::         
+* Function `objc-equal'::       
 @end menu
 
 @node Using the `invoke' function
