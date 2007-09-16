@@ -60,7 +60,7 @@
    ((ensure-same (primitive-invoke (find-objc-class 'ns-object)
                                    'self 'id)
                  (primitive-invoke (find-objc-class 'ns-object)
-                                   'class 'class)))
+                                   'class 'objc-class)))
    ((ensure-different (primitive-invoke (find-objc-class 'ns-object)
                                    'self 'id)
                       (primitive-invoke (find-objc-class 'ns-number)

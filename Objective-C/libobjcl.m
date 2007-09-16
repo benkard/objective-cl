@@ -281,8 +281,8 @@ objcl_invoke_with_types (int argc,
   ffi_type *arg_types[argc + 2];
   ffi_status status;
 
-  id receiver = (id) argv[0];
-  SEL method_selector = (SEL) argv[1];
+  id receiver = *((id*)argv[0]);
+  SEL method_selector = *((SEL*)argv[1]);
 
   static ffi_type *id_type = NULL;
   static ffi_type *sel_type = NULL;
@@ -298,6 +298,9 @@ objcl_invoke_with_types (int argc,
       method = class_getInstanceMethod ([receiver class], method_selector)->method_imp;
 #else
       method = objc_msg_lookup (receiver, method_selector);
+      /* Alternatively:
+         method = [receiver methodForSelector: method_selector];
+      */
 #endif
 
       if (method == NULL)
