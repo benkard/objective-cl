@@ -267,6 +267,20 @@ Returns: *result* --- the return value of the method invocation.
                                            return-c-type)))))))))))
 
 
+;; Optimise constant method names away by converting them to selectors
+;; at load-time.
+(define-compiler-macro primitive-invoke (&whole form
+                                         receiver method-name return-type
+                                         &rest args)
+  (if (and (constantp method-name)
+           (not (and (listp method-name)
+                     (eq 'load-time-value (car method-name)))))
+      `(primitive-invoke ,receiver
+                         (load-time-value (selector ,method-name))
+                         ,return-type ,@args)
+      form))
+
+
 ;;; (@* "Helper functions")
 (defun arglist->objc-arglist (arglist)
   (arglist-intersperse-types (mapcar #'lisp->obj-data arglist)))
