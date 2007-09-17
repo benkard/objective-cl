@@ -210,7 +210,9 @@ Returns: *result* --- the return value of the method invocation.
                                                (the fixnum (length args)))
                                     (objc-arg-ptrs '(:pointer :void)
                                                    real-argc)
-                                    (return-value-cell return-c-type)
+                                    (return-value-cell (if (eq return-c-type :void)
+                                                           :int
+                                                           return-c-type))
                                     (objc-arg-buffer +pessimistic-allocation-type+
                                                      real-argc))
           (dotimes (i real-argc)
@@ -268,6 +270,7 @@ Returns: *result* --- the return value of the method invocation.
                      (make-instance return-type
                         :pointer (cffi:mem-ref return-value-cell
                                                return-c-type))))
+                  ((:void) (values))
                   (otherwise (cffi:mem-ref return-value-cell
                                            return-c-type)))))))))))
 
