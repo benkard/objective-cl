@@ -266,22 +266,32 @@ Returns: *result* --- the return value of the method invocation.
                   ((id objc-class exception selector)
                    (let ((*skip-retaining*
                           (or *skip-retaining*
-                              (constructor-name-p (selector-name selector)))))
-                     (make-instance return-type
-                        :pointer (cffi:mem-ref return-value-cell
-                                               return-c-type))))
+                              (constructor-name-p (selector-name selector))))
+                         (pointer (cffi:mem-ref return-value-cell
+                                                return-c-type)))
+                     (if (cffi:null-pointer-p pointer)
+                         nil
+                         (make-instance return-type
+                            :pointer pointer))))
                   ((:void) (values))
                   (otherwise (cffi:mem-ref return-value-cell
                                            return-c-type)))))))))))
 
 
-(define-cached-function retrieve-method-signature-info (class selector)
+(define-cached-function retrieve-method-signature-info
+    (class selector &optional (instance-or-class :instance))
     (cons (cffi:pointer-address (pointer-to class))
           (cffi:pointer-address (pointer-to selector)))
-  (let* ((signature (primitive-invoke class
-                                      :instance-method-signature-for-selector
-                                      'id
-                                      selector))
+  (let* ((signature
+          (if (eq instance-or-class :instance)
+              (primitive-invoke class
+                                :instance-method-signature-for-selector
+                                'id
+                                selector)
+              (primitive-invoke class
+                                :method-signature-for-selector
+                                'id
+                                selector)))
          (argc (primitive-invoke signature 'number-of-arguments :unsigned-int))
          (method-return-typestring (primitive-invoke signature
                                                      'method-return-type
@@ -388,7 +398,11 @@ Returns: *result* --- the return value of the method invocation.
                           method-return-type
                           method-arg-typestrings
                           method-arg-types)
-        (retrieve-method-signature-info class selector)
+        (retrieve-method-signature-info class selector
+                                        (if (cffi:pointer-eq (pointer-to receiver)
+                                                             (pointer-to class))
+                                            :class
+                                            :instance))
       (assert (= argc (+ 2 (length args)))
               (args)
               "Wrong number of arguments (expected ~A, got ~A)."

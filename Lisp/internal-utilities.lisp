@@ -90,14 +90,21 @@ collector."
   (let ((hash-table (gensym))
         (value (gensym))
         (default-value (gensym))
-        (hash-key (gensym)))
-    `(let ((,hash-table (tg:make-weak-hash-table :weakness :key
-                                                 :test 'equal)))
-       (defun ,name ,lambda-list
-         (let* ((,hash-key ,hashing-form)
-                (,value (gethash ,hash-key ,hash-table ',default-value)))
-           (if (eq ',default-value ,value)
-               (values-list
-                (setf (gethash ,hash-key ,hash-table)
-                      (multiple-value-list (progn ,@body))))
-               (values-list ,value)))))))
+        (hash-key (gensym))
+        (no-weak-hashing-p (handler-case
+                               (prog1 nil
+                                 (tg:make-weak-hash-table :weakness :key
+                                                          :test 'equal))
+                             (serious-condition () t))))
+    (if no-weak-hashing-p
+        `(defun ,name ,lambda-list ,@body)
+        `(let ((,hash-table (tg:make-weak-hash-table :weakness :key
+                                                     :test 'equal)))
+           (defun ,name ,lambda-list
+             (let* ((,hash-key ,hashing-form)
+                    (,value (gethash ,hash-key ,hash-table ',default-value)))
+               (if (eq ',default-value ,value)
+                   (values-list
+                    (setf (gethash ,hash-key ,hash-table)
+                          (multiple-value-list (progn ,@body))))
+                   (values-list ,value))))))))
