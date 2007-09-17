@@ -317,7 +317,10 @@ Returns: *result* --- the return value of the method invocation.
       (cffi:with-foreign-objects ((objc-arg-typestrings :string
                                                         (- argc 2))
                                   (objc-arg-ptrs :pointer argc)
-                                  (objc-return-value-cell return-c-type)
+                                  (objc-return-value-cell
+                                   (if (eq return-c-type :void)
+                                       :int
+                                       return-c-type))
                                   (objc-arg-buffer +pessimistic-allocation-type+
                                                    argc))
         ;; Prepare the argument pointer vector.
@@ -367,6 +370,7 @@ Returns: *result* --- the return value of the method invocation.
                (make-instance (car return-type)
                   :pointer (cffi:mem-ref objc-return-value-cell
                                          return-c-type))))
+            ((:void) (values))
             (otherwise (cffi:mem-ref objc-return-value-cell
                                      return-c-type)))))))))
 
