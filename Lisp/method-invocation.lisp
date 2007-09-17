@@ -275,7 +275,9 @@ Returns: *result* --- the return value of the method invocation.
                                            return-c-type)))))))))))
 
 
-(defun retrieve-method-signature-info (class selector)
+(define-cached-function retrieve-method-signature-info (class selector)
+    (cons (cffi:pointer-address (pointer-to class))
+          (cffi:pointer-address (pointer-to selector)))
   (let* ((signature (primitive-invoke class
                                       :instance-method-signature-for-selector
                                       'id

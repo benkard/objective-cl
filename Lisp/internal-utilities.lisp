@@ -75,3 +75,29 @@
     (if (find-symbol "FOREIGN-FUNCALL-POINTER" '#:cffi)
         `(cffi:foreign-funcall-pointer ,pointer ,options ,@args)
         `(cffi:foreign-funcall (,pointer ,@options) ,@args))))
+
+
+;; Caching of function values.
+(defmacro define-cached-function (name lambda-list hashing-form &body body)
+  "Define a function and cache its result in a hash table.  The hash key
+is computed according to HASHING-FORM.
+
+Note that HASHING-FORM is expected to return a freshly consed object
+that can be garbage collected.  It is not recommended to use an atom as
+a HASHING-FORM if the value of the atom might itself be an interned atom
+or any other value that might never be deleted by the garbage
+collector."
+  (let ((hash-table (gensym))
+        (value (gensym))
+        (default-value (gensym))
+        (hash-key (gensym)))
+    `(let ((,hash-table (tg:make-weak-hash-table :weakness :key
+                                                 :test 'equal)))
+       (defun ,name ,lambda-list
+         (let* ((,hash-key ,hashing-form)
+                (,value (gethash ,hash-key ,hash-table ',default-value)))
+           (if (eq ',default-value ,value)
+               (values-list
+                (setf (gethash ,hash-key ,hash-table)
+                      (multiple-value-list (progn ,@body))))
+               (values-list ,value)))))))
