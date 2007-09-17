@@ -364,7 +364,7 @@ Returns: *result* --- the return value of the method invocation.
              (let ((*skip-retaining*
                     (or *skip-retaining*
                         (constructor-name-p (selector-name selector)))))
-               (make-instance return-type
+               (make-instance (car return-type)
                   :pointer (cffi:mem-ref objc-return-value-cell
                                          return-c-type))))
             (otherwise (cffi:mem-ref objc-return-value-cell
