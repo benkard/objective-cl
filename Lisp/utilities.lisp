@@ -95,32 +95,43 @@
 ;;; (@* "Object Representation")
 (defmethod print-object ((object id) stream)
   (print-unreadable-object (object stream)
-    (format stream "~A `~A' {~X}"
-            (objcl-class-name (primitive-invoke object "class" 'id))
-            (primitive-invoke (primitive-invoke object "description" 'id)
-                              "UTF8String" :string)
-            (primitive-invoke object "hash" :unsigned-int))))
+    (with-slots (pointer) object
+      (format stream "~A `~A' {~X}"
+              (objcl-class-name (primitive-invoke object "class" 'id))
+              (primitive-invoke (primitive-invoke object "description" 'id)
+                                "UTF8String" :string)
+              (cffi:pointer-address pointer)))))
 
 
 (defmethod print-object ((class objc-class) stream)
   (print-unreadable-object (class stream)
-    (format stream "~S ~A {~X}"
-            'objc-class
-            (objcl-class-name class)
-            (primitive-invoke class "hash" :unsigned-int))))
+    (with-slots (pointer) class
+      (format stream "~S ~A {~X}"
+              (type-of class)
+              (objcl-class-name class)
+              (cffi:pointer-address pointer)))))
+
+
+(defmethod print-object ((meta-class objc-meta-class) stream)
+  (print-unreadable-object (meta-class stream)
+    (with-slots (meta-class-for-class pointer) meta-class
+      (format stream "~S ~A {~X}"
+              (type-of meta-class)
+              (objcl-class-name meta-class-for-class)
+              (cffi:pointer-address pointer)))))
 
 
 (defmethod print-object ((selector selector) stream)
   (print-unreadable-object (selector stream)
     (format stream "~S `~A'"
-            'selector
+            (type-of selector)
             (selector-name selector))))
 
 
 (defmethod print-object ((exception exception) stream)
   (print-unreadable-object (exception stream)
     (format stream "~S ~A {~X}"
-            'exception
+            (type-of exception)
             (primitive-invoke (primitive-invoke exception "name" 'id)
                               "UTF8String" :string)
             (primitive-invoke exception "hash" :unsigned-int))))

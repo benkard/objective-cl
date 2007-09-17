@@ -392,15 +392,14 @@ Returns: *result* --- the return value of the method invocation.
 
 (defun invoke-with-conversion (receiver method-name &rest args)
   (let* ((selector (selector method-name))
-         (class (primitive-invoke receiver 'class 'objc-class)))
+         (class (object-get-class receiver)))
     (multiple-value-bind (argc
                           method-return-typestring
                           method-return-type
                           method-arg-typestrings
                           method-arg-types)
         (retrieve-method-signature-info class selector
-                                        (if (cffi:pointer-eq (pointer-to receiver)
-                                                             (pointer-to class))
+                                        (if (object-is-class-p receiver)
                                             :class
                                             :instance))
       (assert (= argc (+ 2 (length args)))

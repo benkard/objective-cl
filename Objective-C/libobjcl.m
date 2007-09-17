@@ -447,3 +447,58 @@ objcl_get_method_implementation (OBJCL_OBJ_DATA object,
   return objc_msg_lookup (obj, selector->data.sel_val);
 #endif
 }
+
+
+BOOL
+objcl_object_is_class (id obj)
+{
+#ifdef __NEXT_RUNTIME__
+  return [obj class] == obj
+#else
+  /* return CLS_ISCLASS (obj); */
+  return object_is_class (obj);
+#endif
+}
+
+
+BOOL
+objcl_object_is_meta_class (id obj)
+{
+#ifdef __NEXT_RUNTIME__
+  /* FIXME: What to do here? */
+  return [[obj class] metaClass] == obj;
+#else
+  /* return CLS_ISMETA (ptr); */
+  if (objcl_object_is_class (obj))
+    return class_is_meta_class (obj);
+  else
+    return object_is_meta_class (obj);
+#endif
+}
+
+
+Class
+objcl_object_get_class (id obj)
+{
+#ifdef __NEXT_RUNTIME__
+  /* XXX? return obj->isa; */
+  return [obj class];
+#else
+  return object_get_class (obj);
+#endif
+}
+
+
+Class
+objcl_object_get_meta_class (id obj)
+{
+#ifdef __NEXT_RUNTIME__
+  /* FIXME: What to do here? */
+  return [[obj class] metaClass];
+#else
+  if (objcl_object_is_class (obj))
+    return class_get_meta_class (obj);
+  else
+    return object_get_meta_class (obj);
+#endif
+}

@@ -57,6 +57,20 @@
   (object obj-data)
   (selector obj-data))
 
+(defcfun ("objcl_object_is_class" %objcl-object-is-class) :boolean
+  (obj :pointer))
+
+(defcfun ("objcl_object_is_meta_class" %objcl-object-is-meta-class)
+    :boolean
+  (obj :pointer))
+
+(defcfun ("objcl_object_get_class" %objcl-object-get-class) :pointer
+  (obj :pointer))
+
+(defcfun ("objcl_object_get_meta_class" %objcl-object-get-meta-class)
+    :pointer
+  (obj :pointer))
+
 
 (defun initialise-runtime ()
   "Initialise the Objective C runtime.
@@ -283,6 +297,27 @@ by which __invoke__ converts its arguments into a *message name*.
     (list   (find-selector-by-name (symbol-list->message-name
                                     selector-name)))))
 
+
+(defun object-is-class-p (obj)
+  (%objcl-object-is-class (pointer-to obj)))
+
+(defun object-is-meta-class-p (obj)
+  (%objcl-object-is-meta-class (pointer-to obj)))
+
+(defun object-get-class (obj)
+  (make-instance 'objc-class
+     :pointer (%objcl-object-get-class (pointer-to obj))))
+
+(defun object-get-meta-class (obj)
+  (make-instance 'objc-meta-class
+     :pointer (%objcl-object-get-meta-class (pointer-to obj))
+     :meta-class-for-class (object-get-class obj)))
+
+(defun objc-class-of (obj)
+  (cond ((object-is-meta-class-p obj)
+         (error "Tried to get the class of meta class ~S." obj))
+        ((object-is-class-p obj) (object-get-meta-class obj))
+        (t (object-get-class obj))))
 
 ;;; (@* "Low-level Data Conversion")
 (eval-when (:compile-toplevel :load-toplevel)

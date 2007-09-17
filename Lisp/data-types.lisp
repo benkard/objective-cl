@@ -108,6 +108,13 @@ a suitable class method instead as you would in Objective C.
   (:documentation ""))
 
 
+(defclass objc-meta-class (c-pointer-wrapper)
+  ((meta-class-for-class :type (or null id objc-class)
+                         :initarg :meta-class-for-class
+                         :reader meta-class-for-class))
+  (:documentation ""))
+
+
 (define-condition exception (error)
   ((pointer :type     c-pointer
             :accessor pointer-to
