@@ -254,7 +254,7 @@ Returns: *result* --- the return value of the method invocation.
                                                 return-value-cell
                                                 objc-arg-ptrs)))
                 (unless (cffi:null-pointer-p error-cell)
-                  (error (make-instance 'exception :pointer error-cell)))
+                  (error (make-condition 'exception :pointer error-cell)))
                 (case return-type
                   ((id objc-class exception selector)
                    (let ((*skip-retaining*
@@ -279,8 +279,14 @@ Returns: *result* --- the return value of the method invocation.
                          (load-time-value (handler-case
                                               (selector ,method-name)
                                             (serious-condition ()
-                                              ;; XXX May want to issue a
-                                              ;; warning here.
+                                              (warn
+                                               (make-condition
+                                                'style-warning
+                                                :format-control
+                                                "~S designates an unknown ~
+                                                 method selector."
+                                                :format-arguments
+                                                (list ,method-name)))
                                               ,method-name)))
                          ,return-type ,@args)
       form))
