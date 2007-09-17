@@ -303,7 +303,7 @@ Returns: *result* --- the return value of the method invocation.
 
 (defun typespec->c-type (typespec)
   (case (car typespec)
-    ((:pointer struct union id objc-class exception array) :pointer)
+    ((:pointer struct union id objc-class exception array selector) :pointer)
     ((:string) :string)
     (otherwise (car typespec))))
 
@@ -345,6 +345,9 @@ Returns: *result* --- the return value of the method invocation.
                       (setf (argref :pointer i) arg))
                      ((id objc-class exception)
                       (setf (argref :pointer i) (pointer-to arg)))
+                     ((selector)
+                      (ctypecase arg
+                        (selector (setf (argref :pointer i) (pointer-to arg)))))
                      (:string
                       (setf (argref :string i)
                             (alloc-string-and-register arg)))
