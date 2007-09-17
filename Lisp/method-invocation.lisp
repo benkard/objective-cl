@@ -254,6 +254,11 @@ Returns: *result* --- the return value of the method invocation.
                                                 return-value-cell
                                                 objc-arg-ptrs)))
                 (unless (cffi:null-pointer-p error-cell)
+                  ;; Note that we do not FOREIGN-FREE the error cell,
+                  ;; because it is either a null pointer or a pointer to
+                  ;; an Objective-C object.  In the latter case,
+                  ;; INITIALIZE-INSTANCE does the memory management for
+                  ;; us.
                   (error (make-condition 'exception :pointer error-cell)))
                 (case return-type
                   ((id objc-class exception selector)
@@ -265,6 +270,125 @@ Returns: *result* --- the return value of the method invocation.
                                                return-c-type))))
                   (otherwise (cffi:mem-ref return-value-cell
                                            return-c-type)))))))))))
+
+
+(defun retrieve-method-signature-info (class selector)
+  (let* ((signature (primitive-invoke class
+                                      :instance-method-signature-for-selector
+                                      'id
+                                      selector))
+         (argc (primitive-invoke signature 'number-of-arguments :unsigned-int))
+         (method-return-typestring (primitive-invoke signature
+                                                     'method-return-type
+                                                     :string))
+         (method-return-type (parse-typespec method-return-typestring))
+         (method-arg-typestrings (loop for x from 0 below argc
+                                       collect (primitive-invoke
+                                                         signature
+                                                         :get-argument-type-at-index
+                                                         :string
+                                                         x)))
+         (method-arg-types (mapcar #'parse-typespec method-arg-typestrings)))
+    (values argc
+            method-return-typestring
+            method-return-type
+            method-arg-typestrings
+            method-arg-types)))
+
+
+(defun typespec->c-type (typespec)
+  (case (car typespec)
+    ((:pointer struct union id objc-class exception array) :pointer)
+    ((:string) :string)
+    (otherwise (car typespec))))
+
+
+(defun low-level-invoke (receiver selector return-typestring return-type
+                         arg-typestrings arg-types argc args)
+  (let ((return-c-type (typespec->c-type return-type))
+        (arg-c-types (mapcar #'typespec->c-type arg-types)))
+    (with-foreign-string-pool (register-temporary-string)
+      (flet ((alloc-string-and-register (string)
+               (register-temporary-string
+                (cffi:foreign-string-alloc string))))
+      (cffi:with-foreign-objects ((objc-arg-typestrings :string
+                                                        (- argc 2))
+                                  (objc-arg-ptrs :pointer argc)
+                                  (objc-return-value-cell return-c-type)
+                                  (objc-arg-buffer +pessimistic-allocation-type+
+                                                   argc))
+        ;; Prepare the argument pointer vector.
+        (loop for i from 0 below argc
+              do (setf (cffi:mem-aref objc-arg-ptrs :pointer i)
+                       (cffi:inc-pointer objc-arg-buffer
+                                         (* i +pessimistic-allocation-size+))))
+        (macrolet ((argref (type num)
+                     `(cffi:mem-ref objc-arg-buffer ,type
+                                    (* ,num +pessimistic-allocation-size+))))
+          ;; Prepare the arguments.
+          (setf (argref :pointer 0) (pointer-to receiver))
+          (setf (argref :pointer 1) (pointer-to selector))
+          (loop for i from 2
+                for arg in args
+                for arg-type in (cddr arg-types) ;skip the first two arguments
+                for arg-c-type in (cddr arg-c-types) ;likewise
+                do (case (car arg-type)
+                     ((:pointer)
+                      (setf (argref :pointer i) arg))
+                     ((id objc-class exception)
+                      (setf (argref :pointer i) (pointer-to arg)))
+                     (:string
+                      (setf (argref :string i)
+                            (alloc-string-and-register arg)))
+                     ((array struct union) (error "~A: Not implemented."
+                                                  arg-type))
+                     (t (setf (argref arg-c-type i) arg)))))
+        ;; Prepare the argument typestring vector.
+        (loop for i from 0
+              for arg-typestring in arg-typestrings
+              do (setf (mem-aref objc-arg-typestrings :string i)
+                       (alloc-string-and-register arg-typestring)))
+        (let* ((error-cell
+                (%objcl-invoke-with-types (- argc 2)
+                                          return-typestring
+                                          objc-arg-typestrings
+                                          objc-return-value-cell
+                                          objc-arg-ptrs)))
+          (unless (cffi:null-pointer-p error-cell)
+            (error (make-condition 'exception :pointer error-cell)))
+          (case (car return-type)
+            ((id objc-class exception selector)
+             (let ((*skip-retaining*
+                    (or *skip-retaining*
+                        (constructor-name-p (selector-name selector)))))
+               (make-instance return-type
+                  :pointer (cffi:mem-ref objc-return-value-cell
+                                         return-c-type))))
+            (otherwise (cffi:mem-ref objc-return-value-cell
+                                     return-c-type)))))))))
+
+
+(defun invoke-with-conversion (receiver method-name &rest args)
+  (let* ((selector (selector method-name))
+         (class (primitive-invoke receiver 'class 'objc-class)))
+    (multiple-value-bind (argc
+                          method-return-typestring
+                          method-return-type
+                          method-arg-typestrings
+                          method-arg-types)
+        (retrieve-method-signature-info class selector)
+      (assert (= argc (+ 2 (length args)))
+              (args)
+              "Wrong number of arguments (expected ~A, got ~A)."
+              argc (+ 2 (length args)))
+      (low-level-invoke receiver
+                        selector
+                        method-return-typestring
+                        method-return-type
+                        method-arg-typestrings
+                        method-arg-types
+                        argc
+                        args))))
 
 
 ;; Optimise constant method names away by converting them to selectors
@@ -289,6 +413,31 @@ Returns: *result* --- the return value of the method invocation.
                                                 (list ,method-name)))
                                               ,method-name)))
                          ,return-type ,@args)
+      form))
+
+
+;; Do the same optimisations for INVOKE-WITH-CONVERSION as for
+;; PRIMITIVE-INVOKE.
+(define-compiler-macro invoke-with-conversion (&whole form
+                                               receiver method-name
+                                               &rest args)
+  (if (and (constantp method-name)
+           (not (and (listp method-name)
+                     (eq 'load-time-value (car method-name)))))
+      `(invoke-with-conversion
+        ,receiver
+        (load-time-value (handler-case
+                             (selector ,method-name)
+                           (serious-condition ()
+                             (warn
+                              (make-condition 'style-warning
+                                              :format-control
+                                              "~S designates an unknown ~
+                                               method selector."
+                                              :format-arguments
+                                              (list ,method-name)))
+                             ,method-name)))
+        ,@args)
       form))
 
 
