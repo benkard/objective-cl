@@ -276,7 +276,12 @@ Returns: *result* --- the return value of the method invocation.
            (not (and (listp method-name)
                      (eq 'load-time-value (car method-name)))))
       `(primitive-invoke ,receiver
-                         (load-time-value (selector ,method-name))
+                         (load-time-value (handler-case
+                                              (selector ,method-name)
+                                            (serious-condition ()
+                                              ;; XXX May want to issue a
+                                              ;; warning here.
+                                              ,method-name)))
                          ,return-type ,@args)
       form))
 
