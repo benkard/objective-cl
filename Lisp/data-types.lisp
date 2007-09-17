@@ -1,6 +1,14 @@
 (in-package #:mulk.objective-cl)
 
 
+;;;; (@* "Convenience types")
+(deftype c-pointer ()
+  '(satisfies pointerp))
+
+(deftype argument-number ()
+  `(integer 0 ,call-arguments-limit))
+
+
 ;;;; (@* "Foreign data types")
 (defctype char-pointer :pointer)
 
@@ -213,12 +221,3 @@ an __exception__, you can simply send it the `self' message.
                (not (null-pointer-p type)))
       (foreign-string-free type)))
   (foreign-free obj-data))
-
-
-;;;; (@* "Convenience types")
-(deftype c-pointer ()
-  '(satisfies pointerp))
-
-
-(deftype argument-number ()
-  `(integer 0 ,call-arguments-limit))
