@@ -1,7 +1,7 @@
 (in-package #:mulk.objective-cl)
 
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
+(eval-when (:execute)
   (unless (boundp '+nil+)
     (defconstant +nil+
       (make-instance 'id :pointer (objcl-get-nil)))))
