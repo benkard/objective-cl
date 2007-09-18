@@ -57,10 +57,10 @@ objcl_invoke_with_types (int argc,
                          void *return_value,
                          void **argv);
 
-OBJCL_OBJ_DATA
+Class
 objcl_find_class (const char *class_name);
 
-OBJCL_OBJ_DATA
+SEL
 objcl_find_selector (const char *selector_name);
 
 /* Return a null-terminated list of type information strings.
@@ -71,14 +71,14 @@ objcl_query_arglist_info (void *receiver,
 
 
 const char *
-objcl_class_name (OBJCL_OBJ_DATA class);
+objcl_class_name (Class class);
 
 const char *
-objcl_selector_name (OBJCL_OBJ_DATA class);
+objcl_selector_name (SEL selector);
 
 IMP
-objcl_get_method_implementation (OBJCL_OBJ_DATA object,
-                                 OBJCL_OBJ_DATA selector);
+objcl_get_method_implementation (id object,
+                                 SEL selector);
 
 BOOL
 objcl_object_is_class (id obj);

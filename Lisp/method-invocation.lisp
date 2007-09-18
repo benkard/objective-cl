@@ -4,7 +4,7 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (unless (boundp '+nil+)
     (defconstant +nil+
-                 (make-instance 'id :pointer (objcl-get-nil)))))
+      (make-instance 'id :pointer (objcl-get-nil)))))
 
 
 ;;; (@* "Method invocation")
@@ -154,7 +154,8 @@ Returns: *result* --- the return value of the method invocation.
 
 
 (defmacro unsafe-primitive-invoke (receiver method-name return-type &rest args)
-  (let ((real-return-type (if (member return-type '(id objc-class exception))
+  (let ((real-return-type (if (member return-type '(id objc-class exception
+                                                    selector))
                               :pointer
                               return-type))
         (real-receiver (gensym))
@@ -175,13 +176,10 @@ Returns: *result* --- the return value of the method invocation.
                                            (list :pointer (pointer-to ,real-selector))
                                            objc-arglist
                                            (list ,real-return-type)))))
-                 ,(if (member return-type '(id objc-class exception))
+                 ,(if (member return-type '(id objc-class exception selector))
                       `(let (,@(when (constructor-name-p (selector-name selector))
                                  `((*skip-retaining* t))))
-                         (make-instance ',(case return-type
-                                            ((id) 'id)
-                                            ((objc-class) 'objc-class)
-                                            ((exception) 'exception))
+                         (make-instance return-type
                             :pointer return-value))
                       `return-value))
              (dealloc-objc-arglist objc-arglist)))))))
@@ -277,8 +275,7 @@ Returns: *result* --- the return value of the method invocation.
                                                 return-c-type)))
                      (if (cffi:null-pointer-p pointer)
                          nil
-                         (make-instance return-type
-                            :pointer pointer))))
+                         (make-instance return-type :pointer pointer))))
                   ((:void) (values))
                   (otherwise (cffi:mem-ref return-value-cell
                                            return-c-type)))))))))))

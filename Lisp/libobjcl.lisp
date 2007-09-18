@@ -42,20 +42,20 @@
 (defcfun ("objcl_find_class" %objcl-find-class) :pointer
   (class-name :string))
 
-(defcfun ("objcl_class_name" %objcl-class-name) :pointer
-  (class obj-data))
+(defcfun ("objcl_class_name" %objcl-class-name) :string
+  (class :pointer))
 
 (defcfun ("objcl_find_selector" %objcl-find-selector) :pointer
   (selector-name :string))
 
-(defcfun ("objcl_selector_name" %objcl-selector-name) :pointer
-  (selector obj-data))
+(defcfun ("objcl_selector_name" %objcl-selector-name) :string
+  (selector :pointer))
 
 (defcfun ("objcl_get_method_implementation"
           %objcl-get-method-implementation)
     :pointer
-  (object obj-data)
-  (selector obj-data))
+  (object :pointer)
+  (selector :pointer))
 
 (defcfun ("objcl_object_is_class" %objcl-object-is-class) :boolean
   (obj :pointer))
@@ -198,49 +198,43 @@ conventional case for namespace identifiers in Objective C."
 (declaim (ftype (function (string) (or null objc-class))
                 find-objc-class-by-name))
 (defun find-objc-class-by-name (class-name)
-  (with-obj-data-values ((obj-data (%objcl-find-class class-name)))
-    (if (null-pointer-p (foreign-slot-value
-                         (foreign-slot-value obj-data 'obj-data 'data)
-                         'obj-data-union
-                         'class-val))
+  (let ((class-ptr (%objcl-find-class class-name)))
+    (if (cffi:null-pointer-p class-ptr)
         nil
-        (the objc-class (obj-data->lisp obj-data)))))
+        #-openmcl (make-instance 'objc-class :pointer class-ptr)
+        #+openmcl (change-class (make-instance 'c-pointer-wrapper
+                                   :pointer value)
+                                'objc-class))))
 
 
 (declaim (ftype (function (string) (or null selector))
                 find-selector-by-name))
 (defun find-selector-by-name (selector-name)
-  (with-obj-data-values ((obj-data (%objcl-find-selector selector-name)))
-    (if (null-pointer-p (foreign-slot-value
-                         (foreign-slot-value obj-data 'obj-data 'data)
-                         'obj-data-union
-                         'sel-val))
+  (let ((selector-ptr (%objcl-find-selector selector-name)))
+    (if (cffi:null-pointer-p selector-ptr)
         nil
-        (the selector (obj-data->lisp obj-data)))))
+        (make-instance 'selector :pointer selector-ptr))))
 
 
 (declaim (ftype (function ((or objc-class id exception)) string)
                 objcl-class-name))
 (defun objcl-class-name (class)
   (declare (type (or objc-class id exception) class))
-  (with-foreign-conversion ((obj-data class))
-    (foreign-string-to-lisp/dealloc (%objcl-class-name obj-data))))
+  (%objcl-class-name (pointer-to class)))
 
 
 (declaim (ftype (function (selector) string) selector-name))
 (defun selector-name (selector)
   (declare (type selector selector))
-  (with-foreign-conversion ((obj-data selector))
-    (foreign-string-to-lisp/dealloc (%objcl-selector-name obj-data))))
+  (%objcl-selector-name (pointer-to selector)))
 
 
 (declaim (ftype (function ((or id objc-class exception) selector) *)
                 get-method-implementation))
 (defun get-method-implementation (object selector)
   (declare (type selector selector))
-  (with-foreign-conversion ((sel-obj-data selector)
-                            (obj-obj-data object))
-    (%objcl-get-method-implementation obj-obj-data sel-obj-data)))
+  (%objcl-get-method-implementation (pointer-to object)
+                                    (pointer-to selector)))
 
 
 (declaim (ftype (function ((or selector string list)) (or null selector))
@@ -425,13 +419,7 @@ If *selector-designator* is a __selector__, it is simply returned.
                                               (type-name->slot-name type-name)))))
       (case lisp-type
         ((id objc-class selector exception)
-         #-openmcl (make-instance lisp-type :pointer value)
-         #+openmcl (if (eq 'objc-class lisp-type)
-                       ;; God help me.
-                       (change-class (make-instance 'c-pointer-wrapper
-                                        :pointer value)
-                                     lisp-type)
-                       (make-instance lisp-type :pointer value)))
+         (make-instance lisp-type :pointer value) )
         ((string) (foreign-string-to-lisp value))
         (otherwise value)))))
 

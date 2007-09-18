@@ -336,61 +336,27 @@ objcl_invoke_with_types (int argc,
 #endif
 
 
-OBJCL_OBJ_DATA
+Class
 objcl_find_class (const char *class_name)
 {
-  Class class =
-    NSClassFromString ([NSString stringWithUTF8String: class_name]);
-  OBJCL_OBJ_DATA result = malloc (sizeof (struct objcl_object));
-  const char *const typespec = @encode (Class);
-
-  result->type = malloc (strlen (typespec) + 1);
-  strcpy (result->type, typespec);
-  result->data.class_val = class;
-
-  return result;
+  return NSClassFromString ([NSString stringWithUTF8String: class_name]);
 }
 
 
-OBJCL_OBJ_DATA
+SEL
 objcl_find_selector (const char *class_name)
 {
-  SEL selector =
-    NSSelectorFromString ([NSString stringWithUTF8String: class_name]);
-  OBJCL_OBJ_DATA result = malloc (sizeof (struct objcl_object));
-  const char *const typespec = @encode (SEL);
-
-  result->type = malloc (strlen (typespec) + 1);
-  strcpy (result->type, typespec);
-  result->data.sel_val = selector;
-
-  return result;
+  return NSSelectorFromString ([NSString stringWithUTF8String: class_name]);
 }
 
 
 const char *
-objcl_class_name (OBJCL_OBJ_DATA class)
+objcl_class_name (Class class)
 {
   const char *ns_name;
   char *name;
-  Class cls = NULL;
 
-  switch (class->type[0])
-    {
-    case '#':
-      cls = class->data.class_val;
-      break;
-    case '@':
-      cls = class->data.id_val;
-      break;
-    case 'E':
-      cls = (id) class->data.exc_val;
-      break;
-    default:
-      return NULL;
-    }
-
-  ns_name = [(NSStringFromClass (cls)) UTF8String];
+  ns_name = [(NSStringFromClass (class)) UTF8String];
   name = malloc (strlen (ns_name) + 1);
   strcpy (name, ns_name);
 
@@ -399,16 +365,12 @@ objcl_class_name (OBJCL_OBJ_DATA class)
 
 
 const char *
-objcl_selector_name (OBJCL_OBJ_DATA selector)
+objcl_selector_name (SEL selector)
 {
   const char *ns_name;
   char *name;
 
-  if (strcmp (selector->type, @encode (SEL)) != 0)
-    return NULL;
-
-  ns_name = [(NSStringFromSelector (selector->data.sel_val))
-              UTF8String];
+  ns_name = [(NSStringFromSelector (selector)) UTF8String];
   name = malloc (strlen (ns_name) + 1);
   strcpy (name, ns_name);
 
@@ -417,34 +379,20 @@ objcl_selector_name (OBJCL_OBJ_DATA selector)
 
 
 IMP
-objcl_get_method_implementation (OBJCL_OBJ_DATA object,
-                                 OBJCL_OBJ_DATA selector)
+objcl_get_method_implementation (id object,
+                                 SEL selector)
 {
-  id obj;
-
-  if (strcmp (selector->type, @encode (SEL)) != 0)
-    return NULL;
-
-  switch (object->type[0])
-    {
-    case '#':
-      obj = object->data.class_val;
-      break;
-    case '@':
-      obj = object->data.id_val;
-      break;
-    case 'E':
-      obj = (id) object->data.exc_val;
-      break;
-    default:
-      return NULL;
-    }
-
 #ifdef __NEXT_RUNTIME__
-  return class_getInstanceMethod ([obj class],
-                                  selector->data.sel_val)->method_imp;
+  if (objcl_object_is_class (object))
+    {
+      return class_getClassMethod (object, selector)->method_imp;
+    }
+  else
+    {
+      return class_getInstanceMethod ([object class], selector)->method_imp;
+    }
 #else
-  return objc_msg_lookup (obj, selector->data.sel_val);
+  return objc_msg_lookup (object, selector);
 #endif
 }
 
@@ -453,7 +401,7 @@ BOOL
 objcl_object_is_class (id obj)
 {
 #ifdef __NEXT_RUNTIME__
-  return [obj class] == obj
+  return [obj class] == obj;
 #else
   /* return CLS_ISCLASS (obj); */
   return object_is_class (obj);
@@ -466,7 +414,7 @@ objcl_object_is_meta_class (id obj)
 {
 #ifdef __NEXT_RUNTIME__
   /* FIXME: What to do here? */
-  return [[obj class] metaClass] == obj;
+  return objcl_object_get_meta_class (obj) == obj;
 #else
   /* return CLS_ISMETA (ptr); */
   if (objcl_object_is_class (obj))
@@ -494,7 +442,7 @@ objcl_object_get_meta_class (id obj)
 {
 #ifdef __NEXT_RUNTIME__
   /* FIXME: What to do here? */
-  return [[obj class] metaClass];
+  return objc_getMetaClass ([(NSStringFromClass ([obj class])) UTF8String]);
 #else
   if (objcl_object_is_class (obj))
     return class_get_meta_class (obj);
