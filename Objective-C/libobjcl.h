@@ -91,3 +91,6 @@ objcl_object_get_class (id obj);
 
 Class
 objcl_object_get_meta_class (id obj);
+
+id
+objcl_get_nil (void);

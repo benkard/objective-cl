@@ -1,6 +1,12 @@
 (in-package #:mulk.objective-cl)
 
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (unless (boundp '+nil+)
+    (defconstant +nil+
+                 (make-instance 'id :pointer (objcl-get-nil)))))
+
+
 ;;; (@* "Method invocation")
 (defun invoke (receiver message-start &rest message-components)
   "Send a message to an Objective C instance.
@@ -353,16 +359,34 @@ Returns: *result* --- the return value of the method invocation.
                 do (case (car arg-type)
                      ((:pointer)
                       (setf (argref :pointer i) arg))
-                     ((id objc-class exception)
+                     ((objc-class exception)
                       (setf (argref :pointer i) (pointer-to arg)))
                      ((selector)
-                      (ctypecase arg
-                        (selector (setf (argref :pointer i) (pointer-to arg)))))
+                      (setf (argref :pointer i) (pointer-to (selector arg))))
                      (:string
                       (setf (argref :string i)
                             (alloc-string-and-register arg)))
-                     ((array struct union) (error "~A: Not implemented."
-                                                  arg-type))
+                     ((struct union)
+                      ;; This is not very sophisticated, but, at
+                      ;; present, we don't care about the internals of
+                      ;; structs and unions much.  Functions returning
+                      ;; structs actually just give us pointers to them,
+                      ;; so we just put those pointers back into the
+                      ;; functions as arguments.
+                      (setf (argref :pointer i) arg))
+                     ((array)
+                      ;; This, too, might someday be ripped out and
+                      ;; replaced with something better.
+                      (setf (argref arg-c-type i) arg))
+                     ((id)
+                      ;; This case is actually interesting.  We can do a
+                      ;; lot of automatic conversion between different
+                      ;; kinds of stuff.  The conversion rules are
+                      ;; somewhat arbitrary, but in the absence of more
+                      ;; detailed method signature type information,
+                      ;; it's the best we can do.
+                      (setf (argref arg-c-type i)
+                            (pointer-to (coerce-object arg 'id))))
                      (t (setf (argref arg-c-type i) arg)))))
         ;; Prepare the argument typestring vector.
         (loop for i from 0
@@ -391,6 +415,7 @@ Returns: *result* --- the return value of the method invocation.
 
 
 (defun invoke-with-conversion (receiver method-name &rest args)
+  ;; TODO: Support varargs.
   (let* ((selector (selector method-name))
          (class (object-get-class receiver)))
     (multiple-value-bind (argc
@@ -499,42 +524,59 @@ Returns: *result* --- the return value of the method invocation.
 ;;; (@* "High-level Data Conversion")
 (defgeneric coerce-object (object type))
 
+
 (defcoercion id ((x id))
   x)
 
 (defcoercion id ((x class))
-  (invoke x 'self))
+  x)
 
 (defcoercion id ((x exception))
-  (invoke x 'self))
+  x)
 
 (defcoercion id ((x integer))
-  (let ((id (invoke (find-class 'ns-number)
-                    :number-with-long x)))
-    (invoke id 'retain)
-    (invoke id 'autorelease)
-    id))
+  (primitive-invoke (find-objc-class 'ns-number)
+                    :number-with-int
+                    'id
+                    x))
 
-(defcoercion id ((x float))
-  (let ((id (invoke (find-class 'ns-number)
-                    :number-with-double x)))
-    (invoke id 'retain)
-    (invoke id 'autorelease)
-    id))
+(defcoercion id ((x double-float))
+  (primitive-invoke (find-objc-class 'ns-number)
+                    :number-with-double
+                    'id
+                    x))
+
+(defcoercion id ((x single-float))
+  (primitive-invoke (find-objc-class 'ns-number)
+                    :number-with-float
+                    'id
+                    x))
 
 (defcoercion id ((x string))
-  (let ((id (invoke (find-class 'ns-string)
-                    :string-with-c-string x)))
-    (invoke id 'retain)
-    (invoke id 'autorelease)
-    id))
+  (primitive-invoke (find-objc-class 'ns-string)
+                    :string-with-u-t-f-8-string
+                    'id
+                    x))
+
+(defcoercion id ((x list))
+  ;; Circular lists may cause this to hang.  So may lists that contain
+  ;; themselves, as well as lists that contain other data structures
+  ;; that contain themselves or this list, and so on.
+  (apply #'primitive-invoke
+         (find-objc-class 'ns-array)
+         :array-with-objects
+         'id
+         (append (mapcar #'(lambda (element)
+                             (coerce-object element 'id))
+                         x)
+                 (list +nil+))))
 
 
 (defcoercion class ((x id))
-  (invoke x 'class))
+  (object-get-class x))
 
 (defcoercion class ((x exception))
-  (invoke x 'class))
+  (object-get-class x))
 
 (defcoercion class ((x class))
   x)
@@ -545,6 +587,9 @@ Returns: *result* --- the return value of the method invocation.
 (defcoercion class ((x symbol))
   (find-objc-class x t))
 
+
+(defcoercion integer ((x integer))
+  x)
 
 (defcoercion integer ((x id))
   (assert (objc-typep x 'ns-number))

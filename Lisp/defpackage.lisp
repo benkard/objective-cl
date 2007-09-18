@@ -24,6 +24,9 @@
            ;; Special variables
            #:*trace-method-calls*
 
+           ;; Constants
+           #:+nil+
+
            ;; Classes
            #:id
            #:selector

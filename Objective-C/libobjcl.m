@@ -502,3 +502,10 @@ objcl_object_get_meta_class (id obj)
     return object_get_meta_class (obj);
 #endif
 }
+
+
+id
+objcl_get_nil (void)
+{
+  return nil;
+}

@@ -94,13 +94,15 @@
 
 ;;; (@* "Object Representation")
 (defmethod print-object ((object id) stream)
-  (print-unreadable-object (object stream)
-    (with-slots (pointer) object
-      (format stream "~A `~A' {~X}"
-              (objcl-class-name (primitive-invoke object "class" 'id))
-              (primitive-invoke (primitive-invoke object "description" 'id)
-                                "UTF8String" :string)
-              (cffi:pointer-address pointer)))))
+  (with-slots (pointer) object
+    (if (cffi:pointer-eq pointer (pointer-to +nil+))
+        (format stream "#.~S" '+nil+)
+        (print-unreadable-object (object stream)
+          (format stream "~A `~A' {~X}"
+                  (objcl-class-name (primitive-invoke object "class" 'id))
+                  (primitive-invoke (primitive-invoke object "description" 'id)
+                                    "UTF8String" :string)
+                  (cffi:pointer-address pointer))))))
 
 
 (defmethod print-object ((class objc-class) stream)

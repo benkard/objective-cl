@@ -71,6 +71,8 @@
     :pointer
   (obj :pointer))
 
+(defcfun objcl-get-nil :pointer)
+
 
 (defun initialise-runtime ()
   "Initialise the Objective C runtime.
