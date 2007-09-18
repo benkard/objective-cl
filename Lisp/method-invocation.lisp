@@ -373,11 +373,25 @@ Returns: *result* --- the return value of the method invocation.
                       ;; structs actually just give us pointers to them,
                       ;; so we just put those pointers back into the
                       ;; functions as arguments.
-                      (setf (argref :pointer i) arg))
+                      ;;
+                      ;; Note that the target type is a struct/union,
+                      ;; not a pointer.  This means that we actually
+                      ;; have to pass a struct/union as an argument.  We
+                      ;; therefore ignore the memory space reserved for
+                      ;; argument cells in the argument buffer and
+                      ;; simply set the argument pointer directly.
+                      (setf (cffi:mem-aref objc-arg-ptrs :pointer i)
+                            arg))
                      ((array)
                       ;; This, too, might someday be ripped out and
-                      ;; replaced with something better.
-                      (setf (argref arg-c-type i) arg))
+                      ;; replaced with something more flexible.  For
+                      ;; now, it's the same as for structs and unions.
+                      ;; That's the nice thing about opaque C data
+                      ;; structures: As a binding writer, we just pass
+                      ;; them around without caring about their
+                      ;; structure.
+                      (setf (cffi:mem-aref objc-arg-ptrs :pointer i)
+                            arg))
                      ((id)
                       ;; This case is actually interesting.  We can do a
                       ;; lot of automatic conversion between different
