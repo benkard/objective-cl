@@ -596,17 +596,18 @@ Returns: *result* --- the return value of the method invocation.
 
 (defcoercion integer ((x id))
   (assert (objc-typep x 'ns-number))
-  (invoke x 'long-value))
+  (invoke x 'int-value))
 
 (defcoercion integer ((x number))
   (truncate x))
 
 (defcoercion integer ((x null))
-  0)
+  (declare (ignore x))
+  +no+)
 
-(defcoercion integer ((x symbol))
-  (assert (eq 't x))
-  1)
+(defcoercion integer (x)
+  (declare (ignore x))
+  +yes+)
 
 
 (defcoercion selector ((x selector))
@@ -644,9 +645,11 @@ Returns: *result* --- the return value of the method invocation.
 ;; Note that this refers to the Objective-C BOOL type, not the Lisp
 ;; BOOLEAN type.
 (defcoercion bool ((x null))
+  (declare (ignore x))
   +no+)
 
 (defcoercion bool (x)
+  (declare (ignore x))
   +yes+)
 
 
