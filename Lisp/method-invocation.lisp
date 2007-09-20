@@ -80,7 +80,7 @@ if as the second **argument** to __invoke-by-name__.
        ((null (cddr components-left))
         (apply #'invoke-by-name
                receiver
-               (symbol-list->message-name (nreverse message-list))
+               (nreverse message-list)
                (nreverse arglist)))))
 
 
@@ -119,32 +119,30 @@ Returns: *result* --- the return value of the method invocation.
 
   __invoke__"
 
-  (check-type receiver (or id objc-class exception)
-              "an Objective C instance (ID, OBJC-CLASS or EXCEPTION)")
-  (when *trace-method-calls*
-    (format t "~&Invoking [~A].~%" method-name))
-  (flet ((convert/signal (foreign-value)
-           ;; Convert a foreign value into a Lisp value.  If the value
-           ;; to be converted represents an exception, signal it instead
-           ;; of returning it as a value.
-           (let ((lisp-value (obj-data->lisp foreign-value)))
-             (if (typep lisp-value 'condition)
-                 (cerror "Return NIL from OBJCL-INVOKE-METHOD." lisp-value)
-                 lisp-value))))
-    (let ((objc-arglist (arglist->objc-arglist args))
-          (selector (selector method-name)))
-      (unwind-protect
-           (with-foreign-conversion ((objc-receiver receiver))
-             (with-obj-data-values ((return-value
-                                     (apply-macro '%objcl-invoke-method
-                                                  objc-receiver
-                                                  (pointer-to selector)
-                                                  (length args)
-                                                  objc-arglist)))
-               (let ((*skip-retaining* (or *skip-retaining*
-                                           (constructor-name-p method-name))))
-                 (convert/signal return-value))))
-        (dealloc-objc-arglist objc-arglist)))))
+  ;; TODO: Support varargs.
+  (let* ((selector (selector method-name))
+         (class (object-get-class receiver)))
+    (multiple-value-bind (argc
+                          method-return-typestring
+                          method-return-type
+                          method-arg-typestrings
+                          method-arg-types)
+        (retrieve-method-signature-info class selector
+                                        (if (object-is-class-p receiver)
+                                            :class
+                                            :instance))
+      (assert (= argc (+ 2 (length args)))
+              (args)
+              "Wrong number of arguments (expected ~A, got ~A)."
+              argc (+ 2 (length args)))
+      (low-level-invoke receiver
+                        selector
+                        method-return-typestring
+                        method-return-type
+                        method-arg-typestrings
+                        method-arg-types
+                        argc
+                        args))))
 
 
 (defmacro unsafe-primitive-invoke (receiver method-name return-type &rest args)
@@ -423,33 +421,6 @@ Returns: *result* --- the return value of the method invocation.
                                        return-c-type)))))))))
 
 
-(defun invoke-with-conversion (receiver method-name &rest args)
-  ;; TODO: Support varargs.
-  (let* ((selector (selector method-name))
-         (class (object-get-class receiver)))
-    (multiple-value-bind (argc
-                          method-return-typestring
-                          method-return-type
-                          method-arg-typestrings
-                          method-arg-types)
-        (retrieve-method-signature-info class selector
-                                        (if (object-is-class-p receiver)
-                                            :class
-                                            :instance))
-      (assert (= argc (+ 2 (length args)))
-              (args)
-              "Wrong number of arguments (expected ~A, got ~A)."
-              argc (+ 2 (length args)))
-      (low-level-invoke receiver
-                        selector
-                        method-return-typestring
-                        method-return-type
-                        method-arg-typestrings
-                        method-arg-types
-                        argc
-                        args))))
-
-
 ;; Optimise constant method names away by converting them to selectors
 ;; at load-time.
 (define-compiler-macro primitive-invoke (&whole form
@@ -475,15 +446,13 @@ Returns: *result* --- the return value of the method invocation.
       form))
 
 
-;; Do the same optimisations for INVOKE-WITH-CONVERSION as for
-;; PRIMITIVE-INVOKE.
-(define-compiler-macro invoke-with-conversion (&whole form
-                                               receiver method-name
-                                               &rest args)
+;; Do the same optimisations for INVOKE-BY-NAME as for PRIMITIVE-INVOKE.
+(define-compiler-macro invoke-by-name (&whole form
+                                       receiver method-name &rest args)
   (if (and (constantp method-name)
            (not (and (listp method-name)
                      (eq 'load-time-value (car method-name)))))
-      `(invoke-with-conversion
+      `(invoke-by-name
         ,receiver
         (load-time-value (handler-case
                              (selector ,method-name)
