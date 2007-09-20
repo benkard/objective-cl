@@ -323,100 +323,104 @@ Returns: *result* --- the return value of the method invocation.
       (flet ((alloc-string-and-register (string)
                (register-temporary-string
                 (cffi:foreign-string-alloc string))))
-      (cffi:with-foreign-objects ((objc-arg-typestrings :string
-                                                        (- argc 2))
-                                  (objc-arg-ptrs :pointer argc)
-                                  (objc-return-value-cell
-                                   (if (eq return-c-type :void)
-                                       :int
-                                       return-c-type))
-                                  (objc-arg-buffer +pessimistic-allocation-type+
-                                                   argc))
-        ;; Prepare the argument pointer vector.
-        (loop for i from 0 below argc
-              do (setf (cffi:mem-aref objc-arg-ptrs :pointer i)
-                       (cffi:inc-pointer objc-arg-buffer
-                                         (* i +pessimistic-allocation-size+))))
-        (macrolet ((argref (type num)
-                     `(cffi:mem-ref objc-arg-buffer ,type
-                                    (* ,num +pessimistic-allocation-size+))))
-          ;; Prepare the arguments.
-          (setf (argref :pointer 0) (pointer-to receiver))
-          (setf (argref :pointer 1) (pointer-to selector))
-          (loop for i from 2
-                for arg in args
-                for arg-type in (cddr arg-types) ;skip the first two arguments
-                for arg-c-type in (cddr arg-c-types) ;likewise
-                do (case (car arg-type)
-                     ((:pointer)
-                      (setf (argref :pointer i) arg))
-                     ((objc-class exception)
-                      (setf (argref :pointer i) (pointer-to arg)))
-                     ((selector)
-                      (setf (argref :pointer i) (pointer-to (selector arg))))
-                     (:string
-                      (setf (argref :string i)
-                            (alloc-string-and-register arg)))
-                     ((struct union)
-                      ;; This is not very sophisticated, but, at
-                      ;; present, we don't care about the internals of
-                      ;; structs and unions much.  Functions returning
-                      ;; structs actually just give us pointers to them,
-                      ;; so we just put those pointers back into the
-                      ;; functions as arguments.
-                      ;;
-                      ;; Note that the target type is a struct/union,
-                      ;; not a pointer.  This means that we actually
-                      ;; have to pass a struct/union as an argument.  We
-                      ;; therefore ignore the memory space reserved for
-                      ;; argument cells in the argument buffer and
-                      ;; simply set the argument pointer directly.
-                      (setf (cffi:mem-aref objc-arg-ptrs :pointer i)
-                            arg))
-                     ((array)
-                      ;; This, too, might someday be ripped out and
-                      ;; replaced with something more flexible.  For
-                      ;; now, it's the same as for structs and unions.
-                      ;; That's the nice thing about opaque C data
-                      ;; structures: As a binding writer, we just pass
-                      ;; them around without caring about their
-                      ;; structure.
-                      (setf (cffi:mem-aref objc-arg-ptrs :pointer i)
-                            arg))
-                     ((id)
-                      ;; This case is actually interesting.  We can do a
-                      ;; lot of automatic conversion between different
-                      ;; kinds of stuff.  The conversion rules are
-                      ;; somewhat arbitrary, but in the absence of more
-                      ;; detailed method signature type information,
-                      ;; it's the best we can do.
-                      (setf (argref arg-c-type i)
-                            (pointer-to (coerce-object arg 'id))))
-                     (t (setf (argref arg-c-type i) arg)))))
-        ;; Prepare the argument typestring vector.
-        (loop for i from 0
-              for arg-typestring in arg-typestrings
-              do (setf (mem-aref objc-arg-typestrings :string i)
-                       (alloc-string-and-register arg-typestring)))
-        (let* ((error-cell
-                (%objcl-invoke-with-types (- argc 2)
-                                          return-typestring
-                                          objc-arg-typestrings
-                                          objc-return-value-cell
-                                          objc-arg-ptrs)))
-          (unless (cffi:null-pointer-p error-cell)
-            (error (make-condition 'exception :pointer error-cell)))
-          (case (car return-type)
-            ((id objc-class exception selector)
-             (let ((*skip-retaining*
-                    (or *skip-retaining*
-                        (constructor-name-p (selector-name selector)))))
-               (make-instance (car return-type)
-                  :pointer (cffi:mem-ref objc-return-value-cell
-                                         return-c-type))))
-            ((:void) (values))
-            (otherwise (cffi:mem-ref objc-return-value-cell
-                                     return-c-type)))))))))
+        (cffi:with-foreign-objects ((objc-arg-typestrings :string
+                                                          (- argc 2))
+                                    (objc-arg-ptrs :pointer argc)
+                                    (objc-return-value-cell
+                                     ;; FIXME: This won't work for
+                                     ;; structs, arrays and unions!
+                                     (if (eq return-c-type :void)
+                                         :int
+                                         return-c-type))
+                                    (objc-arg-buffer +pessimistic-allocation-type+
+                                                     argc))
+          ;; Prepare the argument pointer vector.
+          (loop for i from 0 below argc
+                do (setf (cffi:mem-aref objc-arg-ptrs :pointer i)
+                         (cffi:inc-pointer objc-arg-buffer
+                                           (* i +pessimistic-allocation-size+))))
+          (macrolet ((argref (type num)
+                       `(cffi:mem-ref objc-arg-buffer ,type
+                                      (* ,num +pessimistic-allocation-size+))))
+            ;; Prepare the arguments.
+            (setf (argref :pointer 0) (pointer-to receiver))
+            (setf (argref :pointer 1) (pointer-to selector))
+            (loop for i from 2
+                  for arg in args
+                  for arg-type in (cddr arg-types) ;skip the first two arguments
+                  for arg-c-type in (cddr arg-c-types) ;likewise
+                  do (case (car arg-type)
+                       ((:pointer)
+                        (setf (argref :pointer i) arg))
+                       ((objc-class exception)
+                        (setf (argref :pointer i) (pointer-to arg)))
+                       ((selector)
+                        (setf (argref :pointer i) (pointer-to (selector arg))))
+                       ((:string)
+                        (warn "HERE! HERE!")
+                        (setf (argref :string i)
+                              (alloc-string-and-register arg)))
+                       ((struct union)
+                        ;; This is not very sophisticated, but, at
+                        ;; present, we don't care about the internals of
+                        ;; structs and unions much.  Functions returning
+                        ;; structs actually just give us pointers to them,
+                        ;; so we just put those pointers back into the
+                        ;; functions as arguments.
+                        ;;
+                        ;; Note that the target type is a struct/union,
+                        ;; not a pointer.  This means that we actually
+                        ;; have to pass a struct/union as an argument.  We
+                        ;; therefore ignore the memory space reserved for
+                        ;; argument cells in the argument buffer and
+                        ;; simply set the argument pointer directly.
+                        (setf (cffi:mem-aref objc-arg-ptrs :pointer i)
+                              arg))
+                       ((array)
+                        ;; This, too, might someday be ripped out and
+                        ;; replaced with something more flexible.  For
+                        ;; now, it's the same as for structs and unions.
+                        ;; That's the nice thing about opaque C data
+                        ;; structures: As a binding writer, we just pass
+                        ;; them around without caring about their
+                        ;; structure.
+                        (setf (cffi:mem-aref objc-arg-ptrs :pointer i)
+                              arg))
+                       ((id)
+                        ;; This case is actually interesting.  We can do a
+                        ;; lot of automatic conversion between different
+                        ;; kinds of stuff.  The conversion rules are
+                        ;; somewhat arbitrary, but in the absence of more
+                        ;; detailed method signature type information,
+                        ;; it's the best we can do.
+                        (setf (argref arg-c-type i)
+                              (pointer-to (coerce-object arg 'id))))
+                       (t (setf (argref arg-c-type i) arg)))))
+          ;; Prepare the argument typestring vector.  Note that we don't
+          ;; pass the first two strings, as they are always the same.
+          (loop for i from 0
+                for arg-typestring in arg-typestrings
+                do (setf (mem-aref objc-arg-typestrings :string i)
+                         (alloc-string-and-register arg-typestring)))
+          (let* ((error-cell
+                  (%objcl-invoke-with-types (- argc 2)
+                                            return-typestring
+                                            objc-arg-typestrings
+                                            objc-return-value-cell
+                                            objc-arg-ptrs)))
+            (unless (cffi:null-pointer-p error-cell)
+              (error (make-condition 'exception :pointer error-cell)))
+            (case (car return-type)
+              ((id objc-class exception selector)
+               (let ((*skip-retaining*
+                      (or *skip-retaining*
+                          (constructor-name-p (selector-name selector)))))
+                 (make-instance (car return-type)
+                    :pointer (cffi:mem-ref objc-return-value-cell
+                                           return-c-type))))
+              ((:void) (values))
+              (otherwise (cffi:mem-ref objc-return-value-cell
+                                       return-c-type)))))))))
 
 
 (defun invoke-with-conversion (receiver method-name &rest args)
