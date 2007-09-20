@@ -1,12 +1,6 @@
 (in-package #:mulk.objective-cl)
 
 
-(eval-when (:execute)
-  (unless (boundp '+nil+)
-    (defconstant +nil+
-      (make-instance 'id :pointer (objcl-get-nil)))))
-
-
 ;;; (@* "Method invocation")
 (defun invoke (receiver message-start &rest message-components)
   "Send a message to an Objective C instance.
@@ -539,7 +533,7 @@ Returns: *result* --- the return value of the method invocation.
 (defcoercion id ((x id))
   x)
 
-(defcoercion id ((x class))
+(defcoercion id ((x objc-class))
   x)
 
 (defcoercion id ((x exception))
@@ -551,15 +545,13 @@ Returns: *result* --- the return value of the method invocation.
                     'id
                     x))
 
-(defcoercion id ((x double-float))
+(defcoercion id ((x float))
   (primitive-invoke (find-objc-class 'ns-number)
-                    :number-with-double
-                    'id
-                    x))
-
-(defcoercion id ((x single-float))
-  (primitive-invoke (find-objc-class 'ns-number)
-                    :number-with-float
+                    (etypecase x
+                      (long-float :number-with-double)
+                      (double-float :number-with-double)
+                      (short-float :number-with-float)
+                      (single-float :number-with-float))
                     'id
                     x))
 
@@ -589,7 +581,7 @@ Returns: *result* --- the return value of the method invocation.
 (defcoercion class ((x exception))
   (object-get-class x))
 
-(defcoercion class ((x class))
+(defcoercion class ((x objc-class))
   x)
 
 (defcoercion class ((x string))
@@ -649,15 +641,13 @@ Returns: *result* --- the return value of the method invocation.
   (float x))
 
 
+;; Note that this refers to the Objective-C BOOL type, not the Lisp
+;; BOOLEAN type.
 (defcoercion bool ((x null))
-  x)
+  +no+)
 
-(defcoercion bool ((x symbol))
-  (assert (eq 't x))
-  x)
-
-(defcoercion bool ((x integer))
-  x)
+(defcoercion bool (x)
+  +yes+)
 
 
 (defcoercion string ((x string))

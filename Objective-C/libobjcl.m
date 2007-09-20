@@ -457,3 +457,21 @@ objcl_get_nil (void)
 {
   return nil;
 }
+
+
+long
+objcl_get_yes ()
+{
+  if (sizeof (YES) > sizeof (long))
+    fprintf (stderr, "WARNING: objcl_get_yes: YES might not fit into a long.\n");
+  return YES;
+}
+
+
+long
+objcl_get_no ()
+{
+  if (sizeof (NO) > sizeof (long))
+    fprintf (stderr, "WARNING: objcl_get_no: NO might not fit into a long.\n");
+  return NO;
+}

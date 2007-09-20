@@ -25,7 +25,8 @@
                                                           "data-types"
                                                           "libobjcl"
                                                           "internal-utilities"
-                                                          "parameters"))
+                                                          "parameters"
+                                                          "init"))
                  (:file "memory-management"  :depends-on ("defpackage"
                                                           "init"
                                                           "weak-hash-tables"

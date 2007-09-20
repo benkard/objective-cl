@@ -72,7 +72,8 @@
   (obj :pointer))
 
 (defcfun objcl-get-nil :pointer)
-
+(defcfun objcl-get-yes :long)
+(defcfun objcl-get-no :long)
 
 (defun initialise-runtime ()
   "Initialise the Objective C runtime.

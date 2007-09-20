@@ -8,7 +8,7 @@
 (defun truep (b)
   (or (eq b t)
       (and (numberp b)
-           (not (zerop b)))))
+           (not (eql b +no+)))))
 
 
 (defun id-eql (x y)
@@ -17,10 +17,10 @@
 
 (defun id-equal (x y)
   (truep (if (typep x '(or id objc-class exception))
-             (primitive-invoke x :is-equal :boolean y)
+             (primitive-invoke x :is-equal :char y)
              (progn
                (assert (typep y '(or id objc-class exception)))
-               (primitive-invoke y :is-equal :boolean x)))))
+               (primitive-invoke y :is-equal :char x)))))
 
 
 (defun objc-typep (x class-designator)

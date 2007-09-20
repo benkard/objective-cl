@@ -94,3 +94,11 @@ objcl_object_get_meta_class (id obj);
 
 id
 objcl_get_nil (void);
+
+/* In principle, we do not know whether a BOOL fits into a long.  In
+   practise, it is very likely. */
+long
+objcl_get_yes ();
+
+long
+objcl_get_no ();
