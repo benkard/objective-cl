@@ -188,11 +188,3 @@ an __exception__, you can simply send it the `self' message.
   (pointer-eq (pointer-to obj1) (pointer-to obj2)))
 (defmethod objcl-eql (obj1 obj2)
   (eql obj1 obj2))
-
-
-(defun dealloc-obj-data (obj-data)
-  (with-foreign-slots ((type data) obj-data obj-data)
-    (when (and (pointerp type)
-               (not (null-pointer-p type)))
-      (foreign-string-free type)))
-  (foreign-free obj-data))

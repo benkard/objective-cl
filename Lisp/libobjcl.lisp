@@ -374,61 +374,6 @@ If *selector-designator* is a __selector__, it is simply returned.
                 designator)))))
 
 
-(declaim (ftype (function (*)
-                          (values foreign-pointer &rest nil))
-                lisp->obj-data))
-(defun lisp->obj-data (value)
-  (let ((obj-data (foreign-alloc 'obj-data))
-        (type-name (lisp-value->type-name value)))
-    (with-foreign-slots ((type data) obj-data obj-data)
-      (setf (foreign-slot-value data
-                                'obj-data-union
-                                (type-name->slot-name type-name))
-            (typecase value
-              (symbol (selector value))
-              ((or id objc-class selector exception)
-               (pointer-to value))
-              (string (foreign-string-alloc value))
-              (otherwise value)))
-      (setf type
-            (foreign-string-alloc (type-name->type-id type-name))))
-    obj-data))
-
-
-(declaim (ftype (function (foreign-pointer)
-                          (values (or number string symbol selector id
-                                      objc-class boolean foreign-pointer)
-                                  &rest nil))
-                obj-data->lisp))
-(defun obj-data->lisp (obj-data)
-  (with-foreign-slots ((type data) obj-data obj-data)
-    (let* ((type-name (type-id->type-name (if (stringp type)
-                                              type
-                                              (foreign-string-to-lisp type))))
-           (lisp-type (type-name->lisp-type type-name))
-           (value     (if (eq 'void type-name)
-                          (values)
-                          (foreign-slot-value data
-                                              'obj-data-union
-                                              (type-name->slot-name type-name)))))
-      (case lisp-type
-        ((id objc-class selector exception)
-         (make-instance lisp-type :pointer value) )
-        ((string) (foreign-string-to-lisp value))
-        (otherwise value)))))
-
-
-(declaim (ftype (function (foreign-pointer) (values string &rest nil))
-                foreign-string-to-lisp/dealloc))
-(defun foreign-string-to-lisp/dealloc (foreign-string)
-  "Convert a (possibly freshly allocated) C string into a Lisp string
-and free the C string afterwards."
-
-  (unwind-protect
-       (foreign-string-to-lisp foreign-string)
-    (foreign-string-free foreign-string)))
-
-
 (defun parse-typespec (typestring &optional (start 0))
   "Parse a typestring like \"@0:4{_NSRange=II}8\" into something like (ID ()).
 

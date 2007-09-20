@@ -470,21 +470,11 @@ Returns: *result* --- the return value of the method invocation.
 
 
 ;;; (@* "Helper functions")
-(defun arglist->objc-arglist (arglist)
-  (arglist-intersperse-types (mapcar #'lisp->obj-data arglist)))
-
-
 (defun dealloc-objc-arglist (objc-arglist)
   (do ((objc-arglist objc-arglist (cddr objc-arglist)))
       ((null objc-arglist))
     ;; (first objc-arglist) is a CFFI type name.
     (dealloc-obj-data (second objc-arglist))))
-
-
-(defun arglist-intersperse-types (arglist)
-  (mapcan #'(lambda (arg)
-              (list :pointer arg))
-          arglist))
 
 
 (defun constructor-name-p (method-name)

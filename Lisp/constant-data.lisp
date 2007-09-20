@@ -55,28 +55,6 @@
     (complex  . #\j)))
 
 
-(defparameter *objcl-data-map*
-  '((id       . id-val)
-    (class    . class-val)
-    (exc      . exc-val)
-    (sel      . sel-val)
-    (chr      . char-val)
-    (uchr     . char-val)
-    (sht      . short-val)
-    (usht     . short-val)
-    (int      . int-val)
-    (uint     . int-val)
-    (lng      . long-val)
-    (ulng     . long-val)
-    (lng-lng  . long-long-val)
-    (ulng-lng . long-long-val)
-    (flt      . float-val)
-    (dbl      . double-val)
-    (bool     . bool-val)
-    (ptr      . ptr-val)
-    (charptr  . charptr-val)))
-
-
 (defparameter *objcl-type-map*
   '((id       . id)
     (class    . objc-class)
@@ -96,6 +74,7 @@
     (bool     . boolean)
     (ptr      . c-pointer)
     (charptr  . string)))
+
 
 (defparameter *objcl-c-type-map*
   '((id       . :pointer)
@@ -125,25 +104,9 @@
                       (typep value type))
                   *objcl-type-map*)))
 
-(declaim (ftype (function (symbol) symbol) lisp-type->type-name))
-(defun lisp-type->type-name (lisp-type)
-  (cdr (rassoc lisp-type *objcl-type-map*)))
-
-(declaim (ftype (function (symbol) symbol) type-name->lisp-type))
-(defun type-name->lisp-type (type-name)
-  (cdr (assoc type-name *objcl-type-map*)))
-
-(declaim (ftype (function (symbol) symbol) type-name->slot-name))
-(defun type-name->slot-name (type-name)
-  (cdr (assoc type-name *objcl-data-map*)))
-
 (declaim (ftype (function (symbol) string) type-name->type-id))
 (defun type-name->type-id (type-name)
   (string (cdr (assoc type-name *objcl-api-type-names*))))
-
-(declaim (ftype (function (string) symbol) type-id->type-name))
-(defun type-id->type-name (type-id)
-  (car (rassoc (char type-id 0) *objcl-api-type-names*)))
 
 (declaim (ftype (function (symbol) symbol) type-name->c-type))
 (defun type-name->c-type (type-name)
