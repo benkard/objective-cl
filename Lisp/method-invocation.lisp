@@ -337,6 +337,12 @@ Returns: *result* --- the return value of the method invocation.
                 do (setf (cffi:mem-aref objc-arg-ptrs :pointer i)
                          (cffi:inc-pointer objc-arg-buffer
                                            (* i +pessimistic-allocation-size+))))
+          ;; Prepare the argument typestring vector.  Note that we don't
+          ;; pass the first two strings, as they are always the same.
+          (loop for i from 0
+                for arg-typestring in (cddr arg-typestrings)
+                do (setf (mem-aref objc-arg-typestrings :string i)
+                         (alloc-string-and-register arg-typestring)))
           (macrolet ((argref (type num)
                        `(cffi:mem-ref objc-arg-buffer ,type
                                       (* ,num +pessimistic-allocation-size+))))
@@ -394,12 +400,6 @@ Returns: *result* --- the return value of the method invocation.
                         (setf (argref arg-c-type i)
                               (pointer-to (coerce-object arg 'id))))
                        (t (setf (argref arg-c-type i) arg)))))
-          ;; Prepare the argument typestring vector.  Note that we don't
-          ;; pass the first two strings, as they are always the same.
-          (loop for i from 0
-                for arg-typestring in (cddr arg-typestrings)
-                do (setf (mem-aref objc-arg-typestrings :string i)
-                         (alloc-string-and-register arg-typestring)))
           (let* ((error-cell
                   (%objcl-invoke-with-types (- argc 2)
                                             return-typestring
