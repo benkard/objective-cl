@@ -11,33 +11,6 @@
 extern NSException *objcl_oom_exception;
 
 
-typedef struct objcl_object
-{
-  char* type;
-
-  union
-  {
-    id id_val;
-    Class class_val;
-    NSException *exc_val;
-    SEL sel_val;
-    char char_val;
-    short short_val;
-    int int_val;
-    long long_val;
-    long long long_long_val;
-    float float_val;
-    double double_val;
-    BOOL bool_val;
-    char *charptr_val;
-    void *ptr_val;
-  } data;
-} *OBJCL_OBJ_DATA;
-
-
-#define EXCEPTION_TYPESPEC "ERROR"
-
-
 void
 objcl_initialise_runtime (void);
 

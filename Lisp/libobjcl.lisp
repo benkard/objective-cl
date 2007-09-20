@@ -25,13 +25,6 @@
 
 (defcfun ("objcl_shutdown_runtime" %shutdown-runtime) :void)
 
-(defcfun ("objcl_invoke_method"
-          %objcl-invoke-method) obj-data
-  (receiver obj-data)
-  (method-selector :pointer)
-  (argc :int)
-  &rest)
-
 (defcfun ("objcl_invoke_with_types" %objcl-invoke-with-types) :pointer
   (argc :int)
   (return_typespec :string)

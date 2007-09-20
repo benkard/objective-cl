@@ -12,38 +12,6 @@
 ;;;; (@* "Foreign data types")
 (defctype char-pointer :pointer)
 
-;; Let us just hope that two longs make a long long, space-wise.
-(defcstruct double-long
-  (left :long)
-  (right :long))
-
-(defcunion obj-data-union
-  (id-val :pointer)
-  (class-val :pointer)
-  (exc-val :pointer)
-  (sel-val :pointer)
-  (char-val :char)
-  (short-val :short)
-  (int-val :int)
-  (long-val :long)
-  #-cffi-features:no-long-long (long-long-val :long-long)
-  #+cffi-features:no-long-long (double-long-val double-long)
-  (float-val :float)
-  (double-val :double)
-  (bool-val :boolean)
-  (charptr-val :pointer)
-  (ptr-val :pointer))
-
-(defcstruct obj-data
-  (type char-pointer)
-  (data obj-data-union))
-
-(defmethod translate-to-foreign ((value string) (type (eql 'char-pointer)))
-  (foreign-string-alloc value))
-
-(defmethod translate-from-foreign (c-value (type (eql 'char-pointer)))
-  (foreign-string-to-lisp c-value))
-
 
 ;;;; (@* "Objective C object wrapper classes")
 (defclass c-pointer-wrapper ()
