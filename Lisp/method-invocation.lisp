@@ -399,7 +399,7 @@ Returns: *result* --- the return value of the method invocation.
           ;; Prepare the argument typestring vector.  Note that we don't
           ;; pass the first two strings, as they are always the same.
           (loop for i from 0
-                for arg-typestring in arg-typestrings
+                for arg-typestring in (cddr arg-typestrings)
                 do (setf (mem-aref objc-arg-typestrings :string i)
                          (alloc-string-and-register arg-typestring)))
           (let* ((error-cell
