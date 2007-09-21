@@ -9,4 +9,10 @@
   (unless (boundp '+yes+)
     (defconstant +yes+ (objcl-get-yes)))
   (unless (boundp '+no+)
-    (defconstant +no+ (objcl-get-no))))
+    (defconstant +no+ (objcl-get-no)))
+  (unless (boundp '+runtime-type+)
+    (defconstant +runtime-type+ (runtime-type)))
+  (pushnew (case +runtime-type+
+             ((:gnu) 'objcl-features:gnu-runtime)
+             ((:next) 'objcl-features:next-runtime))
+           *features*))

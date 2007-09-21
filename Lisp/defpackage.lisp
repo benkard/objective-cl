@@ -41,4 +41,12 @@
            ;; Metaclasses
            #:objective-c-class))
 
+
+(defpackage #:mulk.objective-cl-features
+  (:nicknames #:objcl-features #:objective-cl-features #:mulk.objcl-features)
+  (:use)
+  (:export #:gnu-runtime
+           #:next-runtime))
+
+
 #-(or cmu sbcl) (declaim (declaration values))

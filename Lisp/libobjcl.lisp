@@ -64,6 +64,17 @@
     :pointer
   (obj :pointer))
 
+(defcfun ("objcl_get_runtime_type" %objcl-get-runtime-type) :string)
+
+(defcfun ("objcl_sizeof_type" %objcl-sizeof-type) :long
+  (typespec :string))
+
+(defcfun ("objcl_sizeof_return_type" %objcl-sizeof-return-type) :long
+  (typespec :string))
+
+(defcfun ("objcl_alignof_type" %objcl-alignof-type) :long
+  (typespec :string))
+
 (defcfun objcl-get-nil :pointer)
 (defcfun objcl-get-yes :long)
 (defcfun objcl-get-no :long)
@@ -523,3 +534,23 @@ Returns: (VALUES typespec byte-position string-position)"
               byte-position)
             #-(or) nil
             string-position)))
+
+
+;;;; (@* "Helper functions")
+(defun sizeof (typespec)
+  (%objcl-sizeof-type typespec))
+
+(defun alignof (typespec)
+  (%objcl-alignof-type typespec))
+
+(defun return-type-sizeof (typespec)
+  (%objcl-sizeof-return-type typespec))
+
+(defun runtime-type ()
+  (let ((runtime (%objcl-get-runtime-type)))
+    (assert (member runtime '("GNU" "NeXT") :test #'string=)
+            (runtime)
+            "Unkown Objective-C runtime type ~S.  Allowed: (\"GNU\" \"NeXT\")."
+            runtime)
+    (cond ((string= runtime "GNU") :gnu)
+          ((string= runtime "NeXT") :next))))

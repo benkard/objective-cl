@@ -69,3 +69,15 @@ objcl_get_yes (void);
 
 long
 objcl_get_no (void);
+
+const char *
+objcl_get_runtime_type (void);
+
+long
+objcl_sizeof_type (const char *typespec);
+
+long
+objcl_sizeof_return_type (const char *typespec);
+
+long
+objcl_alignof_type (const char *typespec);

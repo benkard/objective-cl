@@ -248,3 +248,41 @@ objcl_get_no (void)
     fprintf (stderr, "WARNING: objcl_get_no: NO might not fit into a long.\n");
   return NO;
 }
+
+
+const char *
+objcl_get_runtime_type (void)
+{
+#ifdef __NEXT_RUNTIME__
+  return "NeXT";
+#else
+  return "GNU";
+#endif
+}
+
+
+long
+objcl_sizeof_type (const char *typespec)
+{
+  if (sizeof (ssize_t) > sizeof (long))
+    fprintf (stderr, "WARNING: objcl_sizeof_typespec: Size might not fit into a long.\n");
+  return PyObjCRT_SizeOfType (typespec);
+}
+
+
+long
+objcl_sizeof_return_type (const char *typespec)
+{
+  if (sizeof (ssize_t) > sizeof (long))
+    fprintf (stderr, "WARNING: objcl_sizeof_return_typespec: Size might not fit into a long.\n");
+  return PyObjCRT_SizeOfReturnType (typespec);
+}
+
+
+long
+objcl_alignof_type (const char *typespec)
+{
+  if (sizeof (ssize_t) > sizeof (long))
+    fprintf (stderr, "WARNING: objcl_align_typespec: Alignment might not fit into a long.\n");
+  return PyObjCRT_AlignOfType (typespec);
+}
