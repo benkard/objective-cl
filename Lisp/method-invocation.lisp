@@ -65,23 +65,9 @@ if as the second **argument** to __invoke-by-name__.
 
   __invoke-by-name__"
 
-  (check-type receiver (or id objc-class exception)
-              "an Objective C instance (ID, OBJC-CLASS or EXCEPTION)")
-  (do* ((components-left (cons message-start message-components)
-                         (cddr components-left))
-        (message-list    (list message-start)
-                         (cons (first components-left) message-list))
-        (arglist         (if (null (rest components-left))
-                             nil
-                             (list (second components-left)))
-                         (if (null (rest components-left))
-                             arglist
-                             (cons (second components-left) arglist))))
-       ((null (cddr components-left))
-        (apply #'invoke-by-name
-               receiver
-               (nreverse message-list)
-               (nreverse arglist)))))
+  (multiple-value-bind (message arglist)
+      (split-method-call message-start message-components)
+    (apply #'invoke-by-name receiver message arglist)))
 
 
 (defun invoke-by-name (receiver method-name &rest args)
@@ -143,6 +129,22 @@ Returns: *result* --- the return value of the method invocation.
                         method-arg-types
                         argc
                         args))))
+
+
+(defun split-method-call (message-start message-components)
+  (do* ((components-left (cons message-start message-components)
+                         (cddr components-left))
+        (message-list    (list message-start)
+                         (cons (first components-left) message-list))
+        (arglist         (if (null (rest components-left))
+                             nil
+                             (list (second components-left)))
+                         (if (null (rest components-left))
+                             arglist
+                             (cons (second components-left) arglist))))
+       ((null (cddr components-left))
+        (values (nreverse message-list)
+                (nreverse arglist)))))
 
 
 (defun primitive-invoke (receiver method-name return-type &rest args)
@@ -389,54 +391,6 @@ Returns: *result* --- the return value of the method invocation.
               ((:void) (values))
               (otherwise (cffi:mem-ref objc-return-value-cell
                                        return-c-type)))))))))
-
-
-;; Optimise constant method names away by converting them to selectors
-;; at load-time.
-(define-compiler-macro primitive-invoke (&whole form
-                                         receiver method-name return-type
-                                         &rest args)
-  (if (and (constantp method-name)
-           (not (and (listp method-name)
-                     (eq 'load-time-value (car method-name)))))
-      `(primitive-invoke ,receiver
-                         (load-time-value (handler-case
-                                              (selector ,method-name)
-                                            (serious-condition ()
-                                              (warn
-                                               (make-condition
-                                                'style-warning
-                                                :format-control
-                                                "~S designates an unknown ~
-                                                 method selector."
-                                                :format-arguments
-                                                (list ,method-name)))
-                                              ,method-name)))
-                         ,return-type ,@args)
-      form))
-
-
-;; Do the same optimisations for INVOKE-BY-NAME as for PRIMITIVE-INVOKE.
-(define-compiler-macro invoke-by-name (&whole form
-                                       receiver method-name &rest args)
-  (if (and (constantp method-name)
-           (not (and (listp method-name)
-                     (eq 'load-time-value (car method-name)))))
-      `(invoke-by-name
-        ,receiver
-        (load-time-value (handler-case
-                             (selector ,method-name)
-                           (serious-condition ()
-                             (warn
-                              (make-condition 'style-warning
-                                              :format-control
-                                              "~S designates an unknown ~
-                                               method selector."
-                                              :format-arguments
-                                              (list ,method-name)))
-                             ,method-name)))
-        ,@args)
-      form))
 
 
 ;;; (@* "Helper functions")

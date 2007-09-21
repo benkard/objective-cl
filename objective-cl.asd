@@ -41,5 +41,7 @@
                  (:file "utilities"          :depends-on ("init"
                                                           "defpackage"
                                                           "method-invocation"
-                                                          "data-types")))))
+                                                          "data-types"))
+                 (:file "compiler-macros"    :depends-on ("defpackage"
+                                                          "method-invocation")))))
   :serial t)
