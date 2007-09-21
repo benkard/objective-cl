@@ -26,6 +26,8 @@
 
            ;; Constants
            #:+nil+
+           #:+yes+
+           #:+no+
 
            ;; Classes
            #:id

@@ -65,7 +65,10 @@ objcl_invoke_with_types (int argc,
   NS_DURING
     {
 #ifdef __NEXT_RUNTIME__
-      method = class_getInstanceMethod ([receiver class], method_selector)->method_imp;
+      if (objcl_object_is_class (receiver))
+        method = class_getClassMethod (receiver, method_selector)->method_imp;
+      else
+        method = class_getInstanceMethod ([receiver class], method_selector)->method_imp;
 #else
       method = objc_msg_lookup (receiver, method_selector);
       /* Alternatively:

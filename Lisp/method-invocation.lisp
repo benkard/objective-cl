@@ -332,7 +332,6 @@ Returns: *result* --- the return value of the method invocation.
                        ((selector)
                         (setf (argref :pointer i) (pointer-to (selector arg))))
                        ((:string)
-                        (warn "HERE! HERE!")
                         (setf (argref :string i)
                               (alloc-string-and-register arg)))
                        ((struct union)

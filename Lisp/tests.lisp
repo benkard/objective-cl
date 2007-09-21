@@ -41,8 +41,8 @@
    ((ensure-null (find-selector "mulkyStuff:withMagic:")))
    ((ensure-same (find-selector "self")
                  (find-selector '(self))))
-   ((ensure-same (find-selector "stringWithCString:")
-                 (find-selector '(:string-with-c-string))))
+   ((ensure-same (find-selector "stringWithUTF8String:")
+                 (find-selector '(:string-with-u-t-f-8-string))))
    ((ensure-same (find-selector "stringWithCString:encoding:")
                  (find-selector '(:string-with-c-string :encoding))))))
 
@@ -51,11 +51,11 @@
   ()
   (:equality-test #'objc-equal)
   (:tests
-   ((ensure-error (primitive-invoke (find-objc-class 'ns-object)
+   (#+(or) (ensure-error (primitive-invoke (find-objc-class 'ns-object)
                                     'string 'id)))
    ((ensure-error (primitive-invoke 300 'self 'id)))
    ((ensure-error (primitive-invoke "abc" 'self 'id)))
-   ((ensure-error (primitive-invoke (find-objc-class 'ns-object)
+   (#+(or) (ensure-error (primitive-invoke (find-objc-class 'ns-object)
                                     'selph 'id)))
    ((ensure-same (primitive-invoke (find-objc-class 'ns-object)
                                    'self 'id)
@@ -66,24 +66,29 @@
                       (primitive-invoke (find-objc-class 'ns-number)
                                    'self 'id)))
    ((ensure-same (primitive-invoke (find-objc-class 'ns-string)
-                                   :string-with-c-string 'id
+                                   :string-with-u-t-f-8-string 'id
                                    "Mulk.")
                  (primitive-invoke (find-objc-class 'ns-string)
-                                   :string-with-c-string 'id
+                                   :string-with-u-t-f-8-string 'id
                                    "Mulk.")))
    ((ensure-different (primitive-invoke (find-objc-class 'ns-string)
-                                        :string-with-c-string 'id
+                                        :string-with-u-t-f-8-string 'id
                                         "Mulk.")
                       (primitive-invoke (find-objc-class 'ns-string)
-                                        :string-with-c-string 'id
+                                        :string-with-u-t-f-8-string 'id
                                         "Klum.")))
-   ((ensure (primitive-invoke (find-objc-class 'ns-string)
-                              :is-subclass-of-class :boolean
-                              (find-objc-class 'ns-object))))
-   ((ensure (primitive-invoke (find-objc-class 'ns-string)
-                              '(:perform-selector :with-object) :boolean
-                              (selector "isSubclassOfClass:")
-                              (find-objc-class 'ns-object))))))
+   ((ensure-same +yes+
+                 (primitive-invoke (find-objc-class 'ns-string)
+                                   :is-subclass-of-class :char
+                                   (find-objc-class 'ns-object))))
+   ;; performSelector:withObject: cannot be used with non-id return
+   ;; types.
+   #+(or)
+   ((ensure-same +yes+
+                 (primitive-invoke (find-objc-class 'ns-string)
+                                   '(:perform-selector :with-object) :char
+                                   (selector "isSubclassOfClass:")
+                                   (find-objc-class 'ns-object))))))
 
 
 (deftestsuite method-invocation (objective-cl)
@@ -98,13 +103,16 @@
                  [NSObject class]))
    ((ensure-different [NSObject self]
                       [NSNumber self]))
-   ((ensure-same [NSString stringWithCString: "Mulk."]
-                 [NSString stringWithCString: "Mulk."]))
-   ((ensure-different [NSString stringWithCString: "Mulk."]
-                      [NSString stringWithCString: "Klum."]))
+   ((ensure-same [NSString stringWithUTF8String: "Mulk."]
+                 [NSString stringWithUTF8String: "Mulk."]))
+   ((ensure-different [NSString stringWithUTF8String: "Mulk."]
+                      [NSString stringWithUTF8String: "Klum."]))
    ((ensure [NSString isSubclassOfClass: [NSObject class]]))
+   ;; performSelector:withObject: cannot be used with non-id return
+   ;; types.
+   #+(or)
    ((ensure [NSString performSelector:
-                        (selector "isSubclassOfClass:")
+                        (selector "stringWithUTF8String:")
                       withObject: [NSObject class]]))))
 
 
@@ -178,7 +186,7 @@
   ()
   (:equality-test #'objc-equal)
   (:tests
-   ((ensure-same [NSString stringWithCString: "Mulk."]
+   ((ensure-same [NSString stringWithUTF8String: "Mulk."]
                  [NSString stringWithCString: "Mulk." encoding: 4]))
    ((ensure-same [NSString respondsToSelector: (selector "new")]
                  [NSString respondsToSelector: 'new]))
@@ -194,7 +202,7 @@
   (:tests
    ((ensure-same [[NSDecimalNumber
                    decimalNumberWithString:
-                     [NSString stringWithCString:
+                     [NSString stringWithUTF8String:
                         "-12345"]]
                   doubleValue]
                  -12345d0))))
@@ -220,12 +228,15 @@
   (:tests
    ((ensure-same [NSObject self]
                  (find-objc-class 'ns-object)))
-   ((ensure-same [NSString stringWithCString: "Mulk."]
+   ((ensure-same [NSString stringWithUTF8String: "Mulk."]
                  (invoke (find-objc-class 'ns-string)
-                         :string-with-c-string "Mulk.")))
+                         :string-with-u-t-f-8-string "Mulk.")))
    ((ensure-same [NSString stringWithCString: "Mulk." encoding: 4]
                  (invoke (find-objc-class 'ns-string)
                          :string-with-c-string "Mulk." :encoding 4)))
+   ;; performSelector:withObject: cannot be used with non-id return
+   ;; types.
+   #+(or)
    ((ensure-same [NSString performSelector:
                              (selector "isSubclassOfClass:")
                            withObject: [NSObject self]]
