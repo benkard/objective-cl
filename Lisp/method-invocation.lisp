@@ -44,7 +44,7 @@ if as the second **argument** to __invoke-by-name__.
 ## Examples:
 
     (invoke (find-objc-class 'ns-string)
-            :string-with-c-string \"Mulk.\")
+            :string-with-u-t-f-8-string \"Mulk.\")
       ;=> #<GSCBufferString `Mulk.' {5B36087}>
 
     (invoke (find-objc-class 'ns-object)
@@ -77,17 +77,25 @@ if as the second **argument** to __invoke-by-name__.
 
 *receiver* --- an Objective C wrapper object.
 
-*method-name* --- a **string**.
+*method-name* --- a *selector designator*.
 
 *args* --- a list of **object**s.
 
 Returns: *result* --- the return value of the method invocation.
 
 
+## Description:
+
+__invoke-by-name__ is like __invoke__ except in its syntax.  It sends
+the message whose selector is designated by *method-name*, which must be
+either a *string*, a *symbol*, a list of message name components as in a
+call to __invoke__, or an object of *type* __selector__, to *receiver*.
+
+
 ## Examples:
 
     (invoke-by-name (find-objc-class 'ns-string)
-                    \"stringWithCString:\" \"Mulk.\")
+                    '(:string-with-u-t-f-8-string) \"Mulk.\")
       ;=> #<GSCBufferString `Mulk.' {5B36087}>
 
     (invoke-by-name (find-objc-class 'ns-object)
@@ -99,6 +107,15 @@ Returns: *result* --- the return value of the method invocation.
                     \"Mulk.\"
                     4)
       ;=> #<GSCBufferString `Mulk.' {5B36087}>
+
+
+## Rationale:
+
+Whereas __invoke__ tries to make writing as well as reading method
+invocations easy by interspersing method name components with arguments
+as Objective-C does, __invoke-by-name__ is better suited for method
+selection at run time as well as code generation.  It is also slightly
+easier to use with __apply__.
 
 
 ## See also:
