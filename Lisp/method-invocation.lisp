@@ -145,38 +145,6 @@ Returns: *result* --- the return value of the method invocation.
                         args))))
 
 
-(defmacro unsafe-primitive-invoke (receiver method-name return-type &rest args)
-  (let ((real-return-type (if (member return-type '(id objc-class exception
-                                                    selector))
-                              :pointer
-                              return-type))
-        (real-receiver (gensym))
-        (real-selector (gensym))
-        (selector (selector method-name)))
-    `(progn
-       (let ((,real-receiver ,receiver)
-             (,real-selector (selector ,method-name)))
-         (check-type ,real-receiver (or id objc-class exception)
-                     "an Objective C instance (ID, OBJC-CLASS or EXCEPTION)")
-         (let ((method (get-method-implementation ,real-receiver ,real-selector))
-               (objc-arglist (arglist->objc-arglist (list ,@args))))
-           (unwind-protect
-               (let ((return-value
-                      (apply-macro 'foreign-funcall-pointer method
-                                   ()
-                                   (append (list :pointer (pointer-to ,real-receiver))
-                                           (list :pointer (pointer-to ,real-selector))
-                                           objc-arglist
-                                           (list ,real-return-type)))))
-                 ,(if (member return-type '(id objc-class exception selector))
-                      `(let (,@(when (constructor-name-p (selector-name selector))
-                                 `((*skip-retaining* t))))
-                         (make-instance return-type
-                            :pointer return-value))
-                      `return-value))
-             (dealloc-objc-arglist objc-arglist)))))))
-
-
 (defun primitive-invoke (receiver method-name return-type &rest args)
   "An invocation mechanism with ad-hoc argument conversion."
   (with-foreign-string-pool (register-temporary-string)
@@ -470,13 +438,6 @@ Returns: *result* --- the return value of the method invocation.
 
 
 ;;; (@* "Helper functions")
-(defun dealloc-objc-arglist (objc-arglist)
-  (do ((objc-arglist objc-arglist (cddr objc-arglist)))
-      ((null objc-arglist))
-    ;; (first objc-arglist) is a CFFI type name.
-    (dealloc-obj-data (second objc-arglist))))
-
-
 (defun constructor-name-p (method-name)
   (flet ((method-name-starts-with (prefix)
            (and (>= (length method-name) (length prefix))

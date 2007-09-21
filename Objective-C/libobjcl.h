@@ -17,12 +17,6 @@ objcl_initialise_runtime (void);
 void
 objcl_shutdown_runtime (void);
 
-OBJCL_OBJ_DATA
-objcl_invoke_method (OBJCL_OBJ_DATA receiver,
-                     SEL method_selector,
-                     int argc,
-                     ...);
-
 id
 objcl_invoke_with_types (int argc,
                          char *return_typespec,
@@ -71,7 +65,7 @@ objcl_get_nil (void);
 /* In principle, we do not know whether a BOOL fits into a long.  In
    practise, it is very likely. */
 long
-objcl_get_yes ();
+objcl_get_yes (void);
 
 long
-objcl_get_no ();
+objcl_get_no (void);
