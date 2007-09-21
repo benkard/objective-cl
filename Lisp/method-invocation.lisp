@@ -246,15 +246,18 @@ Returns: *result* --- the return value of the method invocation.
     (cons (cffi:pointer-address (pointer-to class))
           (cffi:pointer-address (pointer-to selector)))
   (let* ((signature
-          (if (eq instance-or-class :instance)
-              (primitive-invoke class
-                                :instance-method-signature-for-selector
-                                'id
-                                selector)
-              (primitive-invoke class
-                                :method-signature-for-selector
-                                'id
-                                selector)))
+          (or (if (eq instance-or-class :instance)
+                  (primitive-invoke class
+                                    :instance-method-signature-for-selector
+                                    'id
+                                    selector)
+                  (primitive-invoke class
+                                    :method-signature-for-selector
+                                    'id
+                                    selector))
+              (error (make-condition 'message-not-understood
+                                     :class class
+                                     :selector selector))))
          (argc (primitive-invoke signature 'number-of-arguments :unsigned-int))
          (method-return-typestring (primitive-invoke signature
                                                      'method-return-type

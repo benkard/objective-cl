@@ -32,6 +32,10 @@
            #:selector
            #:exception
 
+           ;; Conditions
+           #:message-not-understood
+           #:no-such-selector
+
            ;; Metaclasses
            #:objective-c-class))
 

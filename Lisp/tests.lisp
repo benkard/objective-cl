@@ -206,8 +206,12 @@
   (:tests
    ((ensure (typep (handler-case
                        [NSString selph]
-                     (exception (e) e))
-                   'exception)))))
+                     (error (e) e))
+                   '(or no-such-selector message-not-understood))))
+   ((ensure (typep (handler-case
+                       [NSObject string]
+                     (error (e) e))
+                   'message-not-understood)))))
 
 
 (deftestsuite reader-syntax (objective-cl)

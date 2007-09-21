@@ -13,12 +13,14 @@
                  (:file "name-conversion"    :depends-on ("defpackage"))
                  (:file "internal-utilities" :depends-on ("defpackage"))
                  (:file "weak-hash-tables"   :depends-on ("defpackage"))
+                 (:file "conditions"         :depends-on ("defpackage"))
                  (:file "libobjcl"           :depends-on ("defpackage"
                                                           "constant-data"
                                                           "data-types"
                                                           "name-conversion"
                                                           "internal-utilities"
-                                                          "parameters"))
+                                                          "parameters"
+                                                          "conditions"))
                  (:file "init"               :depends-on ("libobjcl"))
                  (:file "method-invocation"  :depends-on ("defpackage"
                                                           "name-conversion"
@@ -26,7 +28,8 @@
                                                           "libobjcl"
                                                           "internal-utilities"
                                                           "parameters"
-                                                          "init"))
+                                                          "init"
+                                                          "conditions"))
                  (:file "memory-management"  :depends-on ("defpackage"
                                                           "init"
                                                           "weak-hash-tables"

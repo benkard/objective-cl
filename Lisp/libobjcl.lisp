@@ -370,8 +370,7 @@ If *selector-designator* is a __selector__, it is simply returned.
     (symbol (selector (list designator)))
     ((or string list)
      (or (find-selector designator)
-         (error "Could not find the selector designated by ~S."
-                designator)))))
+         (error (make-condition 'no-such-selector :designator designator))))))
 
 
 (defun parse-typespec (typestring &optional (start 0))
