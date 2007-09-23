@@ -182,7 +182,6 @@ an __exception__, you can simply send it the `self' message.
     (list* 'struct '() name (mapcar #'type-info children))))
 
 
-
 (defgeneric objcl-eql (obj1 obj2))
 (defmethod objcl-eql ((obj1 c-pointer-wrapper) (obj2 c-pointer-wrapper))
   (pointer-eq (pointer-to obj1) (pointer-to obj2)))

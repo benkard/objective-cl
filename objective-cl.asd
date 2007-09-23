@@ -14,14 +14,17 @@
                  (:file "internal-utilities" :depends-on ("defpackage"))
                  (:file "weak-hash-tables"   :depends-on ("defpackage"))
                  (:file "conditions"         :depends-on ("defpackage"))
+                 (:file "performance-hacks"  :depends-on ("defpackage"))
                  (:file "libobjcl"           :depends-on ("defpackage"
                                                           "constant-data"
                                                           "data-types"
                                                           "name-conversion"
                                                           "internal-utilities"
                                                           "parameters"
-                                                          "conditions"))
-                 (:file "init"               :depends-on ("libobjcl"))
+                                                          "conditions"
+                                                          "memory-management"))
+                 (:file "init"               :depends-on ("defpackage"
+                                                          "libobjcl"))
                  (:file "method-invocation"  :depends-on ("defpackage"
                                                           "name-conversion"
                                                           "data-types"
@@ -29,12 +32,10 @@
                                                           "internal-utilities"
                                                           "parameters"
                                                           "init"
-                                                          "conditions"))
+                                                          "conditions"
+                                                          "memory-management"))
                  (:file "memory-management"  :depends-on ("defpackage"
-                                                          "init"
                                                           "weak-hash-tables"
-                                                          "data-types"
-                                                          "method-invocation"
                                                           "parameters"))
                  (:file "reader-syntax"      :depends-on ("defpackage"
                                                           "method-invocation"))

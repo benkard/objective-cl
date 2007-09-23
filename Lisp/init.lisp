@@ -4,6 +4,8 @@
 
 (eval-when (:load-toplevel)
   (unless (boundp '+nil+)
+    ;; As nil is never deallocated, we can safely use MAKE-INSTANCE
+    ;; here.
     (defconstant +nil+
       (make-instance 'id :pointer (objcl-get-nil))))
   (unless (boundp '+yes+)

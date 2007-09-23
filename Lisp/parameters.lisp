@@ -3,8 +3,11 @@
 
 (defvar *runtime-initialisation-level* 0)
 
-(defvar *skip-finalization*  nil)
 (defvar *skip-retaining* nil)
+
+(defvar *in-make-pointer-wrapper-p* nil
+  "A debugging tool that helps identify direct MAKE-INSTANCE calls that
+ought not be there.")
 
 (defvar *trace-method-calls* nil
   "Whether to print trace messages of all Objective C method calls.

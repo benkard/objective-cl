@@ -206,10 +206,10 @@ conventional case for namespace identifiers in Objective C."
   (let ((class-ptr (%objcl-find-class class-name)))
     (if (cffi:null-pointer-p class-ptr)
         nil
-        #-openmcl (make-instance 'objc-class :pointer class-ptr)
-        #+openmcl (change-class (make-instance 'c-pointer-wrapper
-                                   :pointer value)
-                                'objc-class))))
+        #-(or t openmcl) (make-pointer-wrapper 'objc-class :pointer class-ptr)
+        #+(and nil openmcl) (change-class (make-pointer-wrapper 'c-pointer-wrapper
+                                             :pointer value)
+                                          'objc-class))))
 
 
 (declaim (ftype (function (string) (or null selector))
@@ -218,7 +218,7 @@ conventional case for namespace identifiers in Objective C."
   (let ((selector-ptr (%objcl-find-selector selector-name)))
     (if (cffi:null-pointer-p selector-ptr)
         nil
-        (make-instance 'selector :pointer selector-ptr))))
+        (make-pointer-wrapper 'selector :pointer selector-ptr))))
 
 
 (declaim (ftype (function ((or objc-class id exception)) string)
@@ -306,11 +306,11 @@ by which __invoke__ converts its arguments into a *message name*.
   (%objcl-object-is-meta-class (pointer-to obj)))
 
 (defun object-get-class (obj)
-  (make-instance 'objc-class
+  (make-pointer-wrapper 'objc-class
      :pointer (%objcl-object-get-class (pointer-to obj))))
 
 (defun object-get-meta-class (obj)
-  (make-instance 'objc-meta-class
+  (make-pointer-wrapper 'objc-meta-class
      :pointer (%objcl-object-get-meta-class (pointer-to obj))
      :meta-class-for-class (object-get-class obj)))
 

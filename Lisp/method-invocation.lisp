@@ -254,7 +254,7 @@ easier to use with __apply__.
                                                 return-c-type)))
                      (if (cffi:null-pointer-p pointer)
                          nil
-                         (make-instance return-type :pointer pointer))))
+                         (make-pointer-wrapper return-type :pointer pointer))))
                   ((:void) (values))
                   (otherwise (cffi:mem-ref return-value-cell
                                            return-c-type)))))))))))
@@ -402,7 +402,7 @@ easier to use with __apply__.
                (let ((*skip-retaining*
                       (or *skip-retaining*
                           (constructor-name-p (selector-name selector)))))
-                 (make-instance (car return-type)
+                 (make-pointer-wrapper (car return-type)
                     :pointer (cffi:mem-ref objc-return-value-cell
                                            return-c-type))))
               ((:void) (values))
