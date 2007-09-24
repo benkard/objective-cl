@@ -1,0 +1,111 @@
+-*- mode: muse -*-
+
+* 2007-09-23, 17:09:07 CEST
+
+** Improved Memory Management for the Masses
+
+Up until now, the second-generation method invocation procedures
+(LOW-LEVEL-INVOKE and PRIMITIVE-INVOKE) simply called MAKE-INSTANCE for
+every object received from Objective-C, which meant that although a
+lookup in the caching hash tables was done, method dispatch for
+MAKE-INSTANCE was needed.  Therefore, everything just worked, but did so
+slowly.
+
+I realised yesterday, after having profiled the code and detected that
+MAKE-INSTANCE method dispatch was the speed bottleneck of INVOKE calls
+now, that overriding MAKE-INSTANCE wasn't really necessary for memory
+management, as we could put instances into the hash tables and register
+finalisers for them just after they were fully created.
+
+So that's what I made the program do.  One of the results is much
+shorter and clearer code, but the more interestng one is a speed
+improvement of around the factor 3, making 100'000 calls to
+NSMethodSignature#getArgumentTypeAtIndex:, which previously called
+MAKE-INSTANCE for each returned value, take around 10s on my machine.
+With the CFFI speed hack enabled, caching CFFI::PARSE-TYPE results, this
+figure even goes down to around 2s (that's 50'000 method calls per
+second).
+
+I think that's pretty cool.  I'm quite satisfied with method invocation
+performance now.  Compared to C, We're still off by a factor of 22 or so
+(0.9s for 1'000'000 method calls).  Most of the time is spent on memory
+allocation for argument passing and typespec strings.  By introducing a
+global pool of preallocated memory spaces for these purposes (one
+argument space per thread and maybe a bunch of string buffers, with a
+fallback mechanism for method calls that take too much space), we might
+be able to cut the run time by another factor of 5.  After that, we
+can't optimise the Lisp code any further, because most of the rest of
+the time is spent within the Objective-C function
+objcl_invoke_with_types (or maybe in calling it via CFFI, which would be
+even worse, optimisationwise).
+
+It's probably best not to spend too much time pondering this, though,
+because without the CFFI speed hack, the improvement would probably not
+be noticeable, anyway (CFFI::PARSE-TYPE is most often called by
+CFFI:MEM-REF and CFFI:MEM-AREF, not by the allocation routines).
+
+
+** Milestones Lying Ahead
+
+There are three things left to do that are showstoppers against actually
+using Objective-CL productively.  One is support for structs.  This one
+is actually quite a bit harder than it looks, because we don't
+necessarily know the structure of foreign objects.  Objective-C tells us
+about the structure (though not the member naming!) of structures as
+well as pointers to structures that are returned by methods, but any
+more indirection (that is, pointers to pointers to structs or something
+even hairier) makes the Objective-C runtime conceal the internals of the
+structs pointed to.  This is probably not a problem in practise, though,
+as pointers to pointers to structs will usually mean a pointer that the
+user may alter in order to point to other structs, not that the user
+will access the structs that are pointed to.  In fact, it will probably
+be best to just pass pointers on to the user.
+
+The second thing left to do is support for defining Objective-C classes.
+I think this is going to be hard.  I've not looked at the problem in
+detail yet, but it looks like creating methods and classes, and
+registering methods and classes are all different actions that are all
+handled differently depending on the runtime.  In the case of GNUstep, I
+don't even know how to register new selectors yet.
+
+Third, varargs.  These are easy to implement, but I'm not sure how they
+should look like in the case of INVOKE.  Maybe a special keyword
+indicator like :* would work for indicating the end of the method name,
+but I think that could be a bit ugly.
+
+We shall see.
+
+
+** OpenMCL and Objective-CL Compared
+
+On another note, I briefly checked out OpenMCL's support for Objective-C
+by randomly typing a bunch of method invocations into the listener and
+calling APROPOS a lot.  Here's what stuck:
+
+1. You have to explicitely create selectors by using @SELECTOR.  Why is
+that?  What's wrong with symbols and strings?
+
+2. Strings designate only NSString objects, not C strings.  Why?
+
+3. The bridge is just as fast as I expect using libffi from C to be on
+that machine, that is, more than 20 times as fast as Objective-CL with
+the speed hack enabled (250'000 method calls per second; my Inspiron is
+faster, so don't compare this value to the ones above).
+
+4. There's no FIND-OBJC-CLASS, but FIND-CLASS works.  Objective-C
+classes seem to be normal CLOS classes whose names are found in the NS
+package.
+
+All in all, what struck me the most was the fact that the OpenMCL
+Objective-C bridge does not seem to make use of the concept of
+designators as much as Objective-CL does.  You have to define C strings
+and selectors explicitely, which I consider a minor annoyance.  It's
+faster, though.  Then again, considering that it's integrated into the
+compiler, I was bit disappointed by the speed, because I figured that a
+native-code compiler could do better than libffi (which is still a lot
+slower than directly calling stuff from Objective-C).
+
+
+** By The Way
+
+Gorm rules.  We need to make Objective-CL fully Gorm-compatible.
