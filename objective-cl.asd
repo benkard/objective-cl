@@ -44,5 +44,6 @@
                                                           "method-invocation"
                                                           "data-types"))
                  (:file "compiler-macros"    :depends-on ("defpackage"
-                                                          "method-invocation")))))
+                                                          "method-invocation"
+                                                          "conditions")))))
   :serial t)

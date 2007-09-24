@@ -15,7 +15,7 @@
                                             (serious-condition ()
                                               (warn
                                                (make-condition
-                                                'style-warning
+                                                'simple-style-warning
                                                 :format-control
                                                 "~S designates an unknown ~
                                                  method selector."
@@ -38,7 +38,7 @@
                              (selector ,method-name)
                            (serious-condition ()
                              (warn
-                              (make-condition 'style-warning
+                              (make-condition 'simple-style-warning
                                               :format-control
                                               "~S designates an unknown ~
                                                method selector."
@@ -60,7 +60,7 @@
                            (selector ',method-name)
                          (serious-condition ()
                            (warn
-                            (make-condition 'style-warning
+                            (make-condition 'simple-style-warning
                                             :format-control
                                             "~S designates an unknown ~
                                                method selector."
