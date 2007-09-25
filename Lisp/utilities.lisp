@@ -117,7 +117,7 @@
         (format stream "#.~S" '+nil+)
         (print-unreadable-object (object stream)
           (format stream "~A `~A' {~X}"
-                  (objcl-class-name (primitive-invoke object "class" 'id))
+                  (objc-class-name (primitive-invoke object "class" 'id))
                   (primitive-invoke (primitive-invoke object "description" 'id)
                                     "UTF8String" :string)
                   (cffi:pointer-address pointer))))))
@@ -128,7 +128,7 @@
     (with-slots (pointer) class
       (format stream "~S ~A {~X}"
               (type-of class)
-              (objcl-class-name class)
+              (objc-class-name class)
               (cffi:pointer-address pointer)))))
 
 
@@ -137,7 +137,7 @@
     (with-slots (meta-class-for-class pointer) meta-class
       (format stream "~S ~A {~X}"
               (type-of meta-class)
-              (objcl-class-name meta-class-for-class)
+              (objc-class-name meta-class-for-class)
               (cffi:pointer-address pointer)))))
 
 

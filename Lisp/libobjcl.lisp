@@ -239,8 +239,8 @@ conventional case for namespace identifiers in Objective C."
 
 
 (declaim (ftype (function ((or objc-class id exception)) string)
-                objcl-class-name))
-(defun objcl-class-name (class)
+                objc-class-name))
+(defun objc-class-name (class)
   (declare (type (or objc-class id exception) class))
   (%objcl-class-name (pointer-to class)))
 
