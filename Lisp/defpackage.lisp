@@ -28,6 +28,8 @@
            #:invoke
            #:find-objc-class
            #:find-selector
+           #:objc-class-name
+           #:selector-name
            #:selector
 
            ;; Generic functions

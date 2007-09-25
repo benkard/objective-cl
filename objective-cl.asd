@@ -25,7 +25,8 @@
   ((:module "Lisp"
     :components ((:file "defpackage")
                  (:file "constant-data"      :depends-on ("defpackage"))
-                 (:file "data-types"         :depends-on ("defpackage"))
+                 (:file "data-types"         :depends-on ("defpackage"
+                                                          "conditions"))
                  (:file "parameters"         :depends-on ("defpackage"))
                  (:file "name-conversion"    :depends-on ("defpackage"))
                  (:file "internal-utilities" :depends-on ("defpackage"))

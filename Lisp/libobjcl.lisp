@@ -52,6 +52,9 @@
 (defcfun ("objcl_find_class" %objcl-find-class) :pointer
   (class-name :string))
 
+(defcfun ("objcl_find_meta_class" %objcl-find-meta-class) :pointer
+  (class-name :string))
+
 (defcfun ("objcl_class_name" %objcl-class-name) :string
   (class :pointer))
 
@@ -221,12 +224,38 @@ conventional case for namespace identifiers in Objective C."
                 find-objc-class-by-name))
 (defun find-objc-class-by-name (class-name)
   (let ((class-ptr (%objcl-find-class class-name)))
-    (if (cffi:null-pointer-p class-ptr)
+    (if (objc-pointer-null class-ptr)
         nil
         #-(or t openmcl) (make-pointer-wrapper 'objc-class :pointer class-ptr)
         #+(and nil openmcl) (change-class (make-pointer-wrapper 'c-pointer-wrapper
                                              :pointer value)
                                           'objc-class))))
+
+
+(defun find-objc-meta-class (meta-class-name &optional errorp)
+  (let ((meta-class
+         (etypecase meta-class-name
+           (string (find-objc-meta-class-by-name meta-class-name))
+           (symbol (find-objc-meta-class-by-name
+                    (symbol->objc-class-name meta-class-name))))))
+    (or meta-class (if errorp
+                       (error "Found no Objective C metaclass named ~S."
+                              meta-class-name)
+                       nil))))
+
+
+(defun find-objc-meta-class-by-name (class-name)
+  (let ((class-ptr (%objcl-find-meta-class class-name)))
+    (if (objc-pointer-null class-ptr)
+        nil
+        #-(or t openmcl) (make-pointer-wrapper 'objc-meta-class :pointer class-ptr)
+        #+(and nil openmcl) (change-class (make-pointer-wrapper 'c-pointer-wrapper
+                                             :pointer value)
+                                          'objc-meta-class))))
+
+(defun objc-pointer-null (pointer)
+  (or (cffi:null-pointer-p pointer)
+      (cffi:pointer-eq pointer (objcl-get-nil))))
 
 
 (declaim (ftype (function (string) (or null selector))
@@ -251,7 +280,7 @@ conventional case for namespace identifiers in Objective C."
   (%objcl-selector-name (pointer-to selector)))
 
 
-(declaim (ftype (function ((or id objc-class exception) selector) *)
+(declaim (ftype (function ((or id objc-class exception) selector) t)
                 get-method-implementation))
 (defun get-method-implementation (object selector)
   (declare (type selector selector))

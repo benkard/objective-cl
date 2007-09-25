@@ -43,6 +43,9 @@ objcl_invoke_with_types (int argc,
 Class
 objcl_find_class (const char *class_name);
 
+Class
+objcl_find_meta_class (const char *class_name);
+
 SEL
 objcl_find_selector (const char *selector_name);
 

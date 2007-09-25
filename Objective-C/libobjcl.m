@@ -128,7 +128,27 @@ objcl_invoke_with_types (int argc,
 Class
 objcl_find_class (const char *class_name)
 {
+#ifdef __NEXT_RUNTIME__
+  return objc_lookUpClass (class_name);
+#else
   return NSClassFromString ([NSString stringWithUTF8String: class_name]);
+#endif
+}
+
+
+Class
+objcl_find_meta_class (const char *class_name)
+{
+#ifdef __NEXT_RUNTIME__
+  return objc_getMetaClass (class_name);
+#else
+  /* FIXME: Is this correct? */
+  Class class = objcl_find_class (class_name);
+  if (class == NULL || class == nil)
+    return NULL;
+  else
+    return class_get_meta_class (class);
+#endif
 }
 
 
