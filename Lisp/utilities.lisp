@@ -33,11 +33,12 @@
 
 
 (defun id-equal (x y)
-  (truep (if (typep x '(or id objc-class exception))
-             (primitive-invoke x :is-equal :char y)
-             (progn
-               (assert (typep y '(or id objc-class exception)))
-               (primitive-invoke y :is-equal :char x)))))
+  (or (id-eql x y)
+      (truep (if (typep x '(or id objc-class exception))
+                 (primitive-invoke x :is-equal :char y)
+                 (progn
+                   (assert (typep y '(or id objc-class exception)))
+                   (primitive-invoke y :is-equal :char x))))))
 
 
 (defun objc-typep (x class-designator)
