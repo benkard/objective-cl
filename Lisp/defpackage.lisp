@@ -37,8 +37,8 @@
            #:objc-equal
 
            ;; Macros
-           #:define-objc-struct
-           #:define-objc-union
+           #+(or) #:define-objc-struct
+           #+(or) #:define-objc-union
 
            ;; Special variables
            #:*trace-method-calls*

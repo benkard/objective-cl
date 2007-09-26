@@ -37,7 +37,19 @@
              ;; The CLHS forbids the use of WITH-SLOTS for conditions.
              (format stream
                      "~S does not designate a known selector."
-                     (rejected-selector-designator condition)))))
+                     (rejected-selector-designator condition))))
+  (:documentation "Someone tried to dereference an invalid method selector.
+
+## Description:
+
+A **condition** of **type** __no-such-selector__ is **signal**led when
+an attempt is made to retrieve a method selector by name, and that
+selector cannot be found.  This is most often the case when a typo is
+made in the message name part of a method invocation.
+
+Note that this error will, at present, never be signalled on Mac OS X,
+because __find-selector__ automatically interns selectors on that
+system.  This behaviour is subject to change."))
 
 
 (define-condition message-not-understood (error)
@@ -48,6 +60,19 @@
   (:report (lambda (condition stream)
              (format stream
                      "The Objective-C class ~S does not understand the ~
-                         message ~S."
+                      message ~S."
                      (rejecting-class condition)
-                     (rejected-selector condition)))))
+                     (rejected-selector condition))))
+  (:documentation "The runtime is unable to retrieve the signature of a method.
+
+## Description:
+
+A **condition** of **type** __message-not-understood__ is **signal**led
+when an attempt is made to call a method on an object that knows nothing
+of it and can therefore not provide signature information for the
+method.  This is most often the case when an object is used at a place
+that expects an object of a different Objective-C type (that is, it can
+be regarded as a kind of type error), although it can also happen when a
+typo is made in the message name part of a method invocation and a
+__no-such-selector__ error is not **signal**led (on Mac OS X, for
+example)."))

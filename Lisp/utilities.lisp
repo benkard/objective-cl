@@ -18,8 +18,127 @@
 (in-package #:mulk.objective-cl)
 
 
-(defgeneric objc-eql (x y))
-(defgeneric objc-equal (x y))
+(defgeneric objc-eql (x y)
+  (:documentation "Test whether two references point to the same object.
+
+## Arguments and Values:
+
+*x* --- an **object**.
+
+*y* --- an **object**.
+
+Returns: *the-same-p* --- a **generalized boolean**.
+
+
+## Description:
+
+If at least one of the **object**s *x* and *y* is not an Objective-C
+instance wrapper, __objc-eql__ behaves the same as __eql__.
+
+For Objective-C instance wrappers, __objc-eql__ compares the pointers
+represented by these instances.  If the pointers are _pointer-eq_ (see
+the [CFFI manual][] for details), __objc-eql__ returns **true**.
+Otherwise, it returns **false**.
+
+
+## Examples:
+
+    (objc-eql (find-objc-class 'ns-string)
+              (find-objc-class 'ns-string))
+     ;=> T
+
+    (objc-eql (find-objc-class 'ns-string)
+              (find-objc-class 'ns-object))
+     ;=> NIL
+
+    (setq greeting1 (invoke (find-objc-class 'ns-string)
+                            :string-with-u-t-f-8-string \"Mulk.\"))
+     ;=> #<GSCBufferString `Mulk.' {8109A38}>
+
+    (setq greeting2 (invoke (find-objc-class 'ns-string)
+                            :string-with-u-t-f-8-string \"Mulk.\"))
+     ;=> #<GSCBufferString `Mulk.' {8109DB0}>
+
+    (objc-equal greeting1 greeting2)
+     ;=> T
+
+    (objc-eql greeting1 greeting2)
+     ;=> NIL
+
+    (objc-equal greeting1 greeting1)
+     ;=> T
+
+    (objc-eql greeting1 greeting1)
+     ;=> T
+
+
+## See Also:
+
+  __objc-equal__
+
+[CFFI manual]: http://common-lisp.net/project/cffi/manual/html_node/index.html"))
+
+
+(defgeneric objc-equal (x y)
+  (:documentation "Test whether two objects are equal.
+
+## Arguments and Values:
+
+*x* --- an **object**.
+
+*y* --- an **object**.
+
+Returns: *equal-p* --- a **generalized boolean**.
+
+
+## Description:
+
+If at least one of the **object**s *x* and *y* is not an Objective-C
+instance wrapper, __objc-equal__ behaves the same as __equal__.
+
+For Objective-C instance wrappers, __objc-equal__ behaves the same as
+`(or (objc-eql x y) (invoke x :is-equal y) (invoke y :is-equal x))`,
+except that it converts the return values of the invocations into
+**generalized boolean**s before evaluating said expression.  (Please
+note that, as there is no way to distinguish methods that return
+booleans from those that return numbers in the Objective-C runtime, the
+invocations will return numbers.)
+
+
+## Examples:
+
+    (objc-equal (find-objc-class 'ns-string)
+                (find-objc-class 'ns-string))
+     ;=> T
+
+    (objc-equal (find-objc-class 'ns-string)
+                (find-objc-class 'ns-object))
+     ;=> NIL
+
+    (setq greeting1 (invoke (find-objc-class 'ns-string)
+                            :string-with-u-t-f-8-string \"Mulk.\"))
+     ;=> #<GSCBufferString `Mulk.' {8109A38}>
+
+    (setq greeting2 (invoke (find-objc-class 'ns-string)
+                            :string-with-u-t-f-8-string \"Mulk.\"))
+     ;=> #<GSCBufferString `Mulk.' {8109DB0}>
+
+    (objc-equal greeting1 greeting2)
+     ;=> T
+
+    (objc-eql greeting1 greeting2)
+     ;=> NIL
+
+    (objc-equal greeting1 greeting1)
+     ;=> T
+
+    (objc-eql greeting1 greeting1)
+     ;=> T
+
+
+## See Also:
+
+  __objc-eql__, __invoke__"))
 
 
 (defun truep (b)

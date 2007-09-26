@@ -23,16 +23,6 @@
   `(progn ,@body))
 
 
-(declaim (ftype (function (symbol * &rest *))))
-(defun apply-macro (macro-name arg &rest args)
-  "Because FOREIGN-FUNCALL is a macro.  Why, oh why is this?"
-  (funcall
-   (compile nil
-            `(lambda ()
-               (,macro-name ,@(butlast (cons arg args))
-                            ,@(car (last (cons arg args))))))))
-
-
 (defmacro with-foreign-string-pool ((register-fn-name) &body body)
   (let ((pool-var (gensym)))
     `(let ((,pool-var (list)))

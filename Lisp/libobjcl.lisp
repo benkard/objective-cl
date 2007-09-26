@@ -270,12 +270,79 @@ conventional case for namespace identifiers in Objective C."
 (declaim (ftype (function ((or objc-class id exception)) string)
                 objc-class-name))
 (defun objc-class-name (class)
+  "Find the name of a class.
+
+## Arguments and Values:
+
+*class* --- an **object** of **type** __objc-id__ or __objc-class__.
+
+Returns: *name* --- a **string**.
+
+
+## Description:
+
+__objc-class-name__ returns the name of *class*.
+
+
+## Examples:
+
+    (objc-class-name (find-objc-class 'ns-object))  ;=> \"NSObject\"
+
+
+## Note:
+
+If *x* is an **object** of **type** __objc-id__ or __objc-class__:
+
+    (objc-eql x (find-objc-class (objc-class-name x)))  ;=> T
+
+If *name* is the name of an existing class:
+
+    (equal name (objc-class-name (find-objc-class name)))  ;=> T
+
+
+## See Also:
+
+  __find-objc-class__"
   (declare (type (or objc-class id exception) class))
   (%objcl-class-name (pointer-to class)))
 
 
 (declaim (ftype (function (selector) string) selector-name))
 (defun selector-name (selector)
+  "Find the name of a selector.
+
+## Arguments and Values:
+
+*selector* --- an **object** of **type** __selector__.
+
+Returns: *name* --- a **string**.
+
+
+## Description:
+
+__selector-name__ returns the name of *selector*.
+
+
+## Examples:
+
+    (selector-name (selector '(:string-with-c-string :encoding)))
+     ;=> \"stringWithCString:encoding:\"
+
+
+## Note:
+
+If *x* is an **object** of **type** __selector__:
+
+    (objc-equal x (find-selector (selector-name x)))  ;=> T
+
+If *name* is the name of an existing selector:
+
+    (equal name (selector-name (find-selector name)))  ;=> T
+
+
+## See Also:
+
+  __find-selector__, __selector__"
   (declare (type selector selector))
   (%objcl-selector-name (pointer-to selector)))
 
