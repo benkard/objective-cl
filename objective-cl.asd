@@ -43,7 +43,11 @@
                                                           "memory-management"))
                  (:file "init"               :depends-on ("defpackage"
                                                           "libobjcl"))
+                 (:file "type-handling"      :depends-on ("defpackage"
+                                                          "libobjcl"
+                                                          "init"))
                  (:file "method-invocation"  :depends-on ("defpackage"
+                                                          "type-handling"
                                                           "name-conversion"
                                                           "data-types"
                                                           "libobjcl"
