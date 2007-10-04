@@ -23,6 +23,10 @@
   `(progn ,@body))
 
 
+(defun featurep (symbol)
+  (member symbol *features*))
+
+
 (defmacro with-foreign-string-pool ((register-fn-name) &body body)
   (let ((pool-var (gensym)))
     `(let ((,pool-var (list)))

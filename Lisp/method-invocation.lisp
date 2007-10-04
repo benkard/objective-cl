@@ -298,7 +298,7 @@ easier to use with __apply__.
          (method-return-typestring (primitive-invoke signature
                                                      'method-return-type
                                                      :string))
-         (method-return-type (parse-typespec method-return-typestring))
+         (method-return-type (parse-typespec method-return-typestring t))
          (method-arg-typestrings (loop for x from 0 below argc
                                        collect (primitive-invoke
                                                          signature

@@ -96,7 +96,8 @@
                                         "Klum.")))
    ((ensure-same +yes+
                  (primitive-invoke (find-objc-class 'ns-string)
-                                   :is-subclass-of-class :char
+                                   :is-subclass-of-class
+                                   (first (parse-typespec "c" t))
                                    (find-objc-class 'ns-object))))
    ;; performSelector:withObject: cannot be used with non-id return
    ;; types.
@@ -169,13 +170,9 @@
                  '(pointer ()
                    (array () 100
                     (struct () "?" (:int ()) (:int ()))))))
-   ((ensure-same (parse-typespec "{?=BcCsSiIlLqQfd@#:*?}")
+   ((ensure-same (parse-typespec "{?=BiIlLqQfd@#:*?}")
                  '(struct () "?"
                    (:boolean ())
-                   (:char ())
-                   (:unsigned-char ())
-                   (:short ())
-                   (:unsigned-short ())
                    (:int ())
                    (:unsigned-int ())
                    (:long ())
@@ -187,6 +184,24 @@
                    (id ()) (objc-class ()) (selector ())
                    (:string ())
                    (:unknown ()))))
+   ((ensure (let ((funky-spec (parse-typespec "{?=cC}")))
+              (member funky-spec
+                      '((struct () "?"
+                         (:char ())
+                         (:unsigned-char ()))
+                        (struct () "?"
+                         (:int ())
+                         (:unsigned-int ())))
+                      :test #'equalp))))
+   ((ensure (let ((funky-spec (parse-typespec "{?=sS}")))
+              (member funky-spec
+                      '((struct () "?"
+                         (:short ())
+                         (:unsigned-short ()))
+                        (struct () "?"
+                         (:int ())
+                         (:unsigned-int ())))
+                      :test #'equalp))))
    ((ensure-same (parse-typespec "{Mulk=*{Untermulk={Unteruntermulk=}}i}")
                  '(struct () "Mulk"
                    (:string ())

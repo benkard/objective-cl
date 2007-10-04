@@ -18,7 +18,7 @@
 (in-package #:mulk.objective-cl)
 
 
-(defun parse-typespec (typestring &optional (start 0))
+(defun parse-typespec (typestring &optional return-type-p (start 0))
   "Parse a typestring like \"@0:4{_NSRange=II}8\" into something like (ID ()).
 
 \"rn{_NSRange=II}8\" is parsed into (STRUCT (CONST IN)
@@ -79,6 +79,7 @@ Returns: (VALUES typespec byte-position string-position)"
                                                               new-string-pos)
                                             (parse-typespec
                                              typestring
+                                             nil
                                              string-position)
                                           (declare (ignore byte-position))
                                           (setq string-position new-string-pos)
@@ -88,7 +89,9 @@ Returns: (VALUES typespec byte-position string-position)"
               (#\^ (list 'pointer
                          qualifiers
                          (multiple-value-bind (typespec byte-pos new-str-pos)
-                             (parse-typespec typestring (1+ string-position))
+                             (parse-typespec typestring
+                                             nil
+                                             (1+ string-position))
                            (declare (ignore byte-pos))
                            (prog1 typespec
                                   (setq string-position new-str-pos)))))
@@ -101,7 +104,7 @@ Returns: (VALUES typespec byte-position string-position)"
                            (prog1 count
                                   (setq string-position new-str-pos)))
                          (multiple-value-bind (typespec byte-pos new-str-pos)
-                             (parse-typespec typestring string-position)
+                             (parse-typespec typestring nil string-position)
                            (declare (ignore byte-pos))
                            ;; Skip end marker (right bracket).
                            (prog1 typespec
@@ -110,7 +113,7 @@ Returns: (VALUES typespec byte-position string-position)"
                (list 'complex
                      qualifiers
                      (multiple-value-bind (typespec byte-pos new-str-pos)
-                         (parse-typespec typestring (1+ string-position))
+                         (parse-typespec typestring nil (1+ string-position))
                        (declare (ignore byte-pos))
                        (prog1 typespec
                               (setq string-position new-str-pos)))))
@@ -126,7 +129,7 @@ Returns: (VALUES typespec byte-position string-position)"
                  (multiple-value-setq (bit-field-typespec
                                        byte-position
                                        string-position)
-                     (parse-typespec typestring string-position))
+                     (parse-typespec typestring nil string-position))
                  (multiple-value-setq (bit-field-length string-position)
                      (parse-integer typestring
                                     :start string-position
@@ -138,11 +141,31 @@ Returns: (VALUES typespec byte-position string-position)"
                        bit-field-typespec)))
               (otherwise
                (prog1 (list (case init-char
-                              (#\B :boolean)
-                              (#\c :char)
-                              (#\C :unsigned-char)
-                              (#\s :short)
-                              (#\S :unsigned-short)
+                              (#\B :boolean) ;XXX :int?
+                              (#\c (if (or return-type-p
+                                           (eq +runtime-type+ :gnu)
+                                           (and (eq +runtime-type+ :next)
+                                                (featurep 'cffi-features:ppc32)))
+                                       :int
+                                       :char))
+                              (#\C (if (or return-type-p
+                                           (eq +runtime-type+ :gnu)
+                                           (and (eq +runtime-type+ :next)
+                                                (featurep 'cffi-features:ppc32)))
+                                       :unsigned-int
+                                       :unsigned-char))
+                              (#\s (if (or return-type-p
+                                           (eq +runtime-type+ :gnu)
+                                           (and (eq +runtime-type+ :next)
+                                                (featurep 'cffi-features:ppc32)))
+                                       :int
+                                       :short))
+                              (#\S (if (or return-type-p
+                                           (eq +runtime-type+ :gnu)
+                                           (and (eq +runtime-type+ :next)
+                                                (featurep 'cffi-features:ppc32)))
+                                       :unsigned-int
+                                       :unsigned-short))
                               (#\i :int)
                               (#\I :unsigned-int)
                               (#\l :long)

@@ -152,12 +152,17 @@ invocations will return numbers.)
 
 
 (defun id-equal (x y)
+  ;; Note that we have to use INVOKE rather than PRIMITIVE-INVOKE here,
+  ;; because we don't know wheter BOOL == char.  We don't even know
+  ;; whether the typespec "c" indicates a char or an int, for that
+  ;; matter (it only does so on NeXT/x86, but neither on GNUstep nor on
+  ;; NeXT/ppc32).
   (or (id-eql x y)
       (truep (if (typep x '(or id objc-class exception))
-                 (primitive-invoke x :is-equal :char y)
+                 (invoke x :is-equal y)
                  (progn
                    (assert (typep y '(or id objc-class exception)))
-                   (primitive-invoke y :is-equal :char x))))))
+                   (invoke y :is-equal x))))))
 
 
 (defun objc-typep (x class-designator)

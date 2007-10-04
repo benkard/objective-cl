@@ -1,5 +1,72 @@
 -*- mode: muse -*-
 
+* 2007-10-04, 16:52:32 CEST
+
+** `char' Does Not Indicate a Char, Continued
+
+There's a good chance that I've figured out what to do about the
+char/int mess.  As it turns out, it isn't even limited to chars, as
+shorts are affected, too.  According to the code I took from PyObjC,
+specifically the typespec conversion functions in libffi_support.m, both
+GNUstep and NeXT/PowerPC treat chars and shorts as ints.  The only
+platform that isn't brain-damaged in this way seems to be NeXT/x86.  Or
+maybe it's even more brain-damaged, as it treats shorts and chars
+normally when they are used as arguments, but as ints when they're used
+as return values!  At least GNUstep and NeXT/PowerPC are brain-damaged
+in a *consistent* manner.
+
+I figure the reason I never saw this problem in GNUstep is probably
+endianness.  The little-endian x86 lets you treat pointers to ints as
+pointers to chars without breaking anything, but that doesn't work in
+big-endian machines.
+
+
+* 2007-10-04, 13:02:31 CEST
+
+** `char' Does Not Indicate a Char
+
+In principle, the typespec "c" is supposed indicate a char.  Now look at
+the following SLIME session transcript (SBCL/PowerPC on Mac OS X):
+
+OBJECTIVE-CL> (defparameter *tmp*
+                (invoke (find-objc-class 'ns-string)
+                        :string-with-u-t-f-8-string "Mulk."))
+*TMP*
+OBJECTIVE-CL> (defparameter *tmp2*
+                (invoke (find-objc-class 'ns-string)
+                        :string-with-u-t-f-8-string "Mulk."))
+*TMP2*
+OBJECTIVE-CL> (second  ;return type specifier
+               (multiple-value-list
+                (retrieve-method-signature-info (find-objc-class 'ns-string)
+                                                (selector :is-equal))))
+"c"
+OBJECTIVE-CL> (invoke *tmp* :is-equal *tmp2*)
+0
+OBJECTIVE-CL> (primitive-invoke *tmp* :is-equal :char *tmp2*)
+0
+OBJECTIVE-CL> (primitive-invoke *tmp* :is-equal :int *tmp2*)
+1
+OBJECTIVE-CL> (primitive-invoke *tmp* :is-equal :long *tmp2*)
+1
+OBJECTIVE-CL> (primitive-invoke *tmp* :is-equal :long-long *tmp2*)
+4294967296
+
+Now, I see why the last value is bogus (I'd be surprised if it weren't,
+actually), but why the heck is the correct value (1, because, you see,
+the strings *are* equal and +YES+ is 1 on my machine) returned only for
+the wrong return type?  The return type is specified as `c', but it's
+actually an int!  What's going on here?  And rather more importantly:
+What can I do about this?  I don't feel exactly comfortable about
+cheating and treating `c' as specifying an int on all systems based on
+the NeXT runtime without having any indication about what else there is
+in the NeXT runtime that has to be special-cased.  I haven't seen this
+weird behaviour documented anywhere.  Even this specific case is
+non-trivial, for I don't know whether this applies to all chars, or only
+to chars that are booleans, or only to chars that are returned, or even
+only to chars that are returned *and* are actually booleans.
+
+
 * 2007-09-26, 00:13:11 CEST
 
 ** Licensing
