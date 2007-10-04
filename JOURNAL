@@ -1,5 +1,22 @@
 -*- mode: muse -*-
 
+* 2007-10-04, 17:27:02 CEST
+
+** `char' Does Actually Indicate a Char, Sometimes
+
+The latest changes made the test cases fail on GNUstep/x86, which either
+means that the PyObjC code is wrong, or the GNU runtime has very weird
+calling conventions that use ints as wrappers for chars or something.
+Anyway, I have reverted the changes for GNUstep and left them in place
+for Mac OS X (but note that I left the PyObjC code as it is, which means
+that libffi is still directed to treats chars as ints).  As a result,
+both NeXT/PowerPC and GNUstep/x86 work for now, but I'm uncertain about
+the status of other architectures as well as calling methods with chars
+and shorts as arguments, which I've got no test cases for.  I'm not
+confident that either GNUstep/PowerPC/SPARC/whatever or NeXT/x86 work
+the way my code expects them to.
+
+
 * 2007-10-04, 16:52:32 CEST
 
 ** `char' Does Not Indicate a Char, Continued

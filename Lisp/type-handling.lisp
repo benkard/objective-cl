@@ -142,27 +142,23 @@ Returns: (VALUES typespec byte-position string-position)"
               (otherwise
                (prog1 (list (case init-char
                               (#\B :boolean) ;XXX :int?
-                              (#\c (if (or return-type-p
-                                           (eq +runtime-type+ :gnu)
-                                           (and (eq +runtime-type+ :next)
+                              (#\c (if (and (eq +runtime-type+ :next)
+                                            (or return-type-p
                                                 (featurep 'cffi-features:ppc32)))
                                        :int
                                        :char))
-                              (#\C (if (or return-type-p
-                                           (eq +runtime-type+ :gnu)
-                                           (and (eq +runtime-type+ :next)
+                              (#\C (if (and (eq +runtime-type+ :next)
+                                            (or return-type-p
                                                 (featurep 'cffi-features:ppc32)))
                                        :unsigned-int
                                        :unsigned-char))
-                              (#\s (if (or return-type-p
-                                           (eq +runtime-type+ :gnu)
-                                           (and (eq +runtime-type+ :next)
+                              (#\s (if (and (eq +runtime-type+ :next)
+                                            (or return-type-p
                                                 (featurep 'cffi-features:ppc32)))
                                        :int
                                        :short))
-                              (#\S (if (or return-type-p
-                                           (eq +runtime-type+ :gnu)
-                                           (and (eq +runtime-type+ :next)
+                              (#\S (if (and (eq +runtime-type+ :next)
+                                            (or return-type-p
                                                 (featurep 'cffi-features:ppc32)))
                                        :unsigned-int
                                        :unsigned-short))
