@@ -231,15 +231,25 @@ easier to use with __apply__.
                            for i from 0 to raw-argc
                            do (let* ((type-name (lisp-value->type-name arg)))
                                 (typecase arg
+                                  ;; According to Allegro CL, strings
+                                  ;; are POINTERP (and thus elements of
+                                  ;; the C-POINTER type), so they have
+                                  ;; to come first in this TYPECASE
+                                  ;; form.  Weird.
+                                  ;;
+                                  ;; By the way, pointers are
+                                  ;; represented as integers in Allegro
+                                  ;; CL, so all integers are POINTERP,
+                                  ;; too.
+                                  (string
+                                   (setf (argref :string (+ i 2))
+                                         (alloc-string-and-register arg)))
                                   ((or c-pointer-wrapper
                                        c-pointer)
                                    (setf (argref :pointer (+ i 2))
                                          (typecase arg
                                            (c-pointer-wrapper (pointer-to arg))
                                            (t arg))))
-                                  (string
-                                   (setf (argref :string (+ i 2))
-                                         (alloc-string-and-register arg)))
                                   (t (setf (argref (type-name->c-type type-name)
                                                    (+ i 2))
                                            arg)))
@@ -247,14 +257,12 @@ easier to use with __apply__.
                                       (alloc-string-and-register
                                        (type-name->type-id type-name)))))))
               (ad-hoc-arglist->objc-arglist! args)
-              (let* ((return-type-cell (alloc-string-and-register
-                                        (type-name->type-id return-type)))
-                     (error-cell
-                      (%objcl-invoke-with-types raw-argc
-                                                return-type-cell
-                                                arg-types
-                                                return-value-cell
-                                                objc-arg-ptrs)))
+              (let ((error-cell
+                     (%objcl-invoke-with-types raw-argc
+                                               (type-name->type-id return-type)
+                                               arg-types
+                                               return-value-cell
+                                               objc-arg-ptrs)))
                 (unless (cffi:null-pointer-p error-cell)
                   ;; Note that we do not FOREIGN-FREE the error cell,
                   ;; because it is either a null pointer or a pointer to

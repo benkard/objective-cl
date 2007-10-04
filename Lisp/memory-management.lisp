@@ -33,7 +33,10 @@
                        ((selector) *selector-objects*)
                        ((objc-meta-class) *meta-class-objects*)))
          (address (cffi:pointer-address pointer))
-         (object (weak-gethash address hash-table nil)))
+         (object (weak-gethash address hash-table nil))
+         (constructor (case class
+                        ((exception) #'make-condition)
+                        (otherwise #'make-instance))))
     (if object
         object
         (progn
@@ -59,7 +62,7 @@
           ;; By the way, is using the return value of SETF considered
           ;; bad style?
           (let* ((*in-make-pointer-wrapper-p* t)
-                 (new-wrapper (apply #'make-instance class initargs)))
+                 (new-wrapper (apply constructor class initargs)))
             (setf (weak-gethash address hash-table) new-wrapper)
             ;; As classes always have a retain count of -1, we don't
             ;; have to do memory management for them.  Meanwhile,
@@ -91,7 +94,7 @@
                        ;; happily take a pointer as its first argument,
                        ;; but why push our luck?)
                        (let* ((temporary-wrapper
-                               (make-instance class :pointer pointer)))
+                               (funcall constructor class :pointer pointer)))
                          (primitive-invoke temporary-wrapper "release" :void))))
                 (trivial-garbage:finalize new-wrapper #'finalizer)))
             new-wrapper)))))

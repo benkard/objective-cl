@@ -89,8 +89,8 @@
     (flt      . single-float)
     (dbl      . double-float)
     (bool     . boolean)
-    (ptr      . c-pointer)
-    (charptr  . string)))
+    (charptr  . string)
+    (ptr      . c-pointer)))
 
 
 (defparameter *objcl-c-type-map*
