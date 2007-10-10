@@ -28,7 +28,7 @@
                      (eq 'load-time-value (car method-name)))))
       `(primitive-invoke ,receiver
                          (load-time-value (handler-case
-                                              (selector ,method-name)
+                                              (find-selector ,method-name t)
                                             (serious-condition ()
                                               (warn
                                                (make-condition
@@ -52,7 +52,7 @@
       `(invoke-by-name
         ,receiver
         (load-time-value (handler-case
-                             (selector ,method-name)
+                             (find-selector ,method-name t)
                            (serious-condition ()
                              (warn
                               (make-condition 'simple-style-warning
@@ -70,11 +70,15 @@
 ;; ones.
 (define-compiler-macro invoke (receiver message-start &rest message-components)
   (multiple-value-bind (method-name args)
-      (split-method-call message-start message-components)
+      (split-method-call (if (and (consp message-start)
+                                  (eq (first message-start) 'quote))
+                             (second message-start)
+                             message-start)
+                         message-components)
     `(invoke-by-name
       ,receiver
       (load-time-value (handler-case
-                           (selector ',method-name)
+                           (find-selector ',method-name t)
                          (serious-condition ()
                            (warn
                             (make-condition 'simple-style-warning

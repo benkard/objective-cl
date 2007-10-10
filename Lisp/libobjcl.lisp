@@ -61,6 +61,9 @@
 (defcfun ("objcl_find_selector" %objcl-find-selector) :pointer
   (selector-name :string))
 
+(defcfun ("objcl_intern_selector" %objcl-intern-selector) :pointer
+  (selector-name :string))
+
 (defcfun ("objcl_selector_name" %objcl-selector-name) :string
   (selector :pointer))
 
@@ -267,6 +270,14 @@ conventional case for namespace identifiers in Objective C."
         (make-pointer-wrapper 'selector :pointer selector-ptr))))
 
 
+(defun intern-selector-by-name (selector-name)
+  (let ((selector-ptr (%objcl-intern-selector selector-name)))
+    (assert (not (cffi:null-pointer-p selector-ptr))
+            (selector-ptr)
+            "%OBJCL-INTERN-SELECTOR must always return a selector.")
+    (make-pointer-wrapper 'selector :pointer selector-ptr)))
+
+
 (declaim (ftype (function ((or objc-class id exception)) string)
                 objc-class-name))
 (defun objc-class-name (class)
@@ -355,14 +366,17 @@ If *name* is the name of an existing selector:
                                     (pointer-to selector)))
 
 
-(declaim (ftype (function ((or selector string list)) (or null selector))
+(declaim (ftype (function ((or selector symbol string list) &optional t)
+                          (or null selector))
                 find-selector))
-(defun find-selector (selector-name)
+(defun find-selector (selector-name &optional errorp)
   "Retrieve a method selector by name.
 
 ## Arguments and Values:
 
-*selector-name* --- a **string** or a **list** of **symbol**s.
+*selector-name* --- a **string**, a **symbol**, or a **list** of **symbol**s.
+
+*errorp* --- a **generalized boolean**.
 
 Returns: *selector* --- a __selector__ object, or __nil__.
 
@@ -371,7 +385,11 @@ Returns: *selector* --- a __selector__ object, or __nil__.
 
 If *selector-name* is a **string**, the __selector__ named by that
 string is returned.  If no __selector__ with the given name exists,
-__nil__ is returned.
+either __nil__ is returned if errorp is **false**, or an error of type
+__no-such-selector__ is signaled if errorp is **true**.
+
+If *selector-name* is a **symbol**, it is treated the same as a **list**
+whose only element is the **symbol**.
 
 If *selector-name* is a **list** of **symbol**s, all **symbol**s are
 first split into parts separated by hyphens and each part converted into
@@ -399,17 +417,94 @@ by which __invoke__ converts its arguments into a *message name*.
 
     (find-selector \"self\")       ;=> #<SELECTOR `self'>
     (find-selector '(self))      ;=> #<SELECTOR `self'>
+    (find-selector 'self)        ;=> #<SELECTOR `self'>
 
     (find-selector \"stringWithCString:encoding:\")
       ;=> #<SELECTOR `stringWithCString:encoding:'>
 
     (find-selector '(:string-with-c-string :encoding))
-      ;=> #<SELECTOR `stringWithCString:encoding:'>"
+      ;=> #<SELECTOR `stringWithCString:encoding:'>
+
+
+## See also:
+
+  __intern-selector__"
+
+  (or (typecase selector-name
+        (string (find-selector-by-name selector-name))
+        (symbol (find-selector-by-name (symbol-list->message-name
+                                        (list selector-name))))
+        (list   (find-selector-by-name (symbol-list->message-name
+                                        selector-name))))
+      (and errorp
+           (error (make-condition 'no-such-selector :designator selector-name)))))
+
+
+(defun intern-selector (selector-name)
+  "Retrieve a method selector by name, or create it if it does not exist.
+
+## Arguments and Values:
+
+*selector-name* --- a **string**, a **symbol**, or a **list** of **symbol**s.
+
+Returns: *selector* --- a __selector__ object.
+
+
+## Description:
+
+If *selector-name* is a **string**, the __selector__ named by that
+string is returned.  If no __selector__ with the given name exists, such
+a selector is created and registered with the Objective-C runtime, after
+which it is returned.
+
+If *selector-name* is a **symbol**, it is treated the same as a **list**
+whose only element is the **symbol**.
+
+If *selector-name* is a **list** of **symbol**s, all **symbol**s are
+first split into parts separated by hyphens and each part converted into
+a **string** according to the following rules:
+
+1. The first part is fully converted to **lowercase**.
+
+2. Any additional parts are also fully converted to **lowercase** except
+   for their first letters, which are left intact.
+
+3. If the symbol is a **keyword**, the resulting **string** is suffixed
+   by a **colon** (`:').
+
+After that, all parts are concatenated in order to form a
+single *selector name component*.  The *selector name components* are in
+turn concatenated in order to form the **string** that identifies the
+selector, which is used as if given directly as an argument to a call to
+__intern-selector__.
+
+Note that the conversion rules for selector names are identical to those
+by which __invoke__ converts its arguments into a *message name*.
+
+
+## Examples:
+
+    (intern-selector \"self\")       ;=> #<SELECTOR `self'>
+    (intern-selector '(self))      ;=> #<SELECTOR `self'>
+    (intern-selector 'self)        ;=> #<SELECTOR `self'>
+
+    (intern-selector \"stringWithCString:encoding:\")
+      ;=> #<SELECTOR `stringWithCString:encoding:'>
+
+    (intern-selector '(:string-with-c-string :encoding))
+      ;=> #<SELECTOR `stringWithCString:encoding:'>
+
+
+## See also:
+
+  __find-selector__"
 
   (typecase selector-name
-    (string (find-selector-by-name selector-name))
-    (list   (find-selector-by-name (symbol-list->message-name
-                                    selector-name)))))
+    (string (intern-selector-by-name selector-name))
+    (symbol (intern-selector-by-name (symbol-list->message-name
+                                      (list selector-name))))
+    (list   (intern-selector-by-name (symbol-list->message-name
+                                      selector-name)))))
 
 
 (defun object-is-class-p (obj)
@@ -432,6 +527,7 @@ by which __invoke__ converts its arguments into a *message name*.
          (error "Tried to get the class of meta class ~S." obj))
         ((object-is-class-p obj) (object-get-meta-class obj))
         (t (object-get-class obj))))
+
 
 ;;; (@* "Low-level Data Conversion")
 (eval-when (:compile-toplevel :load-toplevel)
@@ -464,8 +560,7 @@ either a __selector__ object or one of a **symbol**, a **string**, or a
 **list** of **symbol**s representing a __selector__.
 
 If *selector-designator* is a **string** or a **list** of **symbol**s,
-__find-selector__ is called and the value returned, except that if
-__find-selector__ returns __nil__, an **error** is **signal**ed.
+__intern-selector__ is called and the value returned.
 
 If *selector-designator* is a single **symbol**, it is treated as if it
 were a **list** whose **car** is the **symbol** and whose **cdr** is
@@ -493,8 +588,7 @@ If *selector-designator* is a __selector__, it is simply returned.
     (selector designator)
     (symbol (selector (list designator)))
     ((or string list)
-     (or (find-selector designator)
-         (error (make-condition 'no-such-selector :designator designator))))))
+     (intern-selector designator))))
 
 
 ;;;; (@* "Helper functions")

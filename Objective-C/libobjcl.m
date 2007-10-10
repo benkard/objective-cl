@@ -131,7 +131,7 @@ objcl_find_class (const char *class_name)
 #ifdef __NEXT_RUNTIME__
   return objc_lookUpClass (class_name);
 #else
-  return NSClassFromString ([NSString stringWithUTF8String: class_name]);
+  return objc_lookup_class (class_name);
 #endif
 }
 
@@ -153,9 +153,28 @@ objcl_find_meta_class (const char *class_name)
 
 
 SEL
-objcl_find_selector (const char *class_name)
+objcl_find_selector (const char *selector_name)
 {
-  return NSSelectorFromString ([NSString stringWithUTF8String: class_name]);
+#ifdef __NEXT_RUNTIME__
+  if (!(sel_isMapped ((SEL) selector_name)))  /* XXX Does this work? */
+    return NULL;
+  else
+    return sel_getUid (selector_name);
+#else
+  return sel_get_any_uid (selector_name);
+#endif
+}
+
+
+SEL
+objcl_intern_selector (const char *selector_name)
+{
+  /* sel_registerName and sel_register_name seem not to be necessary here. */
+#ifdef __NEXT_RUNTIME__
+  return sel_getUid (selector_name);
+#else
+  return sel_get_uid (selector_name);
+#endif
 }
 
 

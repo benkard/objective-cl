@@ -1,5 +1,36 @@
 -*- mode: muse -*-
 
+* 2007-10-10, 12:02:38 CEST
+
+I've cleaned the Objective-C code up by making the NeXT and GNU
+runtime-specific code converge a bit.  This also makes FIND-SELECTOR
+return NIL for unknown selectors on the NeXT runtime, so compile-time
+warnings about unknown methods are possible there now.  The latter
+relies on sel_isMapped, whose semantics are not entirely clear to me.
+On the one hand, Apple's reference manual states: “You can use this
+function to determine whether a given address is a valid selector,”
+which I interpret as meaning that it takes a selector pointer as an
+argument, not a string.  On the other hand, in the preceding section,
+the same document states: “You can still use the sel_isMapped function
+to determine whether a method name is mapped to a selector.”
+
+So if I have two strings that aren't the same under POINTER-EQ, but that
+both name the same valid selector that is registered with the runtime,
+like "self", say, does sel_isMapped work reliably in this case?  I'm not
+sure.
+
+On another note, I wonder what the difference between
+sel_get_uid/sel_getUid and sel_register_name/sel_registerName might be.
+They seem to do the same thing.
+
+Maybe this whole #ifdef mess isn't even strictly necessary, anyway.  I
+could just copy objc-gnu2next.h from the GNUstep project (LGPLv3, so the
+licensing is fine).
+
+http://svn.gna.org/svn/gnustep/libs/base/trunk/Headers/Additions/GNUstepBase/objc-gnu2next.h
+
+
+
 * 2007-10-04, 17:27:02 CEST
 
 ** `char' Does Actually Indicate a Char, Sometimes

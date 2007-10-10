@@ -49,6 +49,9 @@ objcl_find_meta_class (const char *class_name);
 SEL
 objcl_find_selector (const char *selector_name);
 
+SEL
+objcl_intern_selector (const char *selector_name);
+
 /* Return a null-terminated list of type information strings.
    The first entry describes the type of the method's return value. */
 char **
