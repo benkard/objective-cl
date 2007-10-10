@@ -55,7 +55,7 @@
    ((ensure-null (find-objc-class 'nsobject)))
    ((ensure-same (find-objc-class 'ns-method-invocation)
                  (find-objc-class "NSMethodInvocation")))
-   ((ensure (typep (find-selector "mulkyStuff:withMagic:")
+   ((ensure (typep (find-selector "mulkyStuff:withMagic:" nil)
                    '(or null selector))))
    ((ensure-same (find-selector "self")
                  (find-selector '(self))))

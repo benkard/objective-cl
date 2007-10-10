@@ -140,7 +140,9 @@ easier to use with __apply__.
   __invoke__"
 
   ;; TODO: Support varargs.
-  (let* ((selector (selector method-name))
+  (let* ((selector (if (typep method-name 'selector)
+                       method-name
+                       (find-selector method-name)))
          (class (object-get-class receiver)))
     (multiple-value-bind (argc
                           method-return-typestring
@@ -189,7 +191,9 @@ easier to use with __apply__.
            (return-c-type (case return-type
                             ((id objc-class exception selector) :pointer)
                             (otherwise return-type)))
-           (selector (selector method-name)))
+           (selector (if (typep method-name 'selector)
+                         method-name
+                         (find-selector method-name))))
       (labels ((alloc-string-and-register (string)
                  (register-temporary-string
                   (cffi:foreign-string-alloc string))))

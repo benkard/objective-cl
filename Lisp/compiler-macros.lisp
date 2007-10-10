@@ -28,7 +28,7 @@
                      (eq 'load-time-value (car method-name)))))
       `(primitive-invoke ,receiver
                          (load-time-value (handler-case
-                                              (find-selector ,method-name t)
+                                              (find-selector ,method-name)
                                             (serious-condition ()
                                               (warn
                                                (make-condition
@@ -52,7 +52,7 @@
       `(invoke-by-name
         ,receiver
         (load-time-value (handler-case
-                             (find-selector ,method-name t)
+                             (find-selector ,method-name)
                            (serious-condition ()
                              (warn
                               (make-condition 'simple-style-warning
@@ -78,7 +78,7 @@
     `(invoke-by-name
       ,receiver
       (load-time-value (handler-case
-                           (find-selector ',method-name t)
+                           (find-selector ',method-name)
                          (serious-condition ()
                            (warn
                             (make-condition 'simple-style-warning

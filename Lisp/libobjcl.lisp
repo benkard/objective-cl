@@ -369,14 +369,14 @@ If *name* is the name of an existing selector:
 (declaim (ftype (function ((or selector symbol string list) &optional t)
                           (or null selector))
                 find-selector))
-(defun find-selector (selector-name &optional errorp)
+(defun find-selector (selector-name &optional (errorp t))
   "Retrieve a method selector by name.
 
 ## Arguments and Values:
 
 *selector-name* --- a **string**, a **symbol**, or a **list** of **symbol**s.
 
-*errorp* --- a **generalized boolean**.
+*errorp* --- a **generalized boolean**.  The default is **true**.
 
 Returns: *selector* --- a __selector__ object, or __nil__.
 
