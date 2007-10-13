@@ -18,15 +18,9 @@
 (in-package #:mulk.objective-cl)
 
 
-(dolist (subdir '("shared_obj" "obj"))
-  (pushnew
-   (merge-pathnames (make-pathname :directory (list
-                                               :relative "Objective-C" subdir)
-                                   :type ""
-                                   :name "")
-                    (asdf:component-pathname (asdf:find-system
-                                              '#:objective-cl)))
-   cffi:*foreign-library-directories*))
+(dolist (subdir '("shared_obj/" "obj/"))
+  (pushnew (merge-pathnames subdir objcl-asdf:*objc-obj-dir*)
+           cffi:*foreign-library-directories*))
 
 (define-foreign-library libobjcl
   (:unix (:or "libobjcl.so"
