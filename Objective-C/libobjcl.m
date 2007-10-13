@@ -32,23 +32,37 @@
 static NSAutoreleasePool *objcl_autorelease_pool = NULL;
 
 /* Preallocate an exception to throw when memory is all used up. */
-NSException *objcl_oom_exception;
+NSException *objcl_oom_exception = NULL;
 
 
 void
 objcl_initialise_runtime (void)
 {
-  objcl_autorelease_pool = [[NSAutoreleasePool alloc] init];
-  objcl_oom_exception = [NSException exceptionWithName: @"MLKOutOfMemoryException"
-                                     reason: @"Out of memory"
-                                     userInfo: nil];
+  if (!objcl_autorelease_pool)
+    objcl_autorelease_pool = [[NSAutoreleasePool alloc] init];
+  if (!objcl_oom_exception)
+    {
+      objcl_oom_exception = [NSException exceptionWithName: @"MLKOutOfMemoryException"
+                                         reason: @"Out of memory"
+                                         userInfo: nil];
+      [objcl_oom_exception retain];
+    }
 }
 
 
 void
 objcl_shutdown_runtime (void)
 {
-  [objcl_autorelease_pool release];
+  if (objcl_autorelease_pool)
+    {
+      [objcl_autorelease_pool release];
+      objcl_autorelease_pool = NULL;
+    }
+  if (objcl_oom_exception)
+    {
+      [objcl_oom_exception release];
+      objcl_oom_exception = NULL;
+    }
 }
 
 
