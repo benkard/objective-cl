@@ -93,7 +93,7 @@
                     (mapcan #'(lambda (x)
                                 (directory (merge-pathnames x source-dir)))
                             '(#p"**/*.m" #p"**/*.h" #p"**/GNUmakefile.*"
-                              #p"**/*.make"))))
+                              #p"**/*.make" #p"**/GNUmakefile"))))
            (output-dir
             (merge-pathnames #p"../../"
                              (directory-namestring (first (output-files o c))))))

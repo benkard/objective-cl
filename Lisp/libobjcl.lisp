@@ -92,9 +92,14 @@
 (defcfun ("objcl_alignof_type" %objcl-alignof-type) :long
   (typespec :string))
 
-(defcfun objcl-get-nil :pointer)
+(defcfun ("objcl_get_nil" %objcl-get-nil) :pointer)
 (defcfun objcl-get-yes :long)
 (defcfun objcl-get-no :long)
+
+(defun objcl-get-nil ()
+  ;; %OBJCL-GET-NIL can return NIL for CLISP, which CFFI refuses to
+  ;; accept as an argument to POINTER-EQ.  This is weird.
+  (or (%objcl-get-nil) (make-pointer 0)))
 
 (defun initialise-runtime ()
   "Initialise the Objective C runtime.
