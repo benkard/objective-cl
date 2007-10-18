@@ -15,7 +15,7 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-include $(GNUSTEP_MAKEFILES)/common.make
+-include $(GNUSTEP_MAKEFILES)/common.make
 
 include ../version.make
 
@@ -35,4 +35,25 @@ ADDITIONAL_OBJCFLAGS += -DUSE_LIBFFI
 libobjcl_OBJC_FILES += libffi_support.m
 endif
 
-include $(GNUSTEP_MAKEFILES)/library.make
+ifneq ($(COMMON_MAKE_LOADED),)
+-include $(GNUSTEP_MAKEFILES)/library.make
+else  # Mac OS X
+libobjcl_OBJ_FILES = $(patsubst %.m,obj/%.o,$(libobjcl_OBJC_FILES))
+
+all: obj/libobjcl.dylib
+
+clean:
+	rm -f obj/libobjcl.dylib obj/libobjcl.dylib.$(VERSION) $(libobjcl_OBJ_FILES)
+
+obj/libobjcl.dylib: obj/libobjcl.dylib.$(VERSION)
+	ln -s libobjcl.dylib.$(VERSION) $@
+
+obj/libobjcl.dylib.$(VERSION): $(libobjcl_OBJ_FILES)
+	make -p obj
+	gcc -dynamiclib -current_version $(VERSION) -flat_namespace -undefined warning -install_name libobjcl.dylib.$(VERSION) -o $@ $(libobjcl_OBJ_FILES) -fnext-runtime -framework AppKit -framework Foundation -lm $(ADDITIONAL_LDFLAGS) $(ADDITIONAL_OBJCFLAGS)
+
+obj/%.o: %.m
+	mkdir -p obj
+	gcc -o $@ -c $< -MMD -MP -DNeXT_Foundation_LIBRARY=1 -DNeXT_GUI_LIBRARY=1 -DNeXT_RUNTIME=1 -dynamic -fno-common -fno-omit-frame-pointer -Wno-import -fno-strict-aliasing -fnext-runtime -I. $(ADDITIONAL_OBJCFLAGS)
+endif
+

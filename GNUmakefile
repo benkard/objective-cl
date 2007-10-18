@@ -15,7 +15,7 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-include $(GNUSTEP_MAKEFILES)/common.make
+-include $(GNUSTEP_MAKEFILES)/common.make
 
 include version.make
 
@@ -24,4 +24,16 @@ RPM_DISABLE_RELOCATABLE = YES
 
 SUBPROJECTS = Objective-C
 
+ifneq ($(COMMON_MAKE_LOADED),)
 include $(GNUSTEP_MAKEFILES)/aggregate.make
+else  # Mac OS X
+all:
+	make -C Objective-C all
+
+clean:
+	make -C Objective-C clean
+
+install:
+	make -C Objective-C install
+endif
+
