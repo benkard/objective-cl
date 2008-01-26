@@ -17,7 +17,7 @@
 
 (defsystem "objective-cl"
   :description "A portable Objective C bridge."
-  :version "0.0.2"
+  :version "0.0.3"
   :author "Matthias Benkard <matthias@benkard.de>"
   :licence "GNU General Public License, version 3 or higher"
   :depends-on (#:cffi #:trivial-garbage #:split-sequence #:objective-cl-libobjcl)
@@ -151,7 +151,7 @@
 
 (defsystem "objective-cl-libobjcl"
   :description "A portable Objective C bridge."
-  :version "0.0.2"
+  :version "0.0.3"
   :author "Matthias Benkard <matthias@benkard.de>"
   :licence "GNU General Public License, version 3 or higher"
   :depends-on ()
