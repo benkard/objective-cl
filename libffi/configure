@@ -1354,6 +1354,7 @@ fi
 
           ac_config_commands="$ac_config_commands default-1"
 
+multi_basedir="."
 if test a = b; then
    # This is for automake
    ac_aux_dir=
