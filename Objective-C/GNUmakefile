@@ -30,8 +30,18 @@ libobjcl_OBJC_FILES = libobjcl.m objc_support.m objc-runtime-apple.m objc-runtim
 LIBRARIES_DEPEND_UPON = $(FND_LIBS) $(GUI_LIBS) $(OBJC_LIBS) $(SYSTEM_LIBS) $(CONFIG_SYSTEM_LIBS)
 
 ifdef USE_LIBFFI
-ADDITIONAL_LDFLAGS = -Wl,-rpath $(CURDIR)/../libffi/.libs -L../libffi/.libs -lffi
-ADDITIONAL_OBJCFLAGS += -DUSE_LIBFFI
+#ifneq ($(COMMON_MAKE_LOADED),)
+## FIXME: The use of -rpath presupposes GNU ld.
+#ADDITIONAL_LDFLAGS = -Wl,-rpath $(CURDIR)/../libffi/.libs -L../libffi/.libs -lffi
+#else  # Mac OS X
+#ADDITIONAL_LDFLAGS = -L$(CURDIR)/../libffi/.libs -lffi
+#endif
+
+# FIXME: For now, we statically link against libffi.  We are not certain
+# that this is a good idea.  Linking dynamically, on the other hand, is
+# hard in general (that's one of the reasons libtool exists, after all).
+ADDITIONAL_LDFLAGS = ../libffi/.libs/libffi.a
+ADDITIONAL_OBJCFLAGS += -DUSE_LIBFFI -I../libffi/include
 libobjcl_OBJC_FILES += libffi_support.m
 FFI_DEPS += ../libffi/.libs/libffi.a
 FFI_CLEAN += libffi_clean
@@ -57,7 +67,8 @@ obj/libobjcl.dylib: $(FFI_DEPS) obj/libobjcl.dylib.$(VERSION)
 
 obj/libobjcl.dylib.$(VERSION): $(libobjcl_OBJ_FILES)
 	make -p obj
-	gcc -dynamiclib -current_version $(VERSION) -flat_namespace -undefined warning -install_name libobjcl.dylib.$(VERSION) -o $@ $(libobjcl_OBJ_FILES) -fnext-runtime -framework AppKit -framework Foundation -lm $(ADDITIONAL_LDFLAGS) $(ADDITIONAL_OBJCFLAGS)
+	gcc -dynamiclib -current_version $(VERSION) -flat_namespace -undefined warning -install_name $(CURDIR)/obj/libobjcl.dylib.$(VERSION) -o $@ $(libobjcl_OBJ_FILES) -fnext-runtime -framework AppKit -framework Foundation -lm $(ADDITIONAL_LDFLAGS) $(ADDITIONAL_OBJCFLAGS)
+#	sh ../libffi/libtool --mode=link -module -no-fast-install -avoid-version -version-info $(VERSION) -R $(CURDIR)/../libffi/.libs -L../libffi/.libs -lffi -o $@ $(libobjcl_OBJ_FILES)
 
 obj/%.o: %.m
 	mkdir -p obj
