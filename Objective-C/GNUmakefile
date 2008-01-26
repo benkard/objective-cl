@@ -76,7 +76,7 @@ obj/%.o: %.m
 endif
 
 ../libffi/.libs/libffi.a:
-	(cd ../libffi && sh ./configure && make)
+	(cd ../libffi && chmod +x ltconfig && sh ./configure && make)
 
 libffi_clean:
 	-make -C ../libffi distclean
