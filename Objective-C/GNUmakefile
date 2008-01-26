@@ -30,22 +30,29 @@ libobjcl_OBJC_FILES = libobjcl.m objc_support.m objc-runtime-apple.m objc-runtim
 LIBRARIES_DEPEND_UPON = $(FND_LIBS) $(GUI_LIBS) $(OBJC_LIBS) $(SYSTEM_LIBS) $(CONFIG_SYSTEM_LIBS)
 
 ifdef USE_LIBFFI
-ADDITIONAL_LDFLAGS = -lffi
+ADDITIONAL_LDFLAGS = -Wl,-rpath $(CURDIR)/../libffi/.libs -L../libffi/.libs -lffi
 ADDITIONAL_OBJCFLAGS += -DUSE_LIBFFI
 libobjcl_OBJC_FILES += libffi_support.m
+FFI_DEPS += ../libffi/.libs/libffi.a
+FFI_CLEAN += libffi_clean
 endif
 
 ifneq ($(COMMON_MAKE_LOADED),)
 -include $(GNUSTEP_MAKEFILES)/library.make
+
+before-all:: $(FFI_DEPS)
+
+after-clean:: $(FFI_CLEAN)
+
 else  # Mac OS X
 libobjcl_OBJ_FILES = $(patsubst %.m,obj/%.o,$(libobjcl_OBJC_FILES))
 
 all: obj/libobjcl.dylib
 
-clean:
+clean: $(FFI_CLEAN)
 	rm -f obj/libobjcl.dylib obj/libobjcl.dylib.$(VERSION) $(libobjcl_OBJ_FILES)
 
-obj/libobjcl.dylib: obj/libobjcl.dylib.$(VERSION)
+obj/libobjcl.dylib: $(FFI_DEPS) obj/libobjcl.dylib.$(VERSION)
 	ln -s libobjcl.dylib.$(VERSION) $@
 
 obj/libobjcl.dylib.$(VERSION): $(libobjcl_OBJ_FILES)
@@ -57,3 +64,8 @@ obj/%.o: %.m
 	gcc -o $@ -c $< -MMD -MP -DNeXT_Foundation_LIBRARY=1 -DNeXT_GUI_LIBRARY=1 -DNeXT_RUNTIME=1 -dynamic -fno-common -fno-omit-frame-pointer -Wno-import -fno-strict-aliasing -fnext-runtime -I. $(ADDITIONAL_OBJCFLAGS)
 endif
 
+../libffi/.libs/libffi.a:
+	(cd ../libffi && sh ./configure && make)
+
+libffi_clean:
+	-make -C ../libffi distclean

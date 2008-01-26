@@ -93,7 +93,8 @@
                     (mapcan #'(lambda (x)
                                 (directory (merge-pathnames x source-dir)))
                             '(#p"**/*.m" #p"**/*.h" #p"**/GNUmakefile.*"
-                              #p"**/*.make" #p"**/GNUmakefile"))))
+                              #p"**/*.make" #p"**/GNUmakefile"
+                              #p"libffi/**/*" #p"libffi/**/*.*"))))
            (output-dir
             (merge-pathnames #p"../../"
                              (directory-namestring (first (output-files o c))))))
@@ -104,15 +105,17 @@
           (unless (and (probe-file output-file)
                        (= (file-write-date source-file)
                           (file-write-date output-file)))
-            (with-open-file (in source-file
-                                :element-type '(unsigned-byte 8))
-              (with-open-file (out output-file
-                                   :direction :output
-                                   :if-exists :supersede
-                                   :element-type '(unsigned-byte 8))
-                (loop for byte = (read-byte in nil nil)
-                      while byte
-                      do (write-byte byte out))))))))))
+            (ignore-errors  ;; FIXME: We need to skip directories, so
+                            ;; that IGNORE-ERRORS can go away.
+              (with-open-file (in source-file
+                                  :element-type '(unsigned-byte 8))
+                (with-open-file (out output-file
+                                     :direction :output
+                                     :if-exists :supersede
+                                     :element-type '(unsigned-byte 8))
+                  (loop for byte = (read-byte in nil nil)
+                        while byte
+                        do (write-byte byte out)))))))))))
 
 (defmethod perform ((o compile-op) (c objc-source-file))
   (unless (or (operation-done-p o c)
