@@ -46,6 +46,10 @@
       (- (random (abs most-negative-double-float)))))
 
 
+#.(prog1 nil
+    (defparameter *readtable-backup* *readtable*)
+    (setq *readtable* (copy-readtable))
+    (setf (readtable-case *readtable*) :invert))
 (deftestsuite base-functions (objective-cl)
   ()
   (:equality-test #'objc-equal)
@@ -62,7 +66,14 @@
    ((ensure-same (find-selector "stringWithUTF8String:")
                  (find-selector '(:string-with-u-t-f-8-string))))
    ((ensure-same (find-selector "stringWithCString:encoding:")
-                 (find-selector '(:string-with-c-string :encoding))))))
+                 (find-selector '(:string-with-c-string :encoding))))
+   ;; Case-sensitivity.
+   ((ensure-same (find-selector "stringWithCString:encoding:")
+                 (find-selector '(:stringWithCString :encoding))))
+   ((ensure-same (find-selector "stringWithUTF8String:")
+                 (find-selector :stringWithUTF8String)))))
+#.(prog1 nil
+    (setq *readtable* *readtable-backup*))
 
 
 (deftestsuite primitive-method-invocation (objective-cl)

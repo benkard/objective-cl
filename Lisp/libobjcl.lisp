@@ -394,12 +394,19 @@ If *selector-name* is a **list** of **symbol**s, all **symbol**s are
 first split into parts separated by hyphens and each part converted into
 a **string** according to the following rules:
 
-1. The first part is fully converted to **lowercase**.
+1. 1. If the keywords' **symbol name**s do contain **lowercase**
+      **character**s, their case is left intact.
 
-2. Any additional parts are also fully converted to **lowercase** except
-   for their first letters, which are left intact.
+   2. If the keywords' **symbol name**s do not contain any **lowercase**
+      **character**s, the following steps are taken in order to adjust
+      their case.
 
-3. If the symbol is a **keyword**, the resulting **string** is suffixed
+      1. The first part is fully converted to **lowercase**.
+
+      2. Any additional parts are also fully converted to **lowercase**
+         except for their first letters, which are left intact.
+
+2. If the symbol is a **keyword**, the resulting **string** is suffixed
    by a **colon** (`:').
 
 After that, all parts are concatenated in order to form a
@@ -424,10 +431,27 @@ by which __invoke__ converts its arguments into a *message name*.
     (find-selector '(:string-with-c-string :encoding))
       ;=> #<SELECTOR `stringWithCString:encoding:'>
 
+    #.(setq \\*readtable\\* (copy-readtable)) 
+    #.(setf (readtable-case \\*readtable\\*) :invert)
+    (find-selector '(:stringWithCString :encoding))
+      ;=> #<SELECTOR `stringWithCString:encoding:'>
+
+
+## Note:
+
+Setting the **readtable case** of the **current readtable** to `:INVERT`
+is a good way of making the Lisp system behave as traditionally as
+possible while making Objective-C method names case-sensitive.
+
+On the other hand, writing all method names in lower case while
+separating parts by hyphens works nicely in all of the `:INVERT`,
+`:UPCASE`, `:DOWNCASE`, and `:PRESERVE` modes as well as Allegro CL's
+*modern mode*.
+
 
 ## See also:
 
-  __intern-selector__"
+  __intern-selector__, __selector__"
 
   (or (typecase selector-name
         (string (find-selector-by-name selector-name))
@@ -463,12 +487,19 @@ If *selector-name* is a **list** of **symbol**s, all **symbol**s are
 first split into parts separated by hyphens and each part converted into
 a **string** according to the following rules:
 
-1. The first part is fully converted to **lowercase**.
+1. 1. If the keywords' **symbol name**s do contain **lowercase**
+      **character**s, their case is left intact.
 
-2. Any additional parts are also fully converted to **lowercase** except
-   for their first letters, which are left intact.
+   2. If the keywords' **symbol name**s do not contain any **lowercase**
+      **character**s, the following steps are taken in order to adjust
+      their case.
 
-3. If the symbol is a **keyword**, the resulting **string** is suffixed
+      1. The first part is fully converted to **lowercase**.
+
+      2. Any additional parts are also fully converted to **lowercase**
+         except for their first letters, which are left intact.
+
+2. If the symbol is a **keyword**, the resulting **string** is suffixed
    by a **colon** (`:').
 
 After that, all parts are concatenated in order to form a
@@ -493,10 +524,27 @@ by which __invoke__ converts its arguments into a *message name*.
     (intern-selector '(:string-with-c-string :encoding))
       ;=> #<SELECTOR `stringWithCString:encoding:'>
 
+    #.(setq \\*readtable\\* (copy-readtable)) 
+    #.(setf (readtable-case \\*readtable\\*) :invert)
+    (intern-selector '(:stringWithCString :encoding))
+      ;=> #<SELECTOR `stringWithCString:encoding:'>
+
+
+## Note:
+
+Setting the **readtable case** of the **current readtable** to `:INVERT`
+is a good way of making the Lisp system behave as traditionally as
+possible while making Objective-C method names case-sensitive.
+
+On the other hand, writing all method names in lower case while
+separating parts by hyphens works nicely in all of the `:INVERT`,
+`:UPCASE`, `:DOWNCASE`, and `:PRESERVE` modes as well as Allegro CL's
+*modern mode*.
+
 
 ## See also:
 
-  __find-selector__"
+  __find-selector__, __selector__"
 
   (typecase selector-name
     (string (intern-selector-by-name selector-name))
@@ -581,7 +629,29 @@ If *selector-designator* is a __selector__, it is simply returned.
       ;=> #<SELECTOR `stringWithCString:encoding:'>
 
     (selector '(:string-with-c-string :encoding))
-      ;=> #<SELECTOR `stringWithCString:encoding:'>"
+      ;=> #<SELECTOR `stringWithCString:encoding:'>
+
+    #.(setq \\*readtable\\* (copy-readtable)) 
+    #.(setf (readtable-case \\*readtable\\*) :invert)
+    (selector '(:stringWithCString :encoding))
+      ;=> #<SELECTOR `stringWithCString:encoding:'>
+
+
+## Note:
+
+Setting the **readtable case** of the **current readtable** to `:INVERT`
+is a good way of making the Lisp system behave as traditionally as
+possible while making Objective-C method names case-sensitive.
+
+On the other hand, writing all method names in lower case while
+separating parts by hyphens works nicely in all of the `:INVERT`,
+`:UPCASE`, `:DOWNCASE`, and `:PRESERVE` modes as well as Allegro CL's
+*modern mode*.
+
+
+## See also:
+
+  __find-selector__, __intern-selector__"
 
   (etypecase designator
     (selector designator)

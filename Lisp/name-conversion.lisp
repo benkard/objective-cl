@@ -22,14 +22,19 @@
 (defun message-component->string (symbol)
   (let* ((components (split-sequence #\- (symbol-name symbol)
                                      :remove-empty-subseqs t))
+         (downcasep (notany #'lower-case-p (symbol-name symbol)))
          (acc-string
           (reduce #'(lambda (x y) (concatenate 'string x y))
                   (mapcar #'(lambda (x)
-                              (concatenate 'string
-                                           (string (char x 0))
-                                           (string-downcase (subseq x 1))))
+                              (if downcasep
+                                  (concatenate 'string
+                                               (string (char x 0))
+                                               (string-downcase (subseq x 1)))
+                                  x))
                           (subseq components 1))
-                  :initial-value (string-downcase (first components)))))
+                  :initial-value (if downcasep
+                                     (string-downcase (first components))
+                                     (first components)))))
     (if (eql (find-package '#:keyword)
              (symbol-package symbol))
         (concatenate 'string acc-string ":")

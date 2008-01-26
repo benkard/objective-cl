@@ -44,12 +44,19 @@ All uneven-numbered *message components*, which must be **symbol**s, are
 first split into parts separated by hyphens and each part converted into
 a **string** according to the following rules:
 
-1. The first part is fully converted to **lowercase**.
+1. 1. If the keywords' **symbol name**s do contain **lowercase**
+      **character**s, their case is left intact.
 
-2. Any additional parts are also fully converted to **lowercase** except
-   for their first letters, which are left intact.
+   2. If the keywords' **symbol name**s do not contain any **lowercase**
+      **character**s, the following steps are taken in order to adjust
+      their case.
 
-3. If the symbol is a **keyword**, the resulting **string** is suffixed
+      1. The first part is fully converted to **lowercase**.
+
+      2. Any additional parts are also fully converted to **lowercase**
+         except for their first letters, which are left intact.
+
+2. If the symbol is a **keyword**, the resulting **string** is suffixed
    by a **colon** (`:').
 
 After that, all parts are concatenated in order to form a
@@ -64,6 +71,10 @@ if as the second **argument** to __invoke-by-name__.
             :string-with-u-t-f-8-string \"Mulk.\")
       ;=> #<GSCBufferString `Mulk.' {5B36087}>
 
+    (invoke (find-objc-class 'ns-string)
+            '|:stringWithUTF8String| \"Mulk.\")
+      ;=> #<GSCBufferString `Mulk.' {5B36087}>
+
     (invoke (find-objc-class 'ns-object)
             'self)                           
       ;=> #<NSObject `NSObject' {16ECF598}>
@@ -76,6 +87,25 @@ if as the second **argument** to __invoke-by-name__.
             :string-with-c-string \"Mulk.\"
             :encoding 4)
       ;=> #<GSCBufferString `Mulk.' {5B36087}>
+
+    #.(setq \\*readtable\\* (copy-readtable)) 
+    #.(setf (readtable-case \\*readtable\\*) :invert)
+    (invoke (find-objc-class 'ns-string)
+            :stringWithCString \"Mulk.\"
+            :encoding 4)
+      ;=> #<GSCBufferString `Mulk.' {5B36087}>
+
+
+## Note:
+
+Setting the **readtable case** of the **current readtable** to `:INVERT`
+is a good way of making the Lisp system behave as traditionally as
+possible while making Objective-C method names case-sensitive.
+
+On the other hand, writing all method names in lower case while
+separating parts by hyphens works nicely in all of the `:INVERT`,
+`:UPCASE`, `:DOWNCASE`, and `:PRESERVE` modes as well as Allegro CL's
+*modern mode*.
 
 
 ## See also:
