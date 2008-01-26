@@ -20,11 +20,11 @@
 
 ;;; (@* "Method invocation")
 (defun invoke (receiver message-start &rest message-components)
-  "Send a message to an Objective C instance.
+  "Send a message to an Objective-C instance.
 
 ## Arguments and Values:
 
-*receiver* --- an Objective C wrapper object.
+*receiver* --- an Objective-C wrapper object.
 
 *message-start* --- a **symbol**.
 
@@ -118,11 +118,11 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
 
 
 (defun invoke-by-name (receiver method-name &rest args)
-  "Send a message to an Objective C object by the name of the method.
+  "Send a message to an Objective-C object by the name of the method.
 
 ## Arguments and Values:
 
-*receiver* --- an Objective C wrapper object.
+*receiver* --- an Objective-C wrapper object.
 
 *method-name* --- a *selector designator*.
 

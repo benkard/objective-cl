@@ -19,14 +19,14 @@
 
 
 (defun install-reader-syntax ()
-  "Install an Objective-C-like **reader macro** for Objective C method
+  "Install an Objective-C-like **reader macro** for Objective-C method
  calls.
 
 ## Description:
 
 The **reader macro** installed by __install-reader-syntax__ closely
-resembles the conventional method call syntax of Objective C.  In fact,
-any differences between standard Objective C method call syntax and this
+resembles the conventional method call syntax of Objective-C.  In fact,
+any differences between standard Objective-C method call syntax and this
 **reader macro** that are not documented here are probably bugs and
 should be reported to the maintainer.
 
@@ -100,7 +100,7 @@ arguments to __invoke-by-name__.
 
 ## Rationale:
 
-Objective C method names tend to be relatively verbose and are
+Objective-C method names tend to be relatively verbose and are
 frequently composed of many short words like \"of\" and \"by\".  As a
 result, using __invoke__ can be quite cumbersome at times and waste
 screen real estate.  One need only compare the example call
@@ -116,7 +116,7 @@ with its reader macro counterpart
 to be able to see an improvement in length as well as readability.
 
 In any case, it is a matter of taste whether to prefer __invoke__ or
-Objective C syntax as it is whether to prefer the standard Common Lisp
+Objective-C syntax as it is whether to prefer the standard Common Lisp
 __loop__ facility or a widespread and well-known alternative called
 \"Iterate\".  In both cases, one can argue that one of the forms
 sacrifices an elusive quality of \"lispiness\" as well as text editor

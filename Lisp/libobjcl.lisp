@@ -102,15 +102,15 @@
   (or (%objcl-get-nil) (make-pointer 0)))
 
 (defun initialise-runtime ()
-  "Initialise the Objective C runtime.
+  "Initialise the Objective-C runtime.
 
 ## Description:
 
 The function __initialise-runtime__ makes all the necessary arrangements
 for object instantiation and method calls to work.  In particular, it
-creates an autorelease pool in order to make the use of Objective C's
+creates an autorelease pool in order to make the use of Objective-C's
 semiautomatic reference counting memory management possible, which is
-used internally by Objective CL.
+used internally by Objective-CL.
 
 Note that, as the autorelease pool created by __initialise-runtime__ is
 currently only deallocated and its containees released when
@@ -118,7 +118,7 @@ __shutdown-runtime__ is called, it is generally advisable to make use of
 AppKit's automatic creation and deletion auf autorelease pools, if
 possible.  Naturally, AppKit-based applications need not worry about
 this, but be aware that they do need to call __initialise-runtime__
-before making any other Objective C calls.
+before making any other Objective-C calls.
 
 
 ## See also:
@@ -131,7 +131,7 @@ before making any other Objective C calls.
 
 
 (defun shutdown-runtime ()
-  "Shut the Objective C runtime down.
+  "Shut the Objective-C runtime down.
 
 ## Description:
 
@@ -141,8 +141,8 @@ autorelease pools created by __initialise-runtime__.
 
 Note that even if you make use of AppKit, which manages its own
 autorelease pools, you must call __initialise-runtime__ before making
-any Objective C calls, and you should call __shutdown-runtime__ when you
-are finished with Objective C, since Objective CL makes use of
+any Objective-C calls, and you should call __shutdown-runtime__ when you
+are finished with Objective-C, since Objective-CL makes use of
 autoreleased objects internally before you are even able to retrieve any
 objects or classes, let alone send messages to them.
 
@@ -159,7 +159,7 @@ objects or classes, let alone send messages to them.
                           (or null objc-class))
                 find-objc-class))
 (defun find-objc-class (class-name &optional errorp)
-  "Retrieve an Objective C class by name.
+  "Retrieve an Objective-C class by name.
 
 ## Arguments and Values:
 
@@ -173,7 +173,7 @@ C class whose name is *class-name*.
 
 ## Description:
 
-If no Objective C class named by *class-name* is found, the behaviour
+If no Objective-C class named by *class-name* is found, the behaviour
 depends on *errorp*: If *errorp* is **true**, an error is signaled.  If
 *errorp* is **false** (which is the default), __nil__ is returned.
 
@@ -206,10 +206,10 @@ __find-objc-class__.
 
 ## Rationale:
 
-The first component of an Objective C class name is conventionally
+The first component of an Objective-C class name is conventionally
 thought of as a namespace identifier.  It is therefore sensible to
 expect it to be converted to **uppercase** by default, which is the
-conventional case for namespace identifiers in Objective C."
+conventional case for namespace identifiers in Objective-C."
 
   (let ((class
          (etypecase class-name
@@ -217,7 +217,7 @@ conventional case for namespace identifiers in Objective C."
            (symbol (find-objc-class-by-name
                     (symbol->objc-class-name class-name))))))
     (or class (if errorp
-                  (error "Found no Objective C class named ~S."
+                  (error "Found no Objective-C class named ~S."
                          class-name)
                   nil))))
 
@@ -241,7 +241,7 @@ conventional case for namespace identifiers in Objective C."
            (symbol (find-objc-meta-class-by-name
                     (symbol->objc-class-name meta-class-name))))))
     (or meta-class (if errorp
-                       (error "Found no Objective C metaclass named ~S."
+                       (error "Found no Objective-C metaclass named ~S."
                               meta-class-name)
                        nil))))
 

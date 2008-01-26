@@ -27,7 +27,7 @@
 ought not be there.")
 
 (defvar *trace-method-calls* nil
-  "Whether to print trace messages of all Objective C method calls.
+  "Whether to print trace messages of all Objective-C method calls.
 
 ## Value Type:
 
@@ -43,9 +43,9 @@ __nil__.
 
 Sometimes it is useful to find out exactly which message calls are done
 in a piece of code that is executed.  If __*trace-method-calls*__ is
-**true**, Objective CL tries to print trace messages to
+**true**, Objective-CL tries to print trace messages to
 __*terminal-io*__ that can be useful for understanding the behaviour
-both of application code and the internals of Objective CL itself.
+both of application code and the internals of Objective-CL itself.
 
 If __*trace-method-calls*__ is __nil__ (which is the default), no trace
 messages are printed.
@@ -53,7 +53,7 @@ messages are printed.
 Note that there is currently no way of determining the receivers of
 messages.  As this limitation severely limits the usefulness of the
 trace messages, it is expected to be lifted in a future version of
-Objective CL.
+Objective-CL.
 
 
 ## Examples:
@@ -78,7 +78,7 @@ Objective CL.
     (setq *trace-method-calls* nil)
 
 \(Note that objects created by a call to `new' are not retained, because
-it is the user's (that is, the Objective CL framework's) responsibility
+it is the user's (that is, the Objective-CL framework's) responsibility
 to release them, while convenience constructors such as `string' return
 objects that have already had `autorelease' called on them and must thus
 be retained not to be garbage-collected prematurely.)
