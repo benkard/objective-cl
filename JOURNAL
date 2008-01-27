@@ -1,5 +1,20 @@
 -*- mode: muse -*-
 
+* 2008-01-27, 12:55:06 CET
+
+Objective-CL now includes its own version of libffi, imported from an
+older version of PyObjC.  (The current version only supports x86 and
+PowerPC.)  Interestingly, according to the Web, Mac OS X 10.5 includes
+its own version of libffi.  This is really good news!  We can finally
+rest assured that Objective-CL does not break on Mac OS X because of
+libffi bitrot anytime soon.  In order to take advantage of this new
+state of the world, the build system has been changed so as to only
+compile our own version of libffi if we can't find any on the system.
+
+The downside?  We now depend on autoconf.  I don't consider this a
+problem, though.
+
+
 * 2007-10-10, 12:02:38 CEST
 
 I've cleaned the Objective-C code up by making the NeXT and GNU
