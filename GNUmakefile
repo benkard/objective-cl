@@ -37,6 +37,7 @@ before-all before-clean before-install before-distclean:: config.make
 after-distclean::
 	rm -f config.make
 	rm -f config.h
+	rm -f config.status config.log
 else  # Mac OS X
 all:
 	$(MAKE) -C Objective-C all
@@ -48,6 +49,7 @@ distclean:
 	$(MAKE) -C Objective-C distclean
 	rm -f config.make
 	rm -f config.h
+	rm -f config.status config.log
 
 install:
 	$(MAKE) -C Objective-C install
