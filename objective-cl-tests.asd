@@ -17,7 +17,7 @@
 
 (defsystem "objective-cl-tests"
   :description "Unit tests for Objective CL."
-  :version "0.0.3"
+  :version "0.0.4"
   :author "Matthias Benkard <matthias@benkard.de>"
   :licence "GNU General Public License, version 3 or higher"
   :depends-on (#:objective-cl #:lift)
