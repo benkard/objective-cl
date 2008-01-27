@@ -27,7 +27,9 @@ AC_PROG_MAKE_SET
 AC_SEARCH_LIBS([ffi_call], [ffi], [HAVE_LIBFFI=1; break], [HAVE_LIBFFI=0])
 
 HAVE_ANY_FFI_H=0
-AC_CHECK_HEADERS([ffi.h ffi/ffi.h], [HAVE_ANY_FFI_H=1; break])
+if test x$HAVE_LIBFFI = x1; then
+  AC_CHECK_HEADERS([ffi.h ffi/ffi.h], [HAVE_ANY_FFI_H=1; break])
+fi
 
 AC_SUBST(HAVE_ANY_FFI_H)
 AC_SUBST(HAVE_LIBFFI)
