@@ -20,10 +20,18 @@
 #import "Foundation/Foundation.h"
 #include <objc/objc-api.h>
 
+#include "../config.h"
+
 #ifdef USE_LIBFFI
+#ifdef HAVE_FFI_H
+#include <ffi.h>
+#elif HAVE_FFI_FFI_H
+#include <ffi/ffi.h>
+#else
+/* We are using our own build of libffi. */
 #include <ffi.h>
 #endif
-
+#endif
 
 extern NSException *objcl_oom_exception;
 

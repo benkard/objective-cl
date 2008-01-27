@@ -14,10 +14,16 @@
 ## You should have received a copy of the GNU General Public License
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
--include $(GNUSTEP_MAKEFILES)/common.make
-
 include version.make
+-include config.make
+
+.PHONY: all clean distclean install
+
+ifeq ($(CONFIG_MAKE_INCLUDED_P),)
+all clean install: config.make
+	@echo "Please run ./configure before running make."
+else # CONFIG_MAKE_INCLUDED_P
+-include $(GNUSTEP_MAKEFILES)/common.make
 
 PACKAGE_NAME = Objective-CL
 RPM_DISABLE_RELOCATABLE = YES
@@ -26,14 +32,30 @@ SUBPROJECTS = Objective-C
 
 ifneq ($(COMMON_MAKE_LOADED),)
 include $(GNUSTEP_MAKEFILES)/aggregate.make
+before-all before-clean before-install before-distclean:: config.make
+
+after-distclean::
+	rm -f config.make
+	rm -f config.h
 else  # Mac OS X
 all:
-	make -C Objective-C all
+	$(MAKE) -C Objective-C all
 
 clean:
-	make -C Objective-C clean
+	$(MAKE) -C Objective-C clean
+
+distclean:
+	$(MAKE) -C Objective-C distclean
+	rm -f config.make
+	rm -f config.h
 
 install:
-	make -C Objective-C install
-endif
+	$(MAKE) -C Objective-C install
+endif # Mac OS X
+endif # CONFIG_MAKE_INCLUDED_P
 
+config.make: configure config.make.in
+	sh ./configure
+
+configure: configure.ac
+	autoreconf

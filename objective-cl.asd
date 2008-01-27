@@ -94,6 +94,7 @@
                                 (directory (merge-pathnames x source-dir)))
                             '(#p"**/*.m" #p"**/*.h" #p"**/GNUmakefile.*"
                               #p"**/*.make" #p"**/GNUmakefile"
+                              #p"**/*.in" #p"**/configure" #p"**/configure.ac"
                               #p"libffi/**/*" #p"libffi/**/*.*"))))
            (output-dir
             (merge-pathnames #p"../../"
@@ -121,8 +122,9 @@
   (unless (or (operation-done-p o c)
               (null (output-files o c)))
     (zerop
+     ;; Run `make' at the top level of the directory tree.
      (run-shell-command "make -C '~A'"
-                        (merge-pathnames #p"../"
+                        (merge-pathnames #p"../../"
                                          (directory-namestring
                                           (first (output-files o c))))))))
 

@@ -18,7 +18,14 @@
 -include $(GNUSTEP_MAKEFILES)/common.make
 
 include ../version.make
+-include ../config.make
 
+.PHONY: all clean distclean install
+
+ifeq ($(CONFIG_MAKE_INCLUDED_P),)
+all clean install:
+	@echo "Please run ./configure before running make."
+else # CONFIG_MAKE_INCLUDED_P
 USE_LIBFFI = 1
 
 LIBRARY_NAME = libobjcl
@@ -29,15 +36,20 @@ ADDITIONAL_OBJCFLAGS = -Wall -g -DVERSION=\"$(VERSION)\" -I/usr/local/include
 libobjcl_OBJC_FILES = libobjcl.m objc_support.m objc-runtime-apple.m objc-runtime-gnu.m
 LIBRARIES_DEPEND_UPON = $(FND_LIBS) $(GUI_LIBS) $(OBJC_LIBS) $(SYSTEM_LIBS) $(CONFIG_SYSTEM_LIBS)
 
+ADDITIONAL_LDFLAGS = $(LIBS)
+
 ifdef USE_LIBFFI
 # FIXME: For now, we statically link against libffi.  We are not certain
 # that this is a good idea.  Linking dynamically, on the other hand, is
 # hard in general (that's one of the reasons libtool exists, after all).
-ADDITIONAL_LDFLAGS = ../libffi/.libs/libffi.a
-ADDITIONAL_OBJCFLAGS += -DUSE_LIBFFI -I../libffi/include
-libobjcl_OBJC_FILES += libffi_support.m
+ADDITIONAL_OBJCFLAGS += -DUSE_LIBFFI
+ifneq ($(HAVE_ANY_FFI_H),1)
+ADDITIONAL_LDFLAGS += ../libffi/.libs/libffi.a
+ADDITIONAL_OBJCFLAGS += -I../libffi/include
 FFI_DEPS += ../libffi/.libs/libffi.a
 FFI_CLEAN += libffi_clean
+endif
+libobjcl_OBJC_FILES += libffi_support.m
 endif
 
 ifneq ($(COMMON_MAKE_LOADED),)
@@ -54,6 +66,8 @@ all: obj/libobjcl.dylib
 
 clean: $(FFI_CLEAN)
 	rm -f obj/libobjcl.dylib obj/libobjcl.dylib.$(VERSION) $(libobjcl_OBJ_FILES)
+
+distclean: clean
 
 obj/libobjcl.dylib: $(FFI_DEPS) obj/libobjcl.dylib.$(VERSION)
 	ln -s libobjcl.dylib.$(VERSION) $@
@@ -72,3 +86,4 @@ endif
 
 libffi_clean:
 	-make -C ../libffi distclean
+endif # CONFIG_MAKE_INCLUDED_P
