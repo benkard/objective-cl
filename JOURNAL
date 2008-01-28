@@ -1,5 +1,26 @@
 -*- mode: muse -*-
 
+* 2008-01-28, 20:45:35 CET
+
+I've added the following files as a first step to support class
+definition.
+
+For the GNU runtime (from JIGS, the Java Interface to GNUstep):
+
+ * JIGS/ObjcRuntimeUtilities.c
+ * JIGS/ObjcRuntimeUtilities.h
+ * JIGS/ObjcRuntimeUtilities2.m
+
+For the NeXT runtime (from PyObjC):
+
+ * PyObjC/pyobjc-compat.h
+ * PyObjC/objc-runtime-compat.h
+ * PyObjC/objc-runtime-compat.m
+
+Both the JIGS and PyObjC codebases are impressively modular.  Those guys
+know what they're doing.
+
+
 * 2008-01-27, 12:55:06 CET
 
 Objective-CL now includes its own version of libffi, imported from an
