@@ -7,6 +7,15 @@
 #include <stdio.h>
 #include "libobjcl.h"
 
+#ifdef __NEXT_RUNTIME__
+#include "pyobjc-compat.h"
+#endif
+
+#ifndef __OBJC2__
+#define NO_OBJC2_RUNTIME
+#endif
+
+/* #define MAC_OS_X_VERSION_MIN_REQUIRED MAC_OS_X_VERSION_10_4 */
 
 #ifdef __NEXT_RUNTIME__
 
