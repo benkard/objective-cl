@@ -1,3 +1,6 @@
+/* This file is part of the PyObjC package. */
+#ifdef __NEXT_RUNTIME__
+
 #ifndef PyObjC_RUNTIME_COMPAT
 #define PyObjC_RUNTIME_COMPAT
 /*
@@ -196,3 +199,4 @@ extern size_t PyObjC_methodlist_magic(Class cls);
 
 
 #endif /* PyObjC_RUNTIME_COMPAT */
+#endif /* __NEXT_RUNTIME__ */

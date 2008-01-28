@@ -1,10 +1,13 @@
+/* This file is part of the PyObjC package. */
 /*
  * Objective-C runtime 2.0 compatibility for MacOS X 10.4 and earlier.
  *
  * This code works by poking into the ObjC runtime, which means loads of 
  * warnings on 10.5+ ;-)
  */
+#ifdef __NEXT_RUNTIME__
 #include "pyobjc.h"
+#include "objc-runtime-compat.h"
 
 BOOL PyObjC_class_isSubclassOf(Class child, Class parent)
 {
@@ -985,3 +988,4 @@ size_t PyObjC_methodlist_magic(Class cls)
 	
 
 #endif
+#endif /* __NEXT_RUNTIME__ */
