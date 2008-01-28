@@ -33,7 +33,8 @@ LIBRARY_NAME = libobjcl
 RPM_DISABLE_RELOCATABLE = YES
 ADDITIONAL_OBJCFLAGS = -Wall -g -DVERSION=\"$(VERSION)\" -I/usr/local/include
 
-libobjcl_OBJC_FILES = libobjcl.m PyObjC/objc_support.m PyObjC/objc-runtime-apple.m PyObjC/objc-runtime-gnu.m
+libobjcl_OBJC_FILES = JIGS/ObjcRuntimeUtilities2.m libobjcl.m PyObjC/objc_support.m PyObjC/objc-runtime-apple.m PyObjC/objc-runtime-gnu.m
+libobjcl_C_FILES = JIGS/ObjcRuntimeUtilities.c
 LIBRARIES_DEPEND_UPON = $(FND_LIBS) $(GUI_LIBS) $(OBJC_LIBS) $(SYSTEM_LIBS) $(CONFIG_SYSTEM_LIBS)
 
 ADDITIONAL_LDFLAGS = $(LIBS)
@@ -57,6 +58,7 @@ ifneq ($(COMMON_MAKE_LOADED),)
 
 before-all:: $(FFI_DEPS)
 	mkdir -p $(GNUSTEP_OBJ_DIR)/PyObjC
+	mkdir -p $(GNUSTEP_OBJ_DIR)/JIGS
 
 after-clean:: $(FFI_CLEAN)
 
