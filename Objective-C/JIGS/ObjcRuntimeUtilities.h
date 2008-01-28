@@ -23,6 +23,10 @@
    Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA.
    */
 
+/* FIXME: This should be something like a simple #ifndef
+   __NEXT_RUNTIME__, but __NEXT_RUNTIME__ isn't defined in C code. */
+#if !defined(__NEXT_RUNTIME__) && !defined(__APPLE__)
+
 #ifndef __ObjcRuntimeUtilities_h_GNUSTEP_JAVA_INCLUDE
 #define __ObjcRuntimeUtilities_h_GNUSTEP_JAVA_INCLUDE
 
@@ -169,3 +173,4 @@ const char *ObjcUtilities_build_runtime_Objc_signature (const char *);
 void ObjcUtilities_register_method_list (Class class, MethodList *ml);
 
 #endif /* __ObjcRuntimeUtilitis_h_GNUSTEP_JAVA_INCLUDE */
+#endif

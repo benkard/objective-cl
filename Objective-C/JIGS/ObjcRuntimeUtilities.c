@@ -46,6 +46,10 @@
  */
 #define	OBJC_VERSION	8
 
+/* FIXME: This should be something like an #ifndef __NEXT_RUNTIME__, but
+   __NEXT_RUNTIME__ isn't defined in C code. */
+#ifndef __APPLE__
+
 #include "ObjcRuntimeUtilities.h"
 #include <string.h>
 
@@ -213,8 +217,4 @@ void ObjcUtilities_register_method_list (Class class, MethodList *ml)
   objc_mutex_unlock (__objc_runtime_mutex);
 }
 
-
-
-
-
-
+#endif

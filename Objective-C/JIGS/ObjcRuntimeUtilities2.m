@@ -27,6 +27,8 @@
  * be compiled using the Objective-C compiler.
  */
 
+#ifndef __NEXT_RUNTIME__
+
 #include <Foundation/Foundation.h>
 
 const char *ObjcUtilities_build_runtime_Objc_signature (const char 
@@ -43,9 +45,4 @@ const char *ObjcUtilities_build_runtime_Objc_signature (const char
 #endif  
 }
 
-
-
-
-
-
-
+#endif
