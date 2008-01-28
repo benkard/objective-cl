@@ -1,0 +1,28 @@
+The license expressed in the file COPYING.PyObjC applies to the
+following files in the `Objective-C/PyObjC' directory:
+
+ * objc-runtime-apple.h
+ * objc-runtime-apple.m
+ * objc-runtime-compat.h
+ * objc-runtime-compat.m
+ * objc-runtime-gnu.h
+ * objc-runtime-gnu.m
+ * objc_support.h
+ * objc_support.m
+ * libffi_support.h
+ * libffi_support.m
+ * pyobjc-compat.h
+
+The following files in the `Objective-C/JIGS' directory are governed by
+the file COPYING.JIGS or, at your option, the file COPYING or any later
+version of the GNU LGPL:
+
+ * ObjcRuntimeUtilities.c
+ * ObjcRuntimeUtilities.h
+ * ObjcRuntimeUtilities2.m
+
+All other files of this project are governed by the license expressed in
+the file COPYING, which contains the full text of the GNU Lesser General
+Public License, version 3.  The program as a whole is also governed by
+the GNU LGPLv3 (that is, the file COPYING), as per the requirements of
+the latter.

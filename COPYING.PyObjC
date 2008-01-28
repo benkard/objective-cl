@@ -1,20 +1,6 @@
-The license expressed in this file applies to the following files in the
-`Objective-C/PyObjC' directory:
-
- * objc-runtime-apple.h
- * objc-runtime-apple.m
- * objc-runtime-gnu.h
- * objc-runtime-gnu.m
- * objc_support.h
- * objc_support.m
- * libffi_support.h
- * libffi_support.m
-
-All other files of this project are governed by the license expressed in
-the file COPYING, which contains the full text of the GNU General Public
-License, version 3.  The project as a whole is also governed by the GNU
-GPLv3 (that is, the file COPYING), as per the requirements of the
-latter.
+Note that this file does not apply to the whole of the program contained
+in this directory and its subdirectories.  Please see the file LICENSE
+for details.
 
 --
 
