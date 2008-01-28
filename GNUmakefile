@@ -60,4 +60,4 @@ config.make: configure config.make.in
 	sh ./configure
 
 configure: configure.ac
-	autoreconf
+	autoreconf || touch configure
