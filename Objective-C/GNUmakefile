@@ -33,7 +33,7 @@ LIBRARY_NAME = libobjcl
 RPM_DISABLE_RELOCATABLE = YES
 ADDITIONAL_OBJCFLAGS = -Wall -g -DVERSION=\"$(VERSION)\" -I/usr/local/include
 
-libobjcl_OBJC_FILES = libobjcl.m objc_support.m objc-runtime-apple.m objc-runtime-gnu.m
+libobjcl_OBJC_FILES = libobjcl.m PyObjC/objc_support.m PyObjC/objc-runtime-apple.m PyObjC/objc-runtime-gnu.m
 LIBRARIES_DEPEND_UPON = $(FND_LIBS) $(GUI_LIBS) $(OBJC_LIBS) $(SYSTEM_LIBS) $(CONFIG_SYSTEM_LIBS)
 
 ADDITIONAL_LDFLAGS = $(LIBS)
@@ -49,13 +49,14 @@ ADDITIONAL_OBJCFLAGS += -I../libffi/include
 FFI_DEPS += ../libffi/.libs/libffi.a
 FFI_CLEAN += libffi_clean
 endif
-libobjcl_OBJC_FILES += libffi_support.m
+libobjcl_OBJC_FILES += PyObjC/libffi_support.m
 endif
 
 ifneq ($(COMMON_MAKE_LOADED),)
 -include $(GNUSTEP_MAKEFILES)/library.make
 
 before-all:: $(FFI_DEPS)
+	mkdir -p $(GNUSTEP_OBJ_DIR)/PyObjC
 
 after-clean:: $(FFI_CLEAN)
 
@@ -77,7 +78,7 @@ obj/libobjcl.dylib.$(VERSION): $(libobjcl_OBJ_FILES)
 	gcc -dynamiclib -current_version $(VERSION) -flat_namespace -undefined warning -install_name $(CURDIR)/obj/libobjcl.dylib.$(VERSION) -o $@ $(libobjcl_OBJ_FILES) -fnext-runtime -framework AppKit -framework Foundation -lm $(ADDITIONAL_LDFLAGS) $(ADDITIONAL_OBJCFLAGS)
 
 obj/%.o: %.m
-	mkdir -p obj
+	mkdir -p $(dir $@)
 	gcc -o $@ -c $< -MMD -MP -DNeXT_Foundation_LIBRARY=1 -DNeXT_GUI_LIBRARY=1 -DNeXT_RUNTIME=1 -dynamic -fno-common -fno-omit-frame-pointer -Wno-import -fno-strict-aliasing -fnext-runtime -I. $(ADDITIONAL_OBJCFLAGS)
 endif
 

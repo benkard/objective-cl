@@ -1,5 +1,5 @@
 The license expressed in this file applies to the following files in the
-`Objective-C' directory:
+`Objective-C/PyObjC' directory:
 
  * objc-runtime-apple.h
  * objc-runtime-apple.m

@@ -18,8 +18,8 @@
  */
 
 #import "libobjcl.h"
-#import "libffi_support.h"
-#import "objc_support.h"
+#import "PyObjC/libffi_support.h"
+#import "PyObjC/objc_support.h"
 
 #import <Foundation/Foundation.h>
 #include <stdarg.h>
