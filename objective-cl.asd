@@ -80,8 +80,11 @@
 (defvar *objc-obj-dir*)
 
 (defclass objc-source-file (source-file) ())
+(defclass objcl-c-source-file (objc-source-file) ()
+  (:documentation "An Objective-CL C source file"))
 
 (defmethod source-file-type ((c objc-source-file) (s module)) "m")
+(defmethod source-file-type ((c objcl-c-source-file) (s module)) "c")
 
 (defmethod perform :before (o (c objc-source-file))
   ;; Copy the Objective-C sources to the target directory.
@@ -92,7 +95,8 @@
                         (enough-namestring x source-dir))
                     (mapcan #'(lambda (x)
                                 (directory (merge-pathnames x source-dir)))
-                            '(#p"**/*.m" #p"**/*.h" #p"**/GNUmakefile.*"
+                            '(#p"**/*.c" #p"**/*.m" #p"**/*.h"
+                              #p"**/GNUmakefile.*"
                               #p"**/*.make" #p"**/GNUmakefile"
                               #p"**/*.in" #p"**/configure" #p"**/configure.ac"
                               #p"libffi/**/*" #p"libffi/**/*.*"))))
@@ -136,6 +140,14 @@
                            (directory-namestring (first files))))
     files))
 
+#+(or)
+(defmethod output-files ((o compile-op) (c objc-source-file))
+  (print (list (merge-pathnames (make-pathname :directory '(:relative "Objective-C" "obj")
+                                        :type "o")
+                         (merge-pathnames
+                          (component-pathname (find-system "objective-cl-libobjcl"))
+                          (component-pathname c))))))
+
 (defmethod output-files ((o compile-op) (c objc-source-file))
   (list (merge-pathnames (make-pathname :directory '(:relative "obj")
                                         :type "o")
@@ -159,8 +171,11 @@
   :depends-on ()
   :components ((:module "Objective-C"
                         :components ((:objc-source-file "libobjcl")
-                                     (:objc-source-file "libffi_support")
-                                     (:objc-source-file "objc_support")
-                                     (:objc-source-file "objc-runtime-apple")
-                                     (:objc-source-file "objc-runtime-gnu"))))
+                                     (:objc-source-file "PyObjC/libffi_support")
+                                     (:objc-source-file "PyObjC/objc_support")
+                                     (:objc-source-file "PyObjC/objc-runtime-apple")
+                                     (:objc-source-file "PyObjC/objc-runtime-compat")
+                                     (:objc-source-file "PyObjC/objc-runtime-gnu")
+                                     (:objc-source-file "JIGS/ObjcRuntimeUtilities2")
+                                     (:objcl-c-source-file "JIGS/ObjcRuntimeUtilities"))))
   :serial t)

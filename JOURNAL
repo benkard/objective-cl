@@ -222,7 +222,7 @@ management, as we could put instances into the hash tables and register
 finalisers for them just after they were fully created.
 
 So that's what I made the program do.  One of the results is much
-shorter and clearer code, but the more interestng one is a speed
+shorter and clearer code, but the more interesting one is a speed
 improvement of around the factor 3, making 100'000 calls to
 NSMethodSignature#getArgumentTypeAtIndex:, which previously called
 MAKE-INSTANCE for each returned value, take around 10s on my machine.
