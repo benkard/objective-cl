@@ -331,6 +331,17 @@ objcl_get_runtime_type (void)
 }
 
 
+int
+objcl_objc2_p (void)
+{
+#ifdef __OBJC2__
+  return 1;
+#else
+  return 0;
+#endif
+}
+
+
 long
 objcl_sizeof_type (const char *typespec)
 {

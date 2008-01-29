@@ -83,6 +83,8 @@
 
 (defcfun ("objcl_get_runtime_type" %objcl-get-runtime-type) :string)
 
+(defcfun ("objcl_objc2_p" %objcl-objc2-p) :int)
+
 (defcfun ("objcl_sizeof_type" %objcl-sizeof-type) :long
   (typespec :string))
 
@@ -678,3 +680,6 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
             runtime)
     (cond ((string= runtime "GNU") :gnu)
           ((string= runtime "NeXT") :next))))
+
+(defun objc-2.0-runtime-p ()
+  (not (zerop (%objcl-objc2-p))))

@@ -104,6 +104,9 @@ objcl_get_no (void);
 const char *
 objcl_get_runtime_type (void);
 
+int
+objcl_objc2_p (void);
+
 long
 objcl_sizeof_type (const char *typespec);
 
