@@ -1,5 +1,29 @@
 -*- mode: muse -*-
 
+* 2008-01-29, 21:34:16 CET
+
+In the Objective-C 2.0 runtime, the functions
+class_add{Method,Protocol,Ivar}, class_copyMethodList,
+{class,protocol}_copyProtocolList, protocol_copyMethodDescriptionList,
+and class_copyPropertyList are probably our friends.
+class_copyMethodList may be used to together with
+method_setImplementation for good effect.
+
+But...  What about the GNU runtime?  Is it okay to inspect a Class'
+`methods' member (see objc.h and objc-api.h) and change the IMPs that
+the individual members point to?  Is it possible to add new methods at
+runtime by using class_add_method_list and thus
+ObjcUtilities_register_method_list?  Is the behaviour of these two
+functions specified if a method list for a given class has already been
+registered in the past?  If so, do they replace the original list or
+amend it?
+
+Changing ivars after class creation seems generally impossible.  This
+applies to all the supported runtimes, and I think I can actually see
+why.  I don't think it's a serious problem, but I do consider it
+regrettable.
+
+
 * 2008-01-28, 20:45:35 CET
 
 I've added the following files as a first step to support class
