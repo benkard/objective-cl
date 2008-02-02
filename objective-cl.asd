@@ -66,6 +66,11 @@
                                                           "defpackage"
                                                           "method-invocation"
                                                           "data-types"))
+                 (:file "class-definition"   :depends-on ("defpackage"
+                                                          "libobjcl"
+                                                          "init"
+                                                          "method-invocation"
+                                                          "data-types"))
                  (:file "compiler-macros"    :depends-on ("defpackage"
                                                           "method-invocation"
                                                           "conditions")))))
