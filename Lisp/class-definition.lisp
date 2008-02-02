@@ -49,7 +49,7 @@
   t)
 
 (defmethod c2mop:direct-slot-definition-class ((class objective-c-class)
-                                         &rest initargs)
+                                               &rest initargs)
   (if (some #'(lambda (symbol) (let ((nada '#:nada))
                                  (not (eq nada (getf initargs symbol nada)))))
             '(:foreign-type :foreign-name))
@@ -58,7 +58,7 @@
 
 
 (defmethod c2mop:effective-slot-definition-class ((class objective-c-class)
-                                            &rest initargs)
+                                                  &rest initargs)
   (if (some #'(lambda (symbol) (let ((nada '#:nada))
                                  (not (eq nada (getf initargs symbol nada)))))
             '(:foreign-type :foreign-name))
