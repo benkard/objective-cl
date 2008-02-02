@@ -233,7 +233,9 @@ conventional case for namespace identifiers in Objective-C."
         (let ((class-name (objc-class-name->symbol class-name-string)))
           (or (find-class class-name nil)
               (c2mop:ensure-class class-name
-                                  :metaclass 'objective-c-class
+                                  :metaclass (class-name
+                                              (find-objc-meta-class
+                                               class-name-string))
                                   :pointer class-ptr
                                   :wrapped-foreign-class class-name-string))))))
 
@@ -258,7 +260,8 @@ conventional case for namespace identifiers in Objective-C."
           (or (find-class class-name nil)
               (c2mop:ensure-class class-name
                                   :metaclass 'objective-c-meta-class
-                                  :pointer class-ptr))))))
+                                  :pointer class-ptr
+                                  :direct-superclasses '(objective-c-class)))))))
 
 
 (defun objc-pointer-null (pointer)

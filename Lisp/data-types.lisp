@@ -93,7 +93,7 @@ a suitable class method instead as you would in Objective-C.
   ())
 
 
-(defclass objective-c-meta-class (standard-class c-pointer-wrapper)
+(defclass objective-c-meta-class (objective-c-class)
   ())
 
 

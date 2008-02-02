@@ -40,6 +40,11 @@
   ())
 
 
+(defmethod c2mop:validate-superclass ((class objective-c-meta-class)
+                                      (superclass standard-class))
+  t)
+
+
 (defmethod c2mop:direct-slot-definition-class ((class objective-c-class)
                                          &rest initargs)
   (if (some #'(lambda (symbol) (let ((nada '#:nada))
@@ -160,5 +165,5 @@
    (nothing :accessor ns-string-nothing
             :initarg :ns-string
             :initform 100))
-  (:metaclass objective-c-class)
+  (:metaclass objective-c-classes::%ns-string)
   (:wrapped-foreign-class "NSString"))
