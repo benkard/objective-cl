@@ -26,7 +26,7 @@
    (foreign-type :initarg :foreign-type
                  :initform nil
                  :accessor slot-definition-foreign-type)
-   #+(#:unused)
+   #+#:unused
    (property :initarg :property
              :accessor slot-definition-property-p
              :type boolean)))
@@ -35,7 +35,7 @@
      (foreign-slot-definition-mixin c2mop:standard-direct-slot-definition)
   ())
 
-(defclass foreign-effectve-slot-definition
+(defclass foreign-effective-slot-definition
      (foreign-slot-definition-mixin c2mop:standard-effective-slot-definition)
   ())
 
@@ -54,15 +54,15 @@
   (if (some #'(lambda (symbol) (let ((nada '#:nada))
                                  (not (eq nada (getf initargs symbol nada)))))
             '(:foreign-type :foreign-name))
-      (find-class 'foreign-direct-slot-definition)
-      (find-class 'c2mop:standard-direct-slot-definition)))
+      (find-class 'foreign-effective-slot-definition)
+      (find-class 'c2mop:standard-effective-slot-definition)))
 
 
 (defmethod c2mop:slot-value-using-class ((class objective-c-class)
                                          instance
                                          effective-slot-definition)
   (etypecase effective-slot-definition
-    (standard-effective-slot-definition (call-next-method))
+    (c2mop:standard-effective-slot-definition (call-next-method))
     (foreign-effective-slot-definition
      (cerror "FIXME" '()))))
 
@@ -72,7 +72,7 @@
                                                 instance
                                                 effective-slot-definition)
   (etypecase effective-slot-definition
-    (standard-effective-slot-definition (call-next-method))
+    (c2mop:standard-effective-slot-definition (call-next-method))
     (foreign-effective-slot-definition
      (cerror "FIXME" '()))))
 
@@ -82,7 +82,7 @@
                                           effective-slot-definition)
   (declare (ignore instance))
   (etypecase effective-slot-definition
-    (standard-effective-slot-definition (call-next-method))
+    (c2mop:standard-effective-slot-definition (call-next-method))
     (foreign-effective-slot-definition t)))
 
 
