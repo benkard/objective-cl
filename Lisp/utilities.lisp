@@ -251,7 +251,7 @@ invocations will return numbers.)
 (defmethod print-object ((class objective-c-class) stream)
   (print-unreadable-object (class stream)
     (with-slots (pointer) class
-      (format stream "~S ~A {~X}"
+      (format stream "~S ~S {~X}"
               (type-of class)
               (class-name class)
               (cffi:pointer-address pointer)))))
@@ -260,7 +260,7 @@ invocations will return numbers.)
 (defmethod print-object ((meta-class objective-c-meta-class) stream)
   (print-unreadable-object (meta-class stream)
     (with-slots (pointer) meta-class
-      (format stream "~S ~A {~X}"
+      (format stream "~S ~S {~X}"
               (type-of meta-class)
               (class-name meta-class)
               (cffi:pointer-address pointer)))))

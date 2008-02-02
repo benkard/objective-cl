@@ -64,6 +64,11 @@
                                          (subseq (first components) 1))))))
 
 
+(defun export-and-return (symbol)
+  (export (list symbol))
+  symbol)
+
+
 (defun objc-class-name->symbol (class-name)
   (let ((prefix-end (1- (position-if #'lower-case-p class-name))))
     (cond ((and prefix-end (> prefix-end 0))
@@ -98,12 +103,14 @@
     ;; because we want this procedure to work as expected for any value
     ;; of (READTABLE-CASE *READTABLE*), which means that 'ns-object
     ;; should always mean the same thing as "NSObject".
-    (read-from-string class-name)))
+    (export-and-return
+     (read-from-string class-name))))
 
 
 (defun objc-meta-class-name->symbol (meta-class-name)
   (let ((*package* (find-package '#:objective-c-classes)))
-    (read-from-string
-     (concatenate 'string
-                  "%"
-                  (symbol-name (objc-class-name->symbol meta-class-name))))))
+    (export-and-return
+     (read-from-string
+      (concatenate 'string
+                   "%"
+                   (symbol-name (objc-class-name->symbol meta-class-name)))))))
