@@ -20,7 +20,8 @@
   :version "0.0.4"
   :author "Matthias Benkard <matthias@benkard.de>"
   :licence "GNU General Public License, version 3 or higher"
-  :depends-on (#:cffi #:trivial-garbage #:split-sequence #:objective-cl-libobjcl)
+  :depends-on (#:cffi #:trivial-garbage #:split-sequence #:objective-cl-libobjcl
+               #:closer-mop)
   :components
   ((:module "Lisp"
     :components ((:file "defpackage")
