@@ -172,7 +172,7 @@ Returns: (VALUES typespec byte-position string-position)"
                               (#\d :double)
                               (#\v :void)
                               (#\@ 'id)
-                              (#\# 'objc-class)
+                              (#\# 'objective-c-class)
                               (#\: 'selector)
                               (#\* :string)
                               (#\? :unknown))

@@ -21,7 +21,7 @@
   (:export #:run-all-tests)
   (:shadowing-import-from #:objcl
                           #:struct #:union #:pointer #:oneway #:out #:in
-                          #:inout #:const #:parse-typespec #:objc-class
+                          #:inout #:const #:parse-typespec #:objective-c-class
                           #:bit-field #:opaque #:bycopy #:byref
                           #:primitive-invoke))
 (in-package #:mulk.objective-cl.tests)
@@ -89,7 +89,7 @@
    ((ensure-same (primitive-invoke (find-objc-class 'ns-object)
                                    'self 'id)
                  (primitive-invoke (find-objc-class 'ns-object)
-                                   'class 'objc-class)))
+                                   'class 'objective-c-class)))
    ((ensure-different (primitive-invoke (find-objc-class 'ns-object)
                                    'self 'id)
                       (primitive-invoke (find-objc-class 'ns-number)
@@ -193,7 +193,7 @@
                    (:unsigned-long-long ())
                    (:float ())
                    (:double ())
-                   (id ()) (objc-class ()) (selector ())
+                   (id ()) (objective-c-class ()) (selector ())
                    (:string ())
                    (:unknown ()))))
    ((ensure (let ((funky-spec (parse-typespec "{?=cC}")))

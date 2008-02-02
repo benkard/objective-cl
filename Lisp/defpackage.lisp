@@ -68,4 +68,9 @@
            #:next-runtime))
 
 
+(defpackage #:objective-c-classes
+  (:nicknames #:objc-classes)
+  (:use))
+
+
 #-(or cmu sbcl) (declaim (declaration values))

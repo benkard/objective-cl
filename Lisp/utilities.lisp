@@ -158,10 +158,10 @@ invocations will return numbers.)
   ;; matter (it only does so on NeXT/x86, but neither on GNUstep nor on
   ;; NeXT/ppc32).
   (or (id-eql x y)
-      (truep (if (typep x '(or id objc-class exception))
+      (truep (if (typep x '(or id objective-c-class exception))
                  (invoke x :is-equal y)
                  (progn
-                   (assert (typep y '(or id objc-class exception)))
+                   (assert (typep y '(or id objective-c-class exception)))
                    (invoke y :is-equal x))))))
 
 
@@ -182,10 +182,10 @@ invocations will return numbers.)
 (defmethod objc-eql (x (y id))
   (id-eql x y))
 
-(defmethod objc-eql ((x objc-class) y)
+(defmethod objc-eql ((x objective-c-class) y)
   (id-eql x y))
 
-(defmethod objc-eql (x (y objc-class))
+(defmethod objc-eql (x (y objective-c-class))
   (id-eql x y))
 
 (defmethod objc-eql ((x exception) y)
@@ -213,10 +213,10 @@ invocations will return numbers.)
 (defmethod objc-equal (x (y id))
   (id-equal x y))
 
-(defmethod objc-equal ((x objc-class) y)
+(defmethod objc-equal ((x objective-c-class) y)
   (id-equal x y))
 
-(defmethod objc-equal (x (y objc-class))
+(defmethod objc-equal (x (y objective-c-class))
   (id-equal x y))
 
 (defmethod objc-equal ((x exception) y)
@@ -248,12 +248,12 @@ invocations will return numbers.)
                   (cffi:pointer-address pointer))))))
 
 
-(defmethod print-object ((class objc-class) stream)
+(defmethod print-object ((class objective-c-class) stream)
   (print-unreadable-object (class stream)
     (with-slots (pointer) class
       (format stream "~S ~A {~X}"
               (type-of class)
-              (objc-class-name class)
+              (class-name class)
               (cffi:pointer-address pointer)))))
 
 

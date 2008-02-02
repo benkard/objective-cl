@@ -89,12 +89,12 @@ a suitable class method instead as you would in Objective-C.
   __invoke__, __invoke-by-name__, __exception__"))
 
 
-(defclass objc-class (c-pointer-wrapper) ()
-  (:documentation ""))
+(defclass objective-c-class (standard-class c-pointer-wrapper)
+  ())
 
 
 (defclass objc-meta-class (c-pointer-wrapper)
-  ((meta-class-for-class :type (or null id objc-class)
+  ((meta-class-for-class :type (or null id objective-c-class)
                          :initarg :meta-class-for-class
                          :reader meta-class-for-class))
   (:documentation ""))

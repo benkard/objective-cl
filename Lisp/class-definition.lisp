@@ -39,11 +39,6 @@
      (foreign-slot-definition-mixin c2mop:standard-effective-slot-definition)
   ())
 
-(defclass objective-c-class (standard-class)
-  ((class-ptr :initarg :class-ptr
-              :type c-pointer
-              :accessor pointer-to)))
-
 
 (defmethod c2mop:direct-slot-definition-class ((class objective-c-class)
                                          &rest initargs)
@@ -82,6 +77,15 @@
      (cerror "FIXME" '()))))
 
 
+(defmethod c2mop:slot-boundp-using-class ((class objective-c-class)
+                                          instance
+                                          effective-slot-definition)
+  (declare (ignore instance))
+  (etypecase effective-slot-definition
+    (standard-effective-slot-definition (call-next-method))
+    (foreign-effective-slot-definition t)))
+
+
 (defmethod c2mop:compute-slots ((class objective-c-class))
   ;; FIXME: Maybe add lots of foreign slots here whose presence the
   ;; Objective-C runtime tells us.
@@ -93,7 +97,6 @@
   (let ((class (call-next-method)))
     class))
 
-#+(or)
 (defmethod initialize-instance ((class objective-c-class)
                                 &key documentation
                                      name
@@ -101,11 +104,10 @@
                                      direct-superclasses
                                      direct-slots
                                      direct-default-initargs
-                                     class-ptr
+                                     pointer
                                      wrapped-foreign-class)
   (call-next-method))
 
-#+(or)
 (defmethod reinitialize-instance ((class objective-c-class)
                                   &key documentation
                                        name
@@ -113,7 +115,7 @@
                                        direct-superclasses
                                        direct-slots
                                        direct-default-initargs
-                                       class-ptr
+                                       pointer
                                        wrapped-foreign-class)
   (call-next-method))
 

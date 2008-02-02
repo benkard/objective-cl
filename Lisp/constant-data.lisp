@@ -74,7 +74,7 @@
 
 (defparameter *objcl-type-map*
   '((id       . id)
-    (class    . objc-class)
+    (class    . objective-c-class)
     (sel      . selector)
     (exc      . exception)
     (chr      . character)

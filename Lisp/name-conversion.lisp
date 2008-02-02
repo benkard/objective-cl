@@ -62,3 +62,40 @@
                                         (string (char (first components) 0))
                                         (string-upcase
                                          (subseq (first components) 1))))))
+
+
+(defun objc-class-name->symbol (class-name)
+  (let ((prefix-end (1- (position-if #'lower-case-p class-name))))
+    (cond ((and prefix-end (> prefix-end 0))
+           ;; There are n upper case chars at the head of the name.
+           ;; Take the first (1- n) of them and downcase them.  Then,
+           ;; put a dash right after them and downcase the n'th char as
+           ;; well, such that "NSFoo" becomes "ns-foo".
+           (setq class-name (concatenate 'string
+                                         (string-downcase
+                                          (subseq class-name 0 prefix-end))
+                                         "-"
+                                         (string
+                                          (char-downcase
+                                           (char class-name prefix-end)))
+                                         (subseq class-name (1+ prefix-end)))))
+          ((and prefix-end (zerop prefix-end))
+           ;; There is exactly one upper case char at the head of the
+           ;; name.  just downcase it and move on.
+           (setq class-name (copy-seq class-name))
+           (setf (char class-name 0) (char-downcase (char class-name 0))))))
+  (loop for delim-position = (position-if #'upper-case-p class-name)
+        while delim-position
+        do (setq class-name (concatenate 'string
+                                         (subseq class-name 0 delim-position)
+                                         "-"
+                                         (string
+                                          (char-downcase
+                                           (char class-name delim-position)))
+                                         (subseq class-name (1+ delim-position)))))
+  (let ((*package* (find-package '#:objective-c-classes)))
+    ;; Why do we use READ-FROM-STRING rather than MAKE-SYMBOL?  That is
+    ;; because we want this procedure to work as expected for any value
+    ;; of (READTABLE-CASE *READTABLE*), which means that 'ns-object
+    ;; should always mean the same thing as "NSObject".
+    (read-from-string class-name)))

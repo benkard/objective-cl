@@ -19,16 +19,18 @@
 
 
 (defvar *id-objects* (make-weak-value-hash-table))
-(defvar *class-objects* (make-weak-value-hash-table))
 (defvar *exception-objects* (make-weak-value-hash-table))
 (defvar *selector-objects* (make-weak-value-hash-table))
 (defvar *meta-class-objects* (make-weak-value-hash-table))
 
 
 (defun make-pointer-wrapper (class &rest initargs &key pointer &allow-other-keys)
+  (when (and (not (eq 'selector class))
+             (%objcl-object-is-class pointer))
+    (return-from make-pointer-wrapper
+      (find-objc-class-by-name (%objcl-class-name pointer))))
   (let* ((hash-table (ecase class
                        ((id) *id-objects*)
-                       ((objc-class) *class-objects*)
                        ((exception) *exception-objects*)
                        ((selector) *selector-objects*)
                        ((objc-meta-class) *meta-class-objects*)))

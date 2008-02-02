@@ -219,7 +219,7 @@ easier to use with __apply__.
     (let* ((raw-argc (the argument-number (length args)))
            (real-argc (+ raw-argc 2))
            (return-c-type (case return-type
-                            ((id objc-class exception selector) :pointer)
+                            ((id objective-c-class exception selector) :pointer)
                             (otherwise return-type)))
            (selector (if (typep method-name 'selector)
                          method-name
@@ -305,7 +305,7 @@ easier to use with __apply__.
                   ;; us.
                   (error (make-condition 'exception :pointer error-cell)))
                 (case return-type
-                  ((id objc-class exception selector)
+                  ((id objective-c-class exception selector)
                    (let ((*skip-retaining*
                           (or *skip-retaining*
                               (constructor-name-p (selector-name selector))))
@@ -357,7 +357,8 @@ easier to use with __apply__.
 
 (defun typespec->c-type (typespec)
   (case (car typespec)
-    ((:pointer struct union id objc-class exception array selector) :pointer)
+    ((:pointer struct union id objective-c-class exception array selector)
+     :pointer)
     ((:string) :string)
     (otherwise (car typespec))))
 
@@ -405,7 +406,7 @@ easier to use with __apply__.
                   do (case (car arg-type)
                        ((:pointer)
                         (setf (argref :pointer i) arg))
-                       ((objc-class exception)
+                       ((objective-c-class exception)
                         (setf (argref :pointer i) (pointer-to arg)))
                        ((selector)
                         (setf (argref :pointer i) (pointer-to (selector arg))))
@@ -457,7 +458,7 @@ easier to use with __apply__.
             (unless (cffi:null-pointer-p error-cell)
               (error (make-condition 'exception :pointer error-cell)))
             (case (car return-type)
-              ((id objc-class exception selector)
+              ((id objective-c-class exception selector)
                (let ((*skip-retaining*
                       (or *skip-retaining*
                           (constructor-name-p (selector-name selector)))))
@@ -489,7 +490,7 @@ easier to use with __apply__.
 (defcoercion id ((x id))
   x)
 
-(defcoercion id ((x objc-class))
+(defcoercion id ((x objective-c-class))
   x)
 
 (defcoercion id ((x exception))
@@ -537,7 +538,7 @@ easier to use with __apply__.
 (defcoercion class ((x exception))
   (object-get-class x))
 
-(defcoercion class ((x objc-class))
+(defcoercion class ((x objective-c-class))
   x)
 
 (defcoercion class ((x string))

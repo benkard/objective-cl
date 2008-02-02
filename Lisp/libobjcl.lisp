@@ -158,7 +158,7 @@ objects or classes, let alone send messages to them.
 
 
 (declaim (ftype (function ((or string symbol) &optional t)
-                          (or null objc-class))
+                          (or null objective-c-class))
                 find-objc-class))
 (defun find-objc-class (class-name &optional errorp)
   "Retrieve an Objective-C class by name.
@@ -224,16 +224,18 @@ conventional case for namespace identifiers in Objective-C."
                   nil))))
 
 
-(declaim (ftype (function (string) (or null objc-class))
+(declaim (ftype (function (string) (or null objective-c-class))
                 find-objc-class-by-name))
-(defun find-objc-class-by-name (class-name)
-  (let ((class-ptr (%objcl-find-class class-name)))
+(defun find-objc-class-by-name (class-name-string)
+  (let ((class-ptr (%objcl-find-class class-name-string)))
     (if (objc-pointer-null class-ptr)
         nil
-        #-(or t openmcl) (make-pointer-wrapper 'objc-class :pointer class-ptr)
-        #+(and nil openmcl) (change-class (make-pointer-wrapper 'c-pointer-wrapper
-                                             :pointer value)
-                                          'objc-class))))
+        (let ((class-name (objc-class-name->symbol class-name-string)))
+          (or (find-class class-name nil)
+              (c2mop:ensure-class class-name
+                                  :metaclass 'objective-c-class
+                                  :pointer class-ptr
+                                  :wrapped-foreign-class class-name-string))))))
 
 
 (defun find-objc-meta-class (meta-class-name &optional errorp)
@@ -279,7 +281,7 @@ conventional case for namespace identifiers in Objective-C."
     (make-pointer-wrapper 'selector :pointer selector-ptr)))
 
 
-(declaim (ftype (function ((or objc-class id exception)) string)
+(declaim (ftype (function ((or objective-c-class id exception)) string)
                 objc-class-name))
 (defun objc-class-name (class)
   "Find the name of a class.
@@ -315,7 +317,7 @@ If *name* is the name of an existing class:
 ## See Also:
 
   __find-objc-class__"
-  (declare (type (or objc-class id exception) class))
+  (declare (type (or objective-c-class id exception) class))
   (%objcl-class-name (pointer-to class)))
 
 
@@ -359,7 +361,7 @@ If *name* is the name of an existing selector:
   (%objcl-selector-name (pointer-to selector)))
 
 
-(declaim (ftype (function ((or id objc-class exception) selector) t)
+(declaim (ftype (function ((or id objective-c-class exception) selector) t)
                 get-method-implementation))
 (defun get-method-implementation (object selector)
   (declare (type selector selector))
@@ -563,8 +565,8 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
   (%objcl-object-is-meta-class (pointer-to obj)))
 
 (defun object-get-class (obj)
-  (make-pointer-wrapper 'objc-class
-     :pointer (%objcl-object-get-class (pointer-to obj))))
+  (find-objc-class-by-name
+   (%objcl-class-name (%objcl-object-get-class (pointer-to obj)))))
 
 (defun object-get-meta-class (obj)
   (make-pointer-wrapper 'objc-meta-class

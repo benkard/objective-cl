@@ -59,7 +59,8 @@
                                                           "memory-management"))
                  (:file "memory-management"  :depends-on ("defpackage"
                                                           "weak-hash-tables"
-                                                          "parameters"))
+                                                          "parameters"
+                                                          "conditions"))
                  (:file "reader-syntax"      :depends-on ("defpackage"
                                                           "method-invocation"))
                  (:file "utilities"          :depends-on ("init"
