@@ -93,11 +93,8 @@ a suitable class method instead as you would in Objective-C.
   ())
 
 
-(defclass objc-meta-class (c-pointer-wrapper)
-  ((meta-class-for-class :type (or null id objective-c-class)
-                         :initarg :meta-class-for-class
-                         :reader meta-class-for-class))
-  (:documentation ""))
+(defclass objective-c-meta-class (standard-class c-pointer-wrapper)
+  ())
 
 
 (define-condition exception (error)

@@ -119,6 +119,26 @@
                                        wrapped-foreign-class)
   (call-next-method))
 
+(defmethod initialize-instance ((class objective-c-meta-class)
+                                &key documentation
+                                     name
+                                     plist
+                                     direct-superclasses
+                                     direct-slots
+                                     direct-default-initargs
+                                     pointer)
+  (call-next-method))
+
+(defmethod reinitialize-instance ((class objective-c-meta-class)
+                                  &key documentation
+                                       name
+                                       plist
+                                       direct-superclasses
+                                       direct-slots
+                                       direct-default-initargs
+                                       pointer)
+  (call-next-method))
+
 #+(or)
 (defmethod c2mop:compute-effective-slot-definition ((class objective-c-class)
                                                     slot-name

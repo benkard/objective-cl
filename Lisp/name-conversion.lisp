@@ -99,3 +99,11 @@
     ;; of (READTABLE-CASE *READTABLE*), which means that 'ns-object
     ;; should always mean the same thing as "NSObject".
     (read-from-string class-name)))
+
+
+(defun objc-meta-class-name->symbol (meta-class-name)
+  (let ((*package* (find-package '#:objective-c-classes)))
+    (read-from-string
+     (concatenate 'string
+                  "%"
+                  (symbol-name (objc-class-name->symbol meta-class-name))))))

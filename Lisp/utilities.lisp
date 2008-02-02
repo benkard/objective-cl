@@ -257,12 +257,12 @@ invocations will return numbers.)
               (cffi:pointer-address pointer)))))
 
 
-(defmethod print-object ((meta-class objc-meta-class) stream)
+(defmethod print-object ((meta-class objective-c-meta-class) stream)
   (print-unreadable-object (meta-class stream)
-    (with-slots (meta-class-for-class pointer) meta-class
+    (with-slots (pointer) meta-class
       (format stream "~S ~A {~X}"
               (type-of meta-class)
-              (objc-class-name meta-class-for-class)
+              (class-name meta-class)
               (cffi:pointer-address pointer)))))
 
 

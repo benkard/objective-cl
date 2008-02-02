@@ -250,14 +250,16 @@ conventional case for namespace identifiers in Objective-C."
                        nil))))
 
 
-(defun find-objc-meta-class-by-name (class-name)
-  (let ((class-ptr (%objcl-find-meta-class class-name)))
+(defun find-objc-meta-class-by-name (class-name-string)
+  (let ((class-ptr (%objcl-find-meta-class class-name-string)))
     (if (objc-pointer-null class-ptr)
         nil
-        #-(or t openmcl) (make-pointer-wrapper 'objc-meta-class :pointer class-ptr)
-        #+(and nil openmcl) (change-class (make-pointer-wrapper 'c-pointer-wrapper
-                                             :pointer value)
-                                          'objc-meta-class))))
+        (let ((class-name (objc-meta-class-name->symbol class-name-string)))
+          (or (find-class class-name nil)
+              (c2mop:ensure-class class-name
+                                  :metaclass 'objective-c-meta-class
+                                  :pointer class-ptr))))))
+
 
 (defun objc-pointer-null (pointer)
   (or (cffi:null-pointer-p pointer)
@@ -569,9 +571,8 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
    (%objcl-class-name (%objcl-object-get-class (pointer-to obj)))))
 
 (defun object-get-meta-class (obj)
-  (make-pointer-wrapper 'objc-meta-class
-     :pointer (%objcl-object-get-meta-class (pointer-to obj))
-     :meta-class-for-class (object-get-class obj)))
+  (find-objc-meta-class-by-name
+   (%objcl-class-name (%objcl-object-get-class (pointer-to obj)))))
 
 (defun objc-class-of (obj)
   (cond ((object-is-meta-class-p obj)
