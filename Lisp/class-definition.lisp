@@ -44,6 +44,9 @@
                                       (superclass standard-class))
   t)
 
+(defmethod c2mop:validate-superclass ((class objective-c-class)
+                                      (superclass objective-c-class))
+  t)
 
 (defmethod c2mop:direct-slot-definition-class ((class objective-c-class)
                                          &rest initargs)
