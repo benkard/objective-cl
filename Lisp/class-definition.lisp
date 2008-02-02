@@ -72,7 +72,7 @@
   (etypecase effective-slot-definition
     (c2mop:standard-effective-slot-definition (call-next-method))
     (foreign-effective-slot-definition
-     (cerror "FIXME" '()))))
+     (cerror "Continue" "FIXME"))))
 
 
 (defmethod (setf c2mop:slot-value-using-class) (value
@@ -82,7 +82,7 @@
   (etypecase effective-slot-definition
     (c2mop:standard-effective-slot-definition (call-next-method))
     (foreign-effective-slot-definition
-     (cerror "FIXME" '()))))
+     (cerror "Continue" "FIXME"))))
 
 
 (defmethod c2mop:slot-boundp-using-class ((class objective-c-class)
@@ -92,6 +92,17 @@
   (etypecase effective-slot-definition
     (c2mop:standard-effective-slot-definition (call-next-method))
     (foreign-effective-slot-definition t)))
+
+
+(defmethod c2mop:slot-makunbound-using-class ((class objective-c-class)
+                                              instance
+                                              effective-slot-definition)
+  (declare (ignore instance))
+  (etypecase effective-slot-definition
+    (c2mop:standard-effective-slot-definition (call-next-method))
+    (foreign-effective-slot-definition
+     (cerror "Continue without doing anything"
+             "Tried to SLOT-MAKUNBOUND a foreign slot"))))
 
 
 (defmethod c2mop:compute-slots ((class objective-c-class))
