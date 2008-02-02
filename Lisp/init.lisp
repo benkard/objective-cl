@@ -31,7 +31,7 @@
     (defconstant +no+ (objcl-get-no)))
   (unless (boundp '+runtime-type+)
     (defconstant +runtime-type+ (runtime-type)))
-  (pushnew (case +runtime-type+
+  (pushnew (case (runtime-type)
              ((:gnu) 'objcl-features:gnu-runtime)
              ((:next) 'objcl-features:next-runtime))
            *features*))
