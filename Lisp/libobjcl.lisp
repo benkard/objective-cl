@@ -240,7 +240,8 @@ conventional case for namespace identifiers in Objective-C."
                                               (find-objc-meta-class
                                                class-name-string))
                                   :pointer class-ptr
-                                  :wrapped-foreign-class class-name-string))))))
+                                  :wrapped-foreign-class class-name-string
+                                  :direct-superclasses (list (objcl-class-superclass/pointer class-ptr))))))))
 
 
 (defun find-objc-meta-class (meta-class-name &optional errorp)
@@ -580,11 +581,14 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
   (find-objc-meta-class-by-name
    (%objcl-class-name (%objcl-object-get-class (pointer-to obj)))))
 
-(defun objcl-class-superclass (class)
-  (let ((superclass-ptr (%objcl-class-superclass (pointer-to class))))
+(defun objcl-class-superclass/pointer (class-ptr)
+  (let ((superclass-ptr (%objcl-class-superclass class-ptr)))
     (if (and superclass-ptr (%objcl-object-is-class superclass-ptr))
         (make-pointer-wrapper t :pointer superclass-ptr)
         nil)))
+
+(defun objcl-class-superclass (class)
+  (objcl-class-superclass/pointer (pointer-to class)))
 
 (defun objc-class-of (obj)
   (cond ((object-is-meta-class-p obj)

@@ -116,6 +116,17 @@
   (let ((class (call-next-method)))
     class))
 
+#+(or)
+(defmethod c2mop:class-direct-superclasses ((class objective-c-class))
+  (list (objcl-class-superclass class)))
+
+
+#+(or)
+(defmethod shared-initialize :after ((class objective-c-class)
+                                     slot-names
+                                     &rest initargs)
+  )
+
 (defmethod initialize-instance ((class objective-c-class)
                                 &key documentation
                                      name
