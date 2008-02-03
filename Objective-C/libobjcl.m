@@ -19,8 +19,6 @@
 
 #import "libobjcl.h"
 #import "PyObjC/libffi_support.h"
-#import "PyObjC/objc_support.h"
-#import "PyObjC/objc-runtime-compat.h"
 
 #import <Foundation/Foundation.h>
 #include <stdarg.h>
@@ -29,7 +27,6 @@
 #ifdef __NEXT_RUNTIME__
 #include <objc/objc-class.h>
 #endif
-
 
 static NSAutoreleasePool *objcl_autorelease_pool = NULL;
 
@@ -371,4 +368,71 @@ objcl_alignof_type (const char *typespec)
   if (sizeof (ssize_t) > sizeof (long))
     fprintf (stderr, "WARNING: objcl_align_typespec: Alignment might not fit into a long.\n");
   return PyObjCRT_AlignOfType (typespec);
+}
+
+
+void
+objcl_set_slot_value (id obj, const char *ivar_name, void *value)
+{
+  /* For the GNU runtime, this function is defined in objc-runtime-gnu.m. */
+  object_setInstanceVariable (obj, ivar_name, value);
+}
+
+
+void *
+objcl_slot_value (id obj, const char *ivar_name)
+{
+  void *value;
+  /* Caching Ivars may be useful here.  Using those instead of strings
+     is claimed to be faster. */
+  /* For the GNU runtime, this function is defined in objc-runtime-gnu.m. */
+  object_getInstanceVariable (obj, ivar_name, &value);
+  return value;
+}
+
+
+IVAR_T *
+objcl_class_direct_slots (Class class, unsigned int *count, unsigned int *element_size)
+{
+  IVAR_T *ivars;
+
+#ifdef __NEXT_RUNTIME__
+#else
+  int i;
+#endif
+
+  *element_size = sizeof (IVAR_T);
+
+#ifdef __NEXT_RUNTIME__
+  ivars = class_copyIvarList (class, count);
+#else
+  *count = class->ivars->ivar_count;
+  ivars = malloc ((*count) * (*element_size));
+  for (i = 0; i < *count; i++)
+    ivars[i] = &class->ivars->ivar_list[i];
+#endif
+
+  return ivars;
+}
+
+
+const char *
+objcl_slot_name (IVAR_T ivar)
+{
+#ifdef __NEXT_RUNTIME__
+  return ivar_getName (ivar);
+#else
+  return ivar->ivar_name;
+#endif
+}
+
+
+const char *
+objcl_slot_type (IVAR_T ivar)
+{
+#ifdef __NEXT_RUNTIME__
+  return ivar_getTypeEncoding (ivar);
+#else
+  return ivar->ivar_type;
+#endif
 }

@@ -22,6 +22,10 @@
 
 #include "../config.h"
 
+#import "PyObjC/pyobjc.h"
+#import "PyObjC/objc_support.h"
+#import "PyObjC/objc-runtime-compat.h"
+
 #ifdef USE_LIBFFI
 #ifdef HAVE_FFI_H
 #include <ffi.h>
@@ -31,6 +35,12 @@
 /* We are using our own build of libffi. */
 #include <ffi.h>
 #endif
+#endif
+
+#ifdef __NEXT_RUNTIME__
+typedef Ivar IVAR_T;
+#else
+typedef struct objc_ivar *IVAR_T;
 #endif
 
 extern NSException *objcl_oom_exception;
@@ -118,3 +128,20 @@ objcl_sizeof_return_type (const char *typespec);
 
 long
 objcl_alignof_type (const char *typespec);
+
+void
+objcl_set_slot_value (id obj, const char *ivar_name, void *value);
+
+void *
+objcl_slot_value (id obj, const char *ivar_name);
+
+/* The following function returns a freshly consed array that the caller
+   must deallocate. */
+IVAR_T *
+objcl_class_direct_slots (Class class, unsigned int *count, unsigned int *element_size);
+
+const char *
+objcl_slot_name (IVAR_T ivar);
+
+const char *
+objcl_slot_type (IVAR_T ivar);

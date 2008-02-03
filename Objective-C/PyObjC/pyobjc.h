@@ -5,7 +5,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "libobjcl.h"
 
 #ifdef __NEXT_RUNTIME__
 #include "pyobjc-compat.h"
@@ -51,5 +50,6 @@
 
 #include "objc_support.h"
 #include "libffi_support.h"
+#import "libobjcl.h"
 
 #endif /* __pyobjc_H */
