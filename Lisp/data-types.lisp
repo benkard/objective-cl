@@ -38,7 +38,8 @@
             :initform (cffi:null-pointer))))
 
 
-(defclass selector   (c-pointer-wrapper) ()
+(defclass selector   (c2mop:funcallable-standard-object c-pointer-wrapper) ()
+  (:metaclass c2mop:funcallable-standard-class)
   (:documentation "An Objective-C method selector.
 
 ## Description:
@@ -53,6 +54,18 @@ Use __find-selector__ instead.
 ## See also:
 
   __find-selector__"))
+
+
+(defmethod shared-initialize :after ((selector selector)
+                                     slot-names
+                                     &rest initargs
+                                     &key
+                                     &allow-other-keys)
+  (declare (ignore slot-names initargs))
+  (c2mop:set-funcallable-instance-function
+   selector
+   #'(lambda (receiver &rest args)
+       (apply #'invoke-by-name receiver selector args))))
 
 
 (defclass id         (c-pointer-wrapper) ()
