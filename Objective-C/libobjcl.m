@@ -49,6 +49,10 @@ objcl_initialise_runtime (void)
                                          userInfo: nil];
       [objcl_oom_exception retain];
     }
+
+#ifdef __NEXT_RUNTIME__
+  PyObjC_SetupRuntimeCompat ();
+#endif
 }
 
 
@@ -96,18 +100,7 @@ objcl_invoke_with_types (int argc,
 
   NS_DURING
     {
-#ifdef __NEXT_RUNTIME__
-      if (objcl_object_is_class (receiver))
-        method = class_getClassMethod (receiver, method_selector)->method_imp;
-      else
-        method = class_getInstanceMethod ([receiver class], method_selector)->method_imp;
-#else
-      method = objc_msg_lookup (receiver, method_selector);
-      /* Alternatively:
-         method = [receiver methodForSelector: method_selector];
-      */
-#endif
-
+      method = objcl_get_method_implementation (receiver, method_selector);
       if (method == NULL)
         [[NSException exceptionWithName: @"MLKNoApplicableMethod"
                       reason: @"Tried to call a non-existent method."
@@ -145,7 +138,7 @@ Class
 objcl_find_class (const char *class_name)
 {
 #ifdef __NEXT_RUNTIME__
-  return objc_lookUpClass (class_name);
+  return objc_getClass (class_name);
 #else
   return objc_lookup_class (class_name);
 #endif
@@ -239,12 +232,14 @@ objcl_get_method_implementation (id object,
 {
 #ifdef __NEXT_RUNTIME__
   if (objcl_object_is_class (object))
-    {
-      return class_getClassMethod (object, selector)->method_imp;
-    }
+    return method_getImplementation (class_getClassMethod (object, selector));
   else
     {
-      return class_getInstanceMethod ([object class], selector)->method_imp;
+#ifdef __OBJC2__
+      return class_getMethodImplementation ([object class], selector);
+#else
+      return method_getImplementation (class_getInstanceMethod ([object class], selector));
+#endif
     }
 #else
   return objc_msg_lookup (object, selector);
@@ -268,8 +263,7 @@ BOOL
 objcl_object_is_meta_class (id obj)
 {
 #ifdef __NEXT_RUNTIME__
-  /* FIXME: What to do here? */
-  return objcl_object_get_meta_class (obj) == obj;
+  return objcl_object_is_class (obj) && class_isMetaClass (obj);
 #else
   /* return CLS_ISMETA (ptr); */
   if (objcl_object_is_class (obj))
@@ -284,8 +278,7 @@ Class
 objcl_object_get_class (id obj)
 {
 #ifdef __NEXT_RUNTIME__
-  /* XXX? return obj->isa; */
-  return [obj class];
+  return object_getClass (obj);
 #else
   return object_get_class (obj);
 #endif

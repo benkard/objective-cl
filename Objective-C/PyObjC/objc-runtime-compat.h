@@ -25,6 +25,7 @@
  *    the preclass_* functions, not the regular ones because it isn't possible
  *    to emulate the entire ObjC 2.0 API on Tiger.
  */
+#include "pyobjc.h"
 #include <objc/objc-runtime.h>
 #include <objc/Protocol.h>
 
