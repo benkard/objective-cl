@@ -156,6 +156,18 @@ call to __invoke__, or an object of *type* __selector__, to *receiver*.
       ;=> #<GSCBufferString `Mulk.' {5B36087}>
 
 
+## Note:
+
+__selector__ objects are funcallable.  Therefore, the following calls
+are all equivalent:
+
+    (invoke-by-name instance \"stringWithCString:encoding:\" \"Mulk.\" 4)
+    (invoke instance :string-with-c-string \"Mulk.\" :encoding 4)
+    (funcall (selector \"stringWithCString:encoding:\") instance \"Mulk.\" 4)
+
+In fact, using __invoke-by-name__ is discouraged in favour of the latter
+form.
+
 ## Rationale:
 
 Whereas __invoke__ tries to make writing as well as reading method

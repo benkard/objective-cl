@@ -66,6 +66,26 @@
       form))
 
 
+;; Optimise all (SELECTOR ...) forms.  This is important in order to
+;; make (FUNCALL (SELECTOR ...) ...) efficient.
+(define-compiler-macro selector (&whole form method-name)
+  (if (and (constantp method-name)
+           (not (and (listp method-name)
+                     (eq 'load-time-value (car method-name)))))
+      `(load-time-value (handler-case
+                            (find-selector ,method-name)
+                          (serious-condition ()
+                            (warn
+                             (make-condition 'simple-style-warning
+                                             :format-control
+                                             "~S designates an unknown ~
+                                               method selector."
+                                             :format-arguments
+                                             (list ,method-name)))
+                            ,method-name)))
+      form))
+
+
 ;; This compiler macro is a bit more complicated than the preceding
 ;; ones.
 (define-compiler-macro invoke (receiver message-start &rest message-components)
