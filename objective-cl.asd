@@ -15,11 +15,13 @@
 ;;;; along with this program.  If not, see
 ;;;; <http://www.gnu.org/licenses/>.
 
+(defvar *objcl-version* "0.0.4")
+
 (defsystem "objective-cl"
   :description "A portable Objective C bridge."
-  :version "0.0.4"
+  :version *objcl-version*
   :author "Matthias Benkard <matthias@benkard.de>"
-  :licence "GNU General Public License, version 3 or higher"
+  :licence "GNU Lesser General Public License, version 3 or higher"
   :depends-on (#:cffi #:trivial-garbage #:split-sequence #:objective-cl-libobjcl
                #:closer-mop)
   :components
@@ -172,9 +174,9 @@
 
 (defsystem "objective-cl-libobjcl"
   :description "A portable Objective C bridge."
-  :version "0.0.4"
+  :version *objcl-version*
   :author "Matthias Benkard <matthias@benkard.de>"
-  :licence "GNU General Public License, version 3 or higher"
+  :licence "GNU Lesser General Public License, version 3 or higher"
   :depends-on ()
   :components ((:module "Objective-C"
                         :components ((:objc-source-file "libobjcl")

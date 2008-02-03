@@ -95,7 +95,8 @@ The following calls are all equivalent:
        (apply #'invoke-by-name receiver selector args))))
 
 
-(defclass id (c-pointer-wrapper) ()
+(defclass id (c-pointer-wrapper)
+     ()
   (:documentation "An instance of an Objective-C class.
 
 ## Description:
@@ -138,9 +139,9 @@ a suitable class method instead as you would in Objective-C.
 
 
 (define-condition exception (error)
-  ((pointer :type     c-pointer
-            :accessor pointer-to
-            :initarg  :pointer))
+    ((pointer :type     c-pointer
+              :accessor pointer-to
+              :initarg  :pointer))
   (:report (lambda (condition stream)
              (format stream
                      "The Objective-C runtime has issued an exception of ~
