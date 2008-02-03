@@ -406,10 +406,15 @@ objcl_class_direct_slots (Class class, unsigned int *count, unsigned int *elemen
 #ifdef __NEXT_RUNTIME__
   ivars = class_copyIvarList (class, count);
 #else
-  *count = class->ivars->ivar_count;
-  ivars = malloc ((*count) * (*element_size));
-  for (i = 0; i < *count; i++)
-    ivars[i] = &class->ivars->ivar_list[i];
+  *count = (class->ivars ? class->ivars->ivar_count : 0);
+  if (!*count)
+    ivars = NULL;
+  else
+    {
+      ivars = malloc ((*count) * (*element_size));
+      for (i = 0; i < *count; i++)
+        ivars[i] = &class->ivars->ivar_list[i];
+    }
 #endif
 
   return ivars;

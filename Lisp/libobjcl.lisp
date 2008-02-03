@@ -97,6 +97,26 @@
 (defcfun ("objcl_alignof_type" %objcl-alignof-type) :long
   (typespec :string))
 
+(defcfun ("objcl_set_slot_value" %objcl-set-slot-value) :void
+  (obj :pointer) ; id
+  (slot-name :string)
+  (value :pointer)) ; void
+
+(defcfun ("objcl_slot_value" %objcl-slot-value) :pointer
+  (obj :pointer) ; id
+  (slot-name :string))
+
+(defcfun ("objcl_class_direct_slots" %objcl-class-direct-slots) :pointer
+  (class :pointer) ; Class
+  (count :pointer) ; unsigned int
+  (element-size :pointer)) ; unsigned int
+
+(defcfun ("objcl_slot_name" %objcl-slot-name) :string
+  (slot :pointer)) ; IVAR_T
+
+(defcfun ("objcl_slot_type" %objcl-slot-type) :string
+  (slot :pointer)) ; IVAR_T
+
 (defcfun ("objcl_get_nil" %objcl-get-nil) :pointer)
 (defcfun objcl-get-yes :long)
 (defcfun objcl-get-no :long)
@@ -702,3 +722,34 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
 
 (defun objc-2.0-runtime-p ()
   (not (zerop (%objcl-objc2-p))))
+
+
+;;;; (@* "Slot access")
+(defun objcl-set-slot-value (instance slot-name value)
+  ;; FIXME
+  (error "To be done."))
+
+(defun objcl-slot-value (instance slot-name)
+  ;; FIXME
+  (error "To be done."))
+
+(defun objcl-slot-type (slot)
+  (%objcl-slot-type slot))
+
+(defun objcl-slot-name (slot)
+  (%objcl-slot-name slot))
+
+(defun objcl-class-direct-slots (class)
+  (with-foreign-objects ((count-ptr :unsigned-int)
+                         (element-size-ptr :unsigned-int))
+    (let ((array-pointer (%objcl-class-direct-slots (pointer-to class)
+                                                    count-ptr
+                                                    element-size-ptr)))
+      (unwind-protect
+          (loop with element-size = (mem-ref element-size-ptr :unsigned-int)
+                with count = (mem-ref count-ptr :unsigned-int)
+                for i from 0 below count
+                for current-slot = array-pointer
+                  then (inc-pointer current-slot element-size)
+                collecting (mem-ref current-slot :pointer))
+        (foreign-free array-pointer)))))
