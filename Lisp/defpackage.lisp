@@ -68,8 +68,8 @@
            #:next-runtime))
 
 
-(defpackage #:objcl-ns
-  (:nicknames #:objective-c-classes #:objc-classes)
+(defpackage #:ns
+  (:nicknames #:objcl-ns #:objective-c-classes #:objc-classes)
   (:use))
 
 

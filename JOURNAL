@@ -1,5 +1,27 @@
 -*- mode: muse -*-
 
+* 2008-02-03, 10:45:58 CET
+
+** To be compatible or not to be compatible?
+
+I wonder whether being API-compatible with Clozure CL's Objective-C
+bridge would be a good or bad thing.  On the one hand, compatibility
+means application portabilitiy, which is nice.  On the other hand, using
+the same package names and reader macros as Clozure CL's bridge makes it
+hard to have both loaded at the same time.
+
+Then again, if someone wants to compare Objective-CL with Clozure CL's
+bridge side-by-side, it's their responsibility to rename packages as
+needed.  Reader macros aren't essential for using Objective-CL, so they
+may be left disabled in such a case, anyway.  I'm going to try hard to
+use Objective-CL-specific package names within my code
+(i.e. OBJECTIVE-C-CLASSES rather than NS), so renaming packages won't
+break things.
+
+I'll be opting for direct API compatibility for now.  It seems to be the
+right choice.
+
+
 * 2008-01-29, 21:34:16 CET
 
 In the Objective-C 2.0 runtime, the functions
