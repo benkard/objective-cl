@@ -39,6 +39,17 @@
                  :initform (cffi:null-pointer)))))
 
 
+;; The following may be needed by some implementations (namely Allegro
+;; CL).
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (loop for class-name in '(c2mop:funcallable-standard-object
+                            c-pointer-wrapper)
+        for class = (find-class class-name nil)
+        when class
+          unless (c2mop:class-finalized-p class)
+            do (c2mop:finalize-inheritance class)))
+
+
 ;; FIXME: I'm not confident about this, but it is needed in order to
 ;; make (DEFCLASS SELECTOR ...) work.
 (defmethod c2mop:validate-superclass ((class c2mop:funcallable-standard-class)
