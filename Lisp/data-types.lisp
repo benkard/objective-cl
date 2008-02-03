@@ -31,14 +31,34 @@
 
 
 ;;;; (@* "Objective-C object wrapper classes")
-(defclass c-pointer-wrapper ()
-  ((pointer :type     c-pointer
-            :reader   pointer-to
-            :initarg  :pointer
-            :initform (cffi:null-pointer))))
+(with-compilation-unit ()  ; needed for class finalization
+  (defclass c-pointer-wrapper ()
+       ((pointer :type     c-pointer
+                 :reader   pointer-to
+                 :initarg  :pointer
+                 :initform (cffi:null-pointer)))))
 
 
-(defclass selector   (c2mop:funcallable-standard-object c-pointer-wrapper) ()
+;; The following may be needed by some implementations (namely Allegro
+;; CL), but I'm not sure.
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (loop for class-name in '(c2mop:funcallable-standard-object
+                            c-pointer-wrapper)
+        for class = (find-class class-name nil)
+        when class
+          unless (c2mop:class-finalized-p class)
+            do (c2mop:finalize-inheritance class)))
+
+
+;; FIXME: I'm not confident about this, but it is needed in order to
+;; make (DEFCLASS SELECTOR ...) work.
+(defmethod c2mop:validate-superclass ((class c2mop:funcallable-standard-class)
+                                      (superclass standard-class))
+  t)
+
+
+(defclass selector (c2mop:funcallable-standard-object c-pointer-wrapper)
+     ()
   (:metaclass c2mop:funcallable-standard-class)
   (:documentation "An Objective-C method selector.
 
