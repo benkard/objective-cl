@@ -20,6 +20,7 @@
 #import "libobjcl.h"
 #import "PyObjC/libffi_support.h"
 #import "PyObjC/objc_support.h"
+#import "PyObjC/objc-runtime-compat.h"
 
 #import <Foundation/Foundation.h>
 #include <stdarg.h>
@@ -204,6 +205,17 @@ objcl_class_name (Class class)
   strcpy (name, ns_name);
 
   return name;
+}
+
+
+Class
+objcl_class_superclass (Class class)
+{
+#ifdef __NEXT_RUNTIME__
+  return class_getSuperclass (class);
+#else
+  return class_get_super_class (class);
+#endif
 }
 
 

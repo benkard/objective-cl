@@ -71,6 +71,9 @@ objcl_query_arglist_info (void *receiver,
 const char *
 objcl_class_name (Class class);
 
+Class
+objcl_class_superclass (Class class);
+
 const char *
 objcl_selector_name (SEL selector);
 

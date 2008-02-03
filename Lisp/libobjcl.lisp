@@ -52,6 +52,9 @@
 (defcfun ("objcl_class_name" %objcl-class-name) :string
   (class :pointer))
 
+(defcfun ("objcl_class_superclass" %objcl-class-superclass) :pointer
+  (obj :pointer))
+
 (defcfun ("objcl_find_selector" %objcl-find-selector) :pointer
   (selector-name :string))
 
@@ -576,6 +579,12 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
 (defun object-get-meta-class (obj)
   (find-objc-meta-class-by-name
    (%objcl-class-name (%objcl-object-get-class (pointer-to obj)))))
+
+(defun objcl-class-superclass (class)
+  (let ((superclass-ptr (%objcl-class-superclass (pointer-to class))))
+    (if superclass-ptr
+        (make-pointer-wrapper t :pointer superclass-ptr)
+        nil)))
 
 (defun objc-class-of (obj)
   (cond ((object-is-meta-class-p obj)
