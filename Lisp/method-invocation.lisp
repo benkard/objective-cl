@@ -108,6 +108,20 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
 *modern mode*.
 
 
+## Note 2:
+
+Instead of using __invoke__, which is neither macro-friendly nor very
+useful for method selection at run-time, you may **funcall** selectors
+directly.  Naturally, __apply__ works as well.
+
+The following calls are all equivalent:
+
+    (invoke-by-name instance \"stringWithCString:encoding:\" \"Mulk.\" 4)
+    (invoke instance :string-with-c-string \"Mulk.\" :encoding 4)
+    (funcall (selector \"stringWithCString:encoding:\") instance \"Mulk.\" 4)
+    (apply (selector \"stringWithCString:encoding:\") (list instance \"Mulk.\" 4))
+
+
 ## See also:
 
   __invoke-by-name__"
@@ -167,6 +181,7 @@ are all equivalent:
 
 In fact, using __invoke-by-name__ is discouraged in favour of the latter
 form.
+
 
 ## Rationale:
 

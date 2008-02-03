@@ -54,10 +54,28 @@
 ## Description:
 
 Method selectors are Objective-C's equivalent to what Common Lisp calls
-**symbols**.  Their use is restricted to retrieving methods by name.
+**symbols**.  Their use, however, is restricted to retrieving methods by
+name.
+
+In Common Lisp, you can **funcall** a __selector__ directly (see the
+note below for details and why you may want to do this).
 
 __selector__ objects cannot be created by means of __make-instance__.
 Use __find-selector__ instead.
+
+
+## Note:
+
+Instead of using __invoke__, which is neither macro-friendly nor very
+useful for method selection at run-time, you may **funcall** selectors
+directly.  Naturally, __apply__ works as well.
+
+The following calls are all equivalent:
+
+    (invoke-by-name instance \"stringWithCString:encoding:\" \"Mulk.\" 4)
+    (invoke instance :string-with-c-string \"Mulk.\" :encoding 4)
+    (funcall (selector \"stringWithCString:encoding:\") instance \"Mulk.\" 4)
+    (apply (selector \"stringWithCString:encoding:\") (list instance \"Mulk.\" 4))
 
 
 ## See also:
@@ -77,7 +95,7 @@ Use __find-selector__ instead.
        (apply #'invoke-by-name receiver selector args))))
 
 
-(defclass id         (c-pointer-wrapper) ()
+(defclass id (c-pointer-wrapper) ()
   (:documentation "An instance of an Objective-C class.
 
 ## Description:
