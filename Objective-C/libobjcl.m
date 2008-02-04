@@ -28,6 +28,18 @@
 #include <objc/objc-class.h>
 #endif
 
+#if 0
+#define TRACE NSLog
+#else
+#define TRACE objcl_null_log
+#endif
+
+static void
+objcl_null_log (NSString *s, ...)
+{
+}
+
+
 static NSAutoreleasePool *objcl_autorelease_pool = NULL;
 
 /* Preallocate an exception to throw when memory is all used up. */
@@ -97,19 +109,24 @@ objcl_invoke_with_types (int argc,
 
   NS_DURING
     {
+      TRACE (@"get-method");
       method = objcl_get_method_implementation (receiver, method_selector);
+      TRACE (@"method == NULL");
       if (method == NULL)
         [[NSException exceptionWithName: @"MLKNoApplicableMethod"
                       reason: @"Tried to call a non-existent method."
                       userInfo: nil] raise];
 
+      TRACE (@"return type");
       return_type = objcl_pyobjc_signature_to_ffi_return_type (return_typespec);
       arg_types[0] = id_type;
       arg_types[1] = sel_type;
 
+      TRACE (@"args");
       for (i = 0; i < argc; i++)
         arg_types[i + 2] = objcl_pyobjc_arg_signature_to_ffi_type (arg_typespecs[i]);
 
+      TRACE (@"prep");
       status = ffi_prep_cif (&cif, FFI_DEFAULT_ABI, argc + 2, return_type, arg_types);
       if (status != FFI_OK)
         {
@@ -118,7 +135,9 @@ objcl_invoke_with_types (int argc,
                         userInfo: nil] raise];
         }
 
+      TRACE (@"call");
       ffi_call (&cif, FFI_FN (method), return_value, argv);
+      TRACE (@"...");
     }
   NS_HANDLER
     {
@@ -134,6 +153,7 @@ objcl_invoke_with_types (int argc,
 Class
 objcl_find_class (const char *class_name)
 {
+  TRACE (@"find-class %s", class_name);
 #ifdef __NEXT_RUNTIME__
   return objc_getClass (class_name);
 #else
@@ -145,6 +165,7 @@ objcl_find_class (const char *class_name)
 Class
 objcl_find_meta_class (const char *class_name)
 {
+  TRACE (@"find-meta-class %s", class_name);
 #ifdef __NEXT_RUNTIME__
   return objc_getMetaClass (class_name);
 #else
@@ -190,6 +211,7 @@ objcl_class_name (Class class)
   const char *ns_name;
   char *name;
 
+  TRACE (@"class-name");
   ns_name = [(NSStringFromClass (class)) UTF8String];
   name = malloc (strlen (ns_name) + 1);
   strcpy (name, ns_name);
@@ -201,6 +223,13 @@ objcl_class_name (Class class)
 Class
 objcl_class_superclass (Class class)
 {
+  TRACE (@"super-class");
+
+  /* Not strictly needed on the GNU runtime, but not going to hurt
+     anyone either. */
+  if (class == [NSObject class])
+    return nil;
+
 #ifdef __NEXT_RUNTIME__
   return class_getSuperclass (class);
 #else
@@ -227,6 +256,7 @@ IMP
 objcl_get_method_implementation (id object,
                                  SEL selector)
 {
+  TRACE (@"method-impl %p %p", object, selector);
 #ifdef __NEXT_RUNTIME__
   if (objcl_object_is_class (object))
     return method_getImplementation (class_getClassMethod (object, selector));
@@ -247,6 +277,7 @@ objcl_get_method_implementation (id object,
 BOOL
 objcl_object_is_class (id obj)
 {
+  TRACE (@"is-class %p", obj);
 #ifdef __NEXT_RUNTIME__
   return [obj class] == obj;
 #else
@@ -259,6 +290,7 @@ objcl_object_is_class (id obj)
 BOOL
 objcl_object_is_meta_class (id obj)
 {
+  TRACE (@"is-meta-class %p", obj);
 #ifdef __NEXT_RUNTIME__
   return objcl_object_is_class (obj) && class_isMetaClass (obj);
 #else
@@ -274,6 +306,7 @@ objcl_object_is_meta_class (id obj)
 Class
 objcl_object_get_class (id obj)
 {
+  TRACE (@"get-class %p", obj);
 #ifdef __NEXT_RUNTIME__
   return object_getClass (obj);
 #else
@@ -285,6 +318,7 @@ objcl_object_get_class (id obj)
 Class
 objcl_object_get_meta_class (id obj)
 {
+  TRACE (@"get-meta-class %p", obj);
 #ifdef __NEXT_RUNTIME__
   /* FIXME: What to do here? */
   return objc_getMetaClass ([(NSStringFromClass ([obj class])) UTF8String]);
@@ -397,6 +431,7 @@ objcl_class_direct_slots (Class class, unsigned int *count, unsigned int *elemen
   IVAR_T *ivars;
 
 #ifdef __NEXT_RUNTIME__
+  TRACE (@"slots");
 #else
   int i;
 #endif
@@ -424,6 +459,7 @@ objcl_class_direct_slots (Class class, unsigned int *count, unsigned int *elemen
 const char *
 objcl_slot_name (IVAR_T ivar)
 {
+  TRACE (@"slot-name");
 #ifdef __NEXT_RUNTIME__
   return ivar_getName (ivar);
 #else
