@@ -500,12 +500,9 @@ easier to use with __apply__.
 ;;; (@* "Helper functions")
 (defun constructor-name-p (method-name)
   (flet ((method-name-starts-with (prefix)
-           (and (>= (length method-name) (length prefix))
-                (or (and (string= prefix
-                                  (subseq method-name 0 (length prefix)))
-                         (or (= (length method-name)
-                                (length prefix))
-                             (not (lower-case-p (char method-name (length prefix))))))))))
+           (or (not (mismatch method-name prefix))
+               (>= (mismatch method-name prefix)
+                   (length prefix)))))
     (or (method-name-starts-with "alloc")
         (method-name-starts-with "new"))))
 
