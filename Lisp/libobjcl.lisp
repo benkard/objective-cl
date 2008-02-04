@@ -605,7 +605,8 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
 
 (defun objcl-class-superclass/pointer (class-ptr)
   (let ((superclass-ptr (%objcl-class-superclass class-ptr)))
-    (if (and superclass-ptr (%objcl-object-is-class superclass-ptr))
+    (if (and (not (null-pointer-p superclass-ptr))
+             (%objcl-object-is-class superclass-ptr))
         (make-pointer-wrapper t :pointer superclass-ptr)
         nil)))
 
