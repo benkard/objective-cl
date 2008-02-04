@@ -24,6 +24,10 @@
 \"rn{_NSRange=II}8\" is parsed into (STRUCT (CONST IN)
 \"_NSRange\" :INTEGER :INTEGER).
 
+\"(sversion=\"version\"i\"next_free\"^v)\" is parsed into (UNION ()
+\"sversion\" (:INT ((NAME \"version\"))) (POINTER ((NAME
+\"next_free\")) (:VOID ())))
+
 Returns: (VALUES typespec byte-position string-position)"
 
   (let ((init-char (char typestring start))
@@ -37,37 +41,52 @@ Returns: (VALUES typespec byte-position string-position)"
                                    (#\o 'out)
                                    (#\O 'bycopy)
                                    (#\V 'oneway)
-                                   (#\R 'byref))))
+                                   (#\R 'byref)
+                                   (#\" 'name))))
                   (and qualifier
                        (incf string-position)
-                       (push qualifier qualifiers))))
+                       (if (eq qualifier 'name)
+                           (let ((name-end (position #\"
+                                                     typestring
+                                                     :start string-position)))
+                             (push (list qualifier
+                                         (subseq typestring
+                                                 string-position
+                                                 name-end))
+                                   qualifiers)
+                             (setf string-position (1+ name-end))
+                             qualifier)
+                           (push qualifier qualifiers)))))
     (values (case init-char
               ((#\{ #\()
                (let* ((=-token (position #\= typestring :start start))
-                      (name-end (or =-token
+                      (closing-delim (position (ecase init-char
+                                                 (#\{ #\})
+                                                 (#\( #\)))
+                                               typestring
+                                               :start start))
+                      (name-end (if (and =-token closing-delim)
+                                    (min =-token closing-delim)
                                     ;; An opaque struct whose contents
                                     ;; we don't know.
-                                    (position (ecase init-char
-                                                (#\{ #\})
-                                                (#\( #\)))
-                                              typestring
-                                              :start start)
-                                    (error "Premature end of file in~
-                                            typespec: ~A."
-                                           typestring)))
+                                    (or closing-delim
+                                        (error "Premature end of file in~
+                                                typespec: ~A."
+                                               typestring))))
+                      (named-p (and =-token (= name-end =-token)))
                       (struct-name (subseq typestring
                                            (1+ string-position)
                                            name-end)))
                  (list* (ecase init-char
                           (#\{ 'struct)
                           (#\( 'union))
-                        (if =-token
+                        (if named-p
                             qualifiers
                             (cons 'opaque qualifiers))
                         struct-name
                         (progn
                           (setq string-position
-                                (if =-token
+                                (if named-p
                                     (1+ name-end) ; skip #\=
                                     name-end))
                           (loop until (char= (char typestring string-position)
