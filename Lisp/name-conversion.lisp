@@ -112,7 +112,7 @@
     (export-and-return
      (read-from-string
       (concatenate 'string
-                   "%"
+                   "+"
                    (symbol-name (objc-class-name->symbol meta-class-name)))))))
 
 

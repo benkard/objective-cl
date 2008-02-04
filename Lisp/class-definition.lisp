@@ -286,5 +286,5 @@
    (nothing :accessor ns-string-nothing
             :initarg :ns-string
             :initform 100))
-  (:metaclass objective-c-classes::%ns-string)
+  (:metaclass objective-c-classes::+ns-string)
   (:wrapped-foreign-class "NSString"))
