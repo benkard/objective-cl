@@ -613,12 +613,6 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
 (defun objcl-class-superclass (class)
   (objcl-class-superclass/pointer (pointer-to class)))
 
-(defun objc-class-of (obj)
-  (cond ((object-is-meta-class-p obj)
-         (error "Tried to get the class of meta class ~S." obj))
-        ((object-is-class-p obj) (object-get-meta-class obj))
-        (t (object-get-class obj))))
-
 
 ;;; (@* "Low-level Data Conversion")
 (eval-when (:compile-toplevel :load-toplevel)
