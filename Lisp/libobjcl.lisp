@@ -742,9 +742,14 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
   (%objcl-slot-name slot))
 
 (defun objcl-class-direct-slots (class)
+  (if (typep class 'objective-c-class)
+      (objcl-class-direct-slots/pointer (pointer-to class))
+      nil))
+
+(defun objcl-class-direct-slots/pointer (class-ptr)
   (with-foreign-objects ((count-ptr :unsigned-int)
                          (element-size-ptr :unsigned-int))
-    (let ((array-pointer (%objcl-class-direct-slots (pointer-to class)
+    (let ((array-pointer (%objcl-class-direct-slots class-ptr
                                                     count-ptr
                                                     element-size-ptr)))
       (unwind-protect

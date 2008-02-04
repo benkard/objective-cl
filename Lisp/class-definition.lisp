@@ -18,6 +18,9 @@
 (in-package #:mulk.objective-cl)
 
 
+(defvar *objcl-foreign-default-initform* (gensym))
+
+
 (defclass foreign-slot-definition-mixin ()
   ((foreign-name :initarg :foreign-name
                  :initform nil
@@ -26,6 +29,9 @@
    (foreign-type :initarg :foreign-type
                  :initform nil
                  :accessor slot-definition-foreign-type)
+   (foreign-slot :initarg :foreign-slot
+                 :initform nil
+                 :accessor slot-definition-foreign-slot)
    #+#:unused
    (property :initarg :property
              :accessor slot-definition-property-p
@@ -56,7 +62,7 @@
                                                &rest initargs)
   (if (some #'(lambda (symbol) (let ((nada '#:nada))
                                  (not (eq nada (getf initargs symbol nada)))))
-            '(:foreign-type :foreign-name))
+            '(:foreign-type :foreign-name :foreign-slot))
       (find-class 'foreign-direct-slot-definition)
       (find-class 'c2mop:standard-direct-slot-definition)))
 
@@ -65,37 +71,100 @@
                                                   &rest initargs)
   (if (some #'(lambda (symbol) (let ((nada '#:nada))
                                  (not (eq nada (getf initargs symbol nada)))))
-            '(:foreign-type :foreign-name))
+            '(:foreign-type :foreign-name :foreign-slot))
       (find-class 'foreign-effective-slot-definition)
       (find-class 'c2mop:standard-effective-slot-definition)))
 
 
+(defmethod c2mop:compute-effective-slot-definition ((class objective-c-class)
+                                                    name
+                                                    direct-slot-definitions)
+  (etypecase (first direct-slot-definitions)
+    (foreign-direct-slot-definition
+     (let ((direct-slot (first direct-slot-definitions)))
+       (with-accessors ((type c2mop:slot-definition-type)
+                        (readers c2mop:slot-definition-readers)
+                        (writers c2mop:slot-definition-writers)
+                        (initargs c2mop:slot-definition-initargs)
+                        (initform c2mop:slot-definition-initform)
+                        (allocation c2mop:slot-definition-allocation)
+                        (initfunction c2mop:slot-definition-initfunction)
+                        (foreign-type slot-definition-foreign-type)
+                        (foreign-name slot-definition-foreign-name)
+                        (foreign-slot slot-definition-foreign-slot))
+           direct-slot
+         (make-instance 'foreign-effective-slot-definition
+            :type (or type t)
+            :name name
+            :readers (or readers nil)
+            :writers (or writers nil)
+            :initargs (or initargs nil)
+            :initform (or initform *objcl-foreign-default-initform*)
+            :location nil
+            :allocation (or allocation :instance)
+            :initfunction (or initfunction
+                              #'(lambda ()
+                                  (or initform *objcl-foreign-default-initform*)))
+            :foreign-type foreign-type
+            :foreign-name foreign-name
+            :foreign-slot foreign-slot
+            :class class))))
+    (c2mop:standard-direct-slot-definition (call-next-method))))
+
+
+(defmethod initialize-instance :after
+    ((slot-definition foreign-effective-slot-definition)
+     &key foreign-name
+          foreign-slot
+          foreign-type
+          name
+          class
+     &allow-other-keys)
+  (when (and (not foreign-name) (not foreign-slot))
+    (setf foreign-name (slot-name->foreign-slot-name name)
+          (slot-value slot-definition 'foreign-name) foreign-name))
+  (cond ((and foreign-name foreign-slot))
+        (foreign-name
+         (setf foreign-slot
+               (or (find foreign-name
+                         (mapcan #'objcl-class-direct-slots
+                                 (c2mop:compute-class-precedence-list
+                                  class))
+                         :key #'objcl-slot-name
+                         :test #'string=)
+                   (error "There is no Objective-C slot named ~A in class ~A"
+                          foreign-name
+                          class))
+               (slot-value slot-definition 'foreign-slot) foreign-slot))
+        (foreign-slot
+         (setf foreign-name (objcl-slot-name foreign-slot)
+               (slot-value slot-definition 'foreign-name) foreign-name)))
+  (unless foreign-type
+    (setf (slot-value slot-definition 'foreign-type)
+          foreign-slot)))
+
+
 (defmethod c2mop:slot-value-using-class ((class objective-c-class)
                                          instance
-                                         effective-slot-definition)
-  (etypecase effective-slot-definition
-    (c2mop:standard-effective-slot-definition (call-next-method))
-    (foreign-effective-slot-definition
-     (cerror "Continue" "FIXME"))))
+                                         (effective-slot-definition
+                                          foreign-effective-slot-definition))
+  (cerror "Continue" "FIXME"))
 
 
 (defmethod (setf c2mop:slot-value-using-class) (value
                                                 (class objective-c-class)
                                                 instance
-                                                effective-slot-definition)
-  (etypecase effective-slot-definition
-    (c2mop:standard-effective-slot-definition (call-next-method))
-    (foreign-effective-slot-definition
-     (cerror "Continue" "FIXME"))))
+                                                (effective-slot-definition
+                                                 foreign-effective-slot-definition))
+  (unless (eq value *objcl-foreign-default-initform*)
+    (cerror "Continue" "FIXME")))
 
 
 (defmethod c2mop:slot-boundp-using-class ((class objective-c-class)
                                           instance
-                                          effective-slot-definition)
-  (declare (ignore instance))
-  (etypecase effective-slot-definition
-    (c2mop:standard-effective-slot-definition (call-next-method))
-    (foreign-effective-slot-definition t)))
+                                          (effective-slot-definition
+                                           foreign-effective-slot-definition))
+  (declare (ignore instance)))
 
 
 (defmethod c2mop:slot-makunbound-using-class ((class objective-c-class)
@@ -113,6 +182,29 @@
   ;; FIXME: Maybe add lots of foreign slots here whose presence the
   ;; Objective-C runtime tells us.
   (call-next-method))
+
+
+(defmethod initialize-instance :around ((class objective-c-class)
+                                        &rest args
+                                        &key direct-slots
+                                             pointer
+                                        &allow-other-keys)
+  (let ((key-args (copy-list args)))
+    (dolist (objc-slot (objcl-class-direct-slots/pointer pointer))
+      (let ((slot-name
+             (intern (string-upcase (objcl-slot-name objc-slot))
+                     (find-package '#:objective-c-classes))))
+        (when (notany #'(lambda (slot-definition)
+                          (eql slot-name (car slot-definition)))
+                      direct-slots)
+          (push (list
+                 :name slot-name
+                 :foreign-name (objcl-slot-name objc-slot)
+                 :foreign-type (typespec->c-type
+                                (parse-typespec
+                                 (objcl-slot-type objc-slot))))
+                (getf key-args :direct-slots)))))
+    (apply #'call-next-method class key-args)))
 
 
 #+(or)

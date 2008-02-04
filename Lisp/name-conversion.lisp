@@ -114,3 +114,20 @@
       (concatenate 'string
                    "%"
                    (symbol-name (objc-class-name->symbol meta-class-name)))))))
+
+
+(defun slot-name->foreign-slot-name (slot-name)
+  (let* ((string (symbol-name slot-name))
+         (case-converted-slot-name
+          (ecase (readtable-case *readtable*)
+            (:preserve string)
+            (:invert (cond ((notany #'lower-case-p string)
+                            (string-downcase string))
+                           ((notany #'upper-case-p string)
+                            (string-upcase string))
+                           (t string)))
+            (:upcase (if (notany #'lower-case-p string)
+                         (string-downcase string)
+                         string))
+            (:downcase string))))
+  (substitute #\_ #\- case-converted-slot-name)))
