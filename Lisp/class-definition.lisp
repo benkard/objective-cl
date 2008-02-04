@@ -45,6 +45,10 @@
   t)
 
 (defmethod c2mop:validate-superclass ((class objective-c-class)
+                                      (superclass standard-class))
+  t)
+
+(defmethod c2mop:validate-superclass ((class objective-c-class)
                                       (superclass objective-c-class))
   t)
 

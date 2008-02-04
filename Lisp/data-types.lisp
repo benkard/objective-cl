@@ -108,14 +108,14 @@ The following calls are all equivalent:
 
 (defclass id (c-pointer-wrapper)
      ()
-  (:documentation "An instance of an Objective-C class.
+  (:documentation "The type of all Objective-C objects.
 
 ## Description:
 
-The class __id__ serves as a general-purpose container for all kinds of
-Objective-C objects that are instances of some Objective-C class, that
-is, neither primitive C values nor __selector__, __class__ or
-__exception__ objects.
+The class __id__ is the supertype of all Objective-C instance types.  It
+comprises all kinds of Objective-C objects that are instances of some
+Objective-C class, that is, neither primitive C values nor __selector__,
+__class__ or __exception__ objects.
 
 __id__ objects cannot be created by means of __make-instance__.  Use
 a suitable class method instead as you would in Objective-C.
