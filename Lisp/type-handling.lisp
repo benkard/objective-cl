@@ -137,27 +137,38 @@ Returns: (VALUES typespec byte-position string-position)"
                        (prog1 typespec
                               (setq string-position new-str-pos)))))
               (#\b
-               (let (bit-field-starting-pos
-                     bit-field-typespec
-                     bit-field-length
-                     byte-position)
-                 (multiple-value-setq (bit-field-starting-pos string-position)
-                     (parse-integer typestring
-                                    :start (1+ string-position)
-                                    :junk-allowed t))
-                 (multiple-value-setq (bit-field-typespec
-                                       byte-position
-                                       string-position)
-                     (parse-typespec typestring nil string-position))
-                 (multiple-value-setq (bit-field-length string-position)
-                     (parse-integer typestring
-                                    :start string-position
-                                    :junk-allowed t))
-                 (list 'bit-field
-                       qualifiers
-                       bit-field-starting-pos
-                       bit-field-length
-                       bit-field-typespec)))
+               (if (eq +runtime-type+ :gnu)
+                   (let (bit-field-starting-pos
+                         bit-field-typespec
+                         bit-field-length
+                         byte-position)
+                     (multiple-value-setq (bit-field-starting-pos string-position)
+                         (parse-integer typestring
+                                        :start (1+ string-position)
+                                        :junk-allowed t))
+                     (multiple-value-setq (bit-field-typespec
+                                           byte-position
+                                           string-position)
+                         (parse-typespec typestring nil string-position))
+                     (multiple-value-setq (bit-field-length string-position)
+                         (parse-integer typestring
+                                        :start string-position
+                                        :junk-allowed t))
+                     (list 'bit-field
+                           qualifiers
+                           bit-field-starting-pos
+                           bit-field-length
+                           bit-field-typespec))
+                   (list 'bit-field
+                         qualifiers
+                         nil
+                         (multiple-value-bind (bit-field-length new-string-pos)
+                             (parse-integer typestring
+                                            :start (1+ string-position)
+                                            :junk-allowed t)
+                           (setq string-position new-string-pos)
+                           bit-field-length)
+                         nil)))
               (otherwise
                (prog1 (list (case init-char
                               (#\B :boolean) ;XXX :int?
@@ -194,7 +205,11 @@ Returns: (VALUES typespec byte-position string-position)"
                               (#\# 'objective-c-class)
                               (#\: 'selector)
                               (#\* :string)
-                              (#\? :unknown))
+                              (#\? :unknown)
+                              (otherwise
+                               (prog1 :unrecognised
+                                 (push (list :type-specifier init-char)
+                                       qualifiers))))
                             qualifiers)
                       (incf string-position))))
             #+(or)  ; too greedy (=> bit-fields can't see their length!)

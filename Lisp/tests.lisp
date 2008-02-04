@@ -172,12 +172,22 @@
    ((ensure-same (parse-typespec "(?=)")
                  '(union () "?")))
    ((ensure-same (parse-typespec "{?=rb123rjf456iii}")
-                 '(struct () "?"
-                   (bit-field (const) 123 456
-                    (complex (const) (:float ())))
-                   (:int ())
-                   (:int ())
-                   (:int ()))))
+                 (if (eq objcl::+runtime-type+ :gnu)
+                     '(struct () "?"
+                       (bit-field (const) 123 456
+                        (complex (const) (:float ())))
+                       (:int ())
+                       (:int ())
+                       (:int ()))
+                     '(struct () "?"
+                       (bit-field (const) nil 123 nil)
+                       (complex (const) (:float ()))
+                       (:unrecognised ((:type-specifier #\4)))
+                       (:unrecognised ((:type-specifier #\5)))
+                       (:unrecognised ((:type-specifier #\6)))
+                       (:int ())
+                       (:int ())
+                       (:int ())))))
    ((ensure-same (parse-typespec "^[100{?=ii}]")
                  '(pointer ()
                    (array () 100
