@@ -137,7 +137,7 @@
 
 (defun name->canonised-lower-case (string)
   (cond ((name-in-canonical-case-p string) (string-downcase string))
-        ((and (eq (readtable-case *readtable*) :invert)
+        ((and (member (readtable-case *readtable*) '(:upcase :invert))
               (notany #'upper-case-p string))
          (string-upcase string))
         (t string)))
