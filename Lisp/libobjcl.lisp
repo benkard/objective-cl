@@ -282,12 +282,26 @@ conventional case for namespace identifiers in Objective-C."
   (let ((class-ptr (%objcl-find-meta-class class-name-string)))
     (if (objc-pointer-null class-ptr)
         nil
-        (let ((class-name (objc-meta-class-name->symbol class-name-string)))
+        (let* ((class-name (objc-meta-class-name->symbol class-name-string))
+               ;; We first determine the superclass of the class that
+               ;; this metaclass is the metaclass of, because we cannot
+               ;; determine a metaclass' superclass directly.
+               (non-meta-superclass (objcl-class-superclass/pointer
+                                     (%objcl-find-class class-name-string)))
+               ;; If such a non-meta-superclass is found, we look for a
+               ;; metaclass with the same name and take that as our
+               ;; superclass.  Otherwise, OBJECTIVE-C-CLASS should be
+               ;; quite the most correct choice.
+               (superclass (if non-meta-superclass
+                               (find-objc-meta-class
+                                (%objcl-class-name
+                                 (pointer-to non-meta-superclass)))
+                               (find-class 'objective-c-class))))
           (or (find-class class-name nil)
               (c2mop:ensure-class class-name
                                   :metaclass 'objective-c-meta-class
                                   :pointer class-ptr
-                                  :direct-superclasses '(objective-c-class)))))))
+                                  :direct-superclasses (list superclass)))))))
 
 
 (defun objc-pointer-null (pointer)
