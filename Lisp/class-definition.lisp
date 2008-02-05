@@ -223,23 +223,6 @@
                :key #'(lambda (slotd) (getf slotd :name))))
     (apply #'call-next-method class key-args)))
 
-
-#+(or)
-(defmethod make-instance ((class-name (eql 'objective-c-class)) &rest initargs)
-  (let ((class (call-next-method)))
-    class))
-
-#+(or)
-(defmethod c2mop:class-direct-superclasses ((class objective-c-class))
-  (list (objcl-class-superclass class)))
-
-
-#+(or)
-(defmethod shared-initialize :after ((class objective-c-class)
-                                     slot-names
-                                     &rest initargs)
-  )
-
 (defmethod initialize-instance ((class objective-c-class)
                                 &key documentation
                                      name
@@ -282,13 +265,8 @@
                                        pointer)
   (call-next-method))
 
-#+(or)
-(defmethod c2mop:compute-effective-slot-definition ((class objective-c-class)
-                                                    slot-name
-                                                    direct-slots)
-  (call-next-method))
 
-
+;;;; (@* "Quick tests")
 #+(or)
 (make-instance 'objective-c-class :wrapped-foreign-class "NSString")
 #+(or)
