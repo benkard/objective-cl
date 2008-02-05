@@ -241,8 +241,8 @@ invocations will return numbers.)
     (if (cffi:pointer-eq pointer (pointer-to +nil+))
         (format stream "#.~S" '+nil+)
         (print-unreadable-object (object stream)
-          (format stream "~A `~A' {~X}"
-                  (objc-class-name (primitive-invoke object "class" 'id))
+          (format stream "~S `~A' {~X}"
+                  (type-of object)
                   (primitive-invoke (primitive-invoke object "description" 'id)
                                     "UTF8String" :string)
                   (cffi:pointer-address pointer))))))
