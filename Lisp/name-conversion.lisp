@@ -116,21 +116,42 @@
                    (symbol-name (objc-class-name->symbol meta-class-name)))))))
 
 
-(defun slot-name->foreign-slot-name (slot-name)
-  (substitute #\_ #\- (name->lower-case (symbol-name slot-name))))
+(defun slot-name->foreign-slot-name (slot-name
+                                     &key (case-convention :underscored))
+  (let ((string (name->canonised-lower-case (symbol-name slot-name))))
+    (ecase case-convention
+      ((:camel-case) (name-hyphened->camel-case string))
+      ((:nerd-caps) (name-hyphened->nerd-caps string))
+      ((:underscored) (name-hyphened->underscored string))
+      ((:hyphened) string))))
 
 
-(defun name->lower-case (string)
-  (cond ((name-typed-in-canonical-case-p) (string-downcase string))
+(defun name-hyphened->underscored (string)
+  (substitute #\_ #\- string))
+
+
+(defun name->canonised-lower-case (string)
+  (cond ((name-in-canonical-case-p string) (string-downcase string))
         ((and (eq (readtable-case *readtable*) :invert)
               (notany #'upper-case-p string))
          (string-upcase string))
         (t string)))
 
 
-(defun name-typed-in-canonical-case-p (string)
-  (or (and (member (readtable-case *readtable*)
-                   '(:downcase :invert :preserve))
+(defun name-in-canonical-case-p (string
+                                 &optional
+                                 (case-mode (readtable-case *readtable*)))
+  (or (and (member case-mode '(:downcase :invert :preserve))
            (notany #'upper-case-p string))
-      (and (member (readtable-case *readtable*))
+      (and (member case-mode '(:upcase))
            (notany #'lower-case-p string))))
+
+
+(defun name-hyphened->camel-case (string)
+  (remove #\- (concatenate 'string
+                           (string (char string 0))
+                           (subseq (string-capitalize string) 1))))
+
+
+(defun name-hyphened->nerd-caps (string)
+  (remove #\- (string-capitalize string)))
