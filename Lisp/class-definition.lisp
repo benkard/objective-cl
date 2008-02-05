@@ -148,7 +148,10 @@
                                          instance
                                          (effective-slot-definition
                                           foreign-effective-slot-definition))
-  (cerror "Continue" "FIXME"))
+  (with-slots (foreign-name foreign-type) effective-slot-definition
+    (cffi:convert-from-foreign
+     (%objcl-slot-value (pointer-to instance) foreign-name)
+     (typespec->c-type foreign-type))))
 
 
 (defmethod (setf c2mop:slot-value-using-class) (value
@@ -156,8 +159,27 @@
                                                 instance
                                                 (effective-slot-definition
                                                  foreign-effective-slot-definition))
+  ;; If we are directed to set the slot to the default initform dummy
+  ;; value, we have probably been called during initialisation.  In this
+  ;; case, do nothing.  There may or may not be useful information
+  ;; present in the foreign slot at this time.
   (unless (eq value *objcl-foreign-default-initform*)
-    (cerror "Continue" "FIXME")))
+    (with-slots (foreign-name foreign-type) effective-slot-definition
+      ;; FIXME: What to do about memory management here?  Strings are
+      ;; possibly the most problematic case here.
+      ;;
+      ;; FIXME: This won't work at all right now, because
+      ;; %OBJCL-SET-SLOT-VALUE expects a pointer to the value that it
+      ;; should store as an argument, not the value itself.  For structs
+      ;; and related things that can't be reasonably passed by value,
+      ;; this is good news.  For everything else, it means just a bit
+      ;; more work.
+      (cerror "Do nothing" "FIXME")
+      #+(or)
+      (%objcl-set-slot-value
+       instance
+       foreign-name
+       (cffi:convert-to-foreign value (typespec->c-type foreign-type))))))
 
 
 (defmethod c2mop:slot-boundp-using-class ((class objective-c-class)
@@ -200,9 +222,8 @@
           (push (list
                  :name slot-name
                  :foreign-name (objcl-slot-name objc-slot)
-                 :foreign-type (typespec->c-type
-                                (parse-typespec
-                                 (objcl-slot-type objc-slot))))
+                 :foreign-type (parse-typespec
+                                (objcl-slot-type objc-slot)))
                 (getf key-args :direct-slots)))))
     (apply #'call-next-method class key-args)))
 

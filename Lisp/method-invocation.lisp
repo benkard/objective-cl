@@ -386,7 +386,8 @@ easier to use with __apply__.
 
 (defun typespec->c-type (typespec)
   (case (car typespec)
-    ((:pointer struct union id objective-c-class exception array selector)
+    ((:pointer pointer struct union id objective-c-class exception array
+      selector)
      :pointer)
     ((:string) :string)
     (otherwise (car typespec))))
