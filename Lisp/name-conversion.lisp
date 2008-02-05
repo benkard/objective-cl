@@ -117,7 +117,7 @@
 
 
 (defun slot-name->foreign-slot-name (slot-name
-                                     &key (case-convention :underscored))
+                                     &key (case-convention :camel-case))
   (let ((string (name->canonised-lower-case (symbol-name slot-name))))
     (ecase case-convention
       ((:camel-case) (name-hyphened->camel-case string))
