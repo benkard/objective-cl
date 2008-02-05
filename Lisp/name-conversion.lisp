@@ -117,8 +117,7 @@
 
 (defun slot-name->foreign-slot-name (slot-name
                                      &key (case-convention :camel-case))
-  (name-hyphened->mixed-case (symbol-name slot-name)
-                             :case-convention case-convention))
+  (name-hyphened->mixed-case (symbol-name slot-name) case-convention))
 
 
 (defun name-hyphened->underscored (string)
@@ -142,11 +141,28 @@
            (notany #'lower-case-p string))))
 
 
+(defun string-capitalise-lower-case (string)
+  "Like STRING-CAPITALIZE except that all upper-case characters are left alone."
+  (with-output-to-string (out)
+    (loop for previous-position = 0 then word-start
+          for delimiter-pos = (position-if-not #'alphanumericp
+                                               string
+                                               :start previous-position)
+          for word-start = (and delimiter-pos (1+ delimiter-pos))
+          do (format out
+                     "~:(~C~)~A"
+                     (char string previous-position)
+                     (subseq string
+                             (1+ previous-position)
+                             (or word-start (length string))))
+          while word-start)))
+
+
 (defun name-hyphened->camel-case (string)
   (remove #\- (concatenate 'string
                            (string (char string 0))
-                           (subseq (string-capitalize string) 1))))
+                           (subseq (string-capitalise-lower-case string) 1))))
 
 
 (defun name-hyphened->nerd-caps (string)
-  (remove #\- (string-capitalize string)))
+  (remove #\- (string-capitalise-lower-case string)))
