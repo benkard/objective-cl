@@ -299,7 +299,34 @@ conventional case for namespace identifiers in Objective-C."
                                (find-class 'objective-c-class))))
           (or (find-class class-name nil)
               (c2mop:ensure-class class-name
-                                  :metaclass 'objective-c-meta-class
+                                  ;; If there is no superclass, we are
+                                  ;; the root metaclass.  As we cannot
+                                  ;; assign ourselves as our own
+                                  ;; metaclass (which is a pity, because
+                                  ;; it would be the correct thing to
+                                  ;; do), we use OBJECTIVE-C-META-CLASS
+                                  ;; as our metaclass and regrettably
+                                  ;; miss out on some features.  (Sorry,
+                                  ;; you can't get at +NS-OBJECT's
+                                  ;; slots.)
+                                  ;;
+                                  ;; If the superclass is the root
+                                  ;; metaclass, we take it as our
+                                  ;; metaclass, because the root
+                                  ;; metaclass is the metaclass of all
+                                  ;; metaclasses.
+                                  ;;
+                                  ;; Otherwise, we use the metaclass of
+                                  ;; the superclass as our own, which
+                                  ;; will always get us the root
+                                  ;; metaclass.
+                                  :metaclass (if non-meta-superclass
+                                                 (if (eq (class-name
+                                                          (class-of superclass))
+                                                         'objective-c-meta-class)
+                                                     superclass
+                                                     (class-of superclass))
+                                                 'objective-c-meta-class)
                                   :pointer class-ptr
                                   :direct-superclasses (list superclass)))))))
 
