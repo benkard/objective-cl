@@ -100,7 +100,7 @@
 (defun objc-meta-class-name->symbol (meta-class-name)
   (let ((*package* (find-package '#:objective-c-classes)))
     (export-and-return
-     (read-from-string
+     (intern
       (concatenate 'string
                    "+"
                    (symbol-name (objc-class-name->symbol meta-class-name)))))))
@@ -146,9 +146,9 @@
 (defun name-in-canonical-case-p (string
                                  &optional
                                  (case-mode (readtable-case *readtable*)))
-  (or (and (member case-mode '(:downcase :invert :preserve))
+  (or (and (member case-mode '(:downcase :preserve))
            (notany #'upper-case-p string))
-      (and (member case-mode '(:upcase))
+      (and (member case-mode '(:upcase :invert))
            (notany #'lower-case-p string))))
 
 
