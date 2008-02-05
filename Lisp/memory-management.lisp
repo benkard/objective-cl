@@ -65,7 +65,24 @@
           ;; By the way, is using the return value of SETF considered
           ;; bad style?
           (let* ((*in-make-pointer-wrapper-p* t)
-                 (new-wrapper (apply constructor class initargs)))
+                 (new-wrapper (apply constructor
+                                     ;; We do not create direct
+                                     ;; instances of ID anymore.
+                                     ;; Instead, we look for the correct
+                                     ;; Objective-C wrapper class and
+                                     ;; use that.
+                                     ;;
+                                     ;; Note that we do not have to
+                                     ;; handle the case of POINTER
+                                     ;; pointing to a class, because it
+                                     ;; is handled right at the
+                                     ;; beginning of the function.
+                                     (if (eq class 'id)
+                                         (primitive-invoke pointer
+                                                           "class"
+                                                           'id)
+                                         class)
+                                     initargs)))
             (setf (weak-gethash address hash-table) new-wrapper)
             ;; As classes always have a retain count of -1, we don't
             ;; have to do memory management for them.  Meanwhile,
@@ -83,21 +100,12 @@
               (unless *skip-retaining*
                 (primitive-invoke new-wrapper "retain" 'id))
               (flet ((finalizer ()
-                       ;; In order to send the `release' message to the
-                       ;; newly GC'd object, we have to create a
-                       ;; temporary container object for the final
-                       ;; message delivery.  Note that this can cause an
-                       ;; infinite recursion or even memory corruption
-                       ;; if we don't take measure to skip both
-                       ;; finalization and retaining of the temporary
-                       ;; object.  Therefore, we call MAKE-INSTANCE
-                       ;; directly.
-                       ;;
-                       ;; (In principle, PRIMITIVE-INVOKE should also
-                       ;; happily take a pointer as its first argument,
-                       ;; but why push our luck?)
-                       (let* ((temporary-wrapper
-                               (funcall constructor class :pointer pointer)))
-                         (primitive-invoke temporary-wrapper "release" :void))))
+                       ;; Nowadays, PRIMITIVE-INVOKE happily accepts a
+                       ;; pointer as its first argument, which is
+                       ;; important here because the previously created
+                       ;; object wrapper cannot be used anymore.  We're
+                       ;; right within its finalisation phase, after
+                       ;; all.
+                       (primitive-invoke pointer "release" :void)))
                 (trivial-garbage:finalize new-wrapper #'finalizer)))
             new-wrapper)))))

@@ -285,7 +285,9 @@ easier to use with __apply__.
                                       (* ,num +pessimistic-allocation-size+))))
             (flet ((ad-hoc-arglist->objc-arglist! (args)
                      (setf (argref '(:pointer :void) 0)
-                           (pointer-to receiver)
+                           (if (pointerp receiver)
+                               receiver
+                               (pointer-to receiver))
                            (argref '(:pointer :void) 1)
                            (pointer-to selector))
                      (loop for arg in args
