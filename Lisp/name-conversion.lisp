@@ -117,17 +117,20 @@
 
 
 (defun slot-name->foreign-slot-name (slot-name)
-  (let* ((string (symbol-name slot-name))
-         (case-converted-slot-name
-          (ecase (readtable-case *readtable*)
-            (:preserve string)
-            (:invert (cond ((notany #'lower-case-p string)
-                            (string-downcase string))
-                           ((notany #'upper-case-p string)
-                            (string-upcase string))
-                           (t string)))
-            (:upcase (if (notany #'lower-case-p string)
-                         (string-downcase string)
-                         string))
-            (:downcase string))))
-  (substitute #\_ #\- case-converted-slot-name)))
+  (substitute #\_ #\- (name->lower-case (symbol-name slot-name))))
+
+
+(defun name->lower-case (string)
+  (cond ((name-typed-in-canonical-case-p) (string-downcase string))
+        ((and (eq (readtable-case *readtable*) :invert)
+              (notany #'upper-case-p string))
+         (string-upcase string))
+        (t string)))
+
+
+(defun name-typed-in-canonical-case-p (string)
+  (or (and (member (readtable-case *readtable*)
+                   '(:downcase :invert :preserve))
+           (notany #'upper-case-p string))
+      (and (member (readtable-case *readtable*))
+           (notany #'lower-case-p string))))
