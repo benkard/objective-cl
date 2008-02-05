@@ -120,6 +120,17 @@
   (name-hyphened->mixed-case (symbol-name slot-name) case-convention))
 
 
+(defun foreign-slot-name->slot-name (foreign-slot-name)
+  (let ((*package* (find-package '#:objective-c-classes)))
+    (export-and-return (read-from-string (name-underscored->hyphened
+                                          (name-camel-case->hyphened
+                                           foreign-slot-name))))))
+
+
+(defun name-underscored->hyphened (string)
+  (substitute #\- #\_ string))
+
+
 (defun name-hyphened->underscored (string)
   (substitute #\_ #\- string))
 
@@ -162,6 +173,19 @@
   (remove #\- (concatenate 'string
                            (string (char string 0))
                            (subseq (string-capitalise-lower-case string) 1))))
+
+
+(defun name-camel-case->hyphened (string)
+  (with-output-to-string (out)
+    (loop for previous-position = 0 then word-start
+          for word-start = (position-if #'upper-case-p
+                                        string
+                                        :start (1+ previous-position))
+          do (format out "~(~A~)" (subseq string
+                                          previous-position
+                                          (or word-start (length string))))
+          while word-start
+          do (format out "-"))))
 
 
 (defun name-hyphened->nerd-caps (string)

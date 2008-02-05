@@ -215,7 +215,8 @@
   ;; add them to our :DIRECT-SLOTS keyword argument.
   (let ((key-args (copy-list args)))
     (dolist (objc-slot (objcl-class-direct-slots/pointer pointer))      
-      (pushnew (list :name (intern (string-upcase (objcl-slot-name objc-slot))
+      (pushnew (list :name (intern (foreign-slot-name->slot-name
+                                    (objcl-slot-name objc-slot))
                                    (find-package '#:objective-c-classes))
                      :foreign-name (objcl-slot-name objc-slot)
                      :foreign-type (parse-typespec (objcl-slot-type objc-slot)))
