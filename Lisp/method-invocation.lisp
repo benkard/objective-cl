@@ -355,25 +355,25 @@ easier to use with __apply__.
   (let* ((signature
           (or (if (eq instance-or-class :instance)
                   (primitive-invoke class
-                                    :instance-method-signature-for-selector
+                                    "instanceMethodSignatureForSelector:"
                                     'id
                                     selector)
                   (primitive-invoke class
-                                    :method-signature-for-selector
+                                    "methodSignatureForSelector:"
                                     'id
                                     selector))
               (error (make-condition 'message-not-understood
                                      :class class
                                      :selector selector))))
-         (argc (primitive-invoke signature 'number-of-arguments :unsigned-int))
+         (argc (primitive-invoke signature "numberOfArguments" :unsigned-int))
          (method-return-typestring (primitive-invoke signature
-                                                     'method-return-type
+                                                     "methodReturnType"
                                                      :string))
          (method-return-type (parse-typespec method-return-typestring t))
          (method-arg-typestrings (loop for x from 0 below argc
                                        collect (primitive-invoke
                                                          signature
-                                                         :get-argument-type-at-index
+                                                         "getArgumentTypeAtIndex:"
                                                          :string
                                                          x)))
          (method-arg-types (mapcar #'parse-typespec method-arg-typestrings)))
@@ -525,23 +525,23 @@ easier to use with __apply__.
 
 (defcoercion id ((x integer))
   (primitive-invoke (find-objc-class 'ns-number)
-                    :number-with-int
+                    "numberWithInt:"
                     'id
                     x))
 
 (defcoercion id ((x float))
   (primitive-invoke (find-objc-class 'ns-number)
                     (etypecase x
-                      (long-float :number-with-double)
-                      (double-float :number-with-double)
-                      (short-float :number-with-float)
-                      (single-float :number-with-float))
+                      (long-float "numberWithDouble:")
+                      (double-float "numberWithDouble:")
+                      (short-float "numberWithFloat:")
+                      (single-float "numberWithFloat:"))
                     'id
                     x))
 
 (defcoercion id ((x string))
   (primitive-invoke (find-objc-class 'ns-string)
-                    :string-with-u-t-f-8-string
+                    "stringWithUTF8String:"
                     'id
                     x))
 
@@ -551,7 +551,7 @@ easier to use with __apply__.
   ;; that contain themselves or this list, and so on.
   (apply #'primitive-invoke
          (find-objc-class 'ns-array)
-         :array-with-objects
+         "arrayWithObjects:"
          'id
          (append (mapcar #'(lambda (element)
                              (coerce-object element 'id))
