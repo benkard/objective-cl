@@ -186,7 +186,8 @@
                                           instance
                                           (effective-slot-definition
                                            foreign-effective-slot-definition))
-  (declare (ignore instance)))
+  (declare (ignore instance))
+  t)
 
 
 (defmethod c2mop:slot-makunbound-using-class ((class objective-c-class)
