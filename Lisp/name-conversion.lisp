@@ -21,7 +21,7 @@
 ;;; (@* "Message and selector names")
 (defun message-component->string (symbol)
   (let ((case-converted-name
-         (name-hyphened->mixed-case (symbol-name symbol) :camel-case)))
+         (name-hyphenated->mixed-case (symbol-name symbol) :camel-case)))
     (if (eql (find-package '#:keyword)
              (symbol-package symbol))
         (concatenate 'string case-converted-name ":")
@@ -46,7 +46,7 @@
                    (subseq name hyphen-pos)
                    name))
          (converted-tail
-          (name-hyphened->mixed-case tail :nerd-caps)))
+          (name-hyphenated->mixed-case tail :nerd-caps)))
     (if head
         (concatenate 'string
                      (string-upcase head)
@@ -106,32 +106,32 @@
                    (symbol-name (objc-class-name->symbol meta-class-name)))))))
 
 
-(defun name-hyphened->mixed-case (string &optional (case-convention :nerd-caps))
+(defun name-hyphenated->mixed-case (string &optional (case-convention :nerd-caps))
   (let ((lower-case-string (name->canonised-lower-case string)))
     (ecase case-convention
-      ((:camel-case) (name-hyphened->camel-case lower-case-string))
-      ((:nerd-caps) (name-hyphened->nerd-caps lower-case-string))
-      ((:underscored) (name-hyphened->underscored lower-case-string))
-      ((:hyphened) lower-case-string))))
+      ((:camel-case) (name-hyphenated->camel-case lower-case-string))
+      ((:nerd-caps) (name-hyphenated->nerd-caps lower-case-string))
+      ((:underscored) (name-hyphenated->underscored lower-case-string))
+      ((:hyphenated) lower-case-string))))
 
 
 (defun slot-name->foreign-slot-name (slot-name
                                      &key (case-convention :camel-case))
-  (name-hyphened->mixed-case (symbol-name slot-name) case-convention))
+  (name-hyphenated->mixed-case (symbol-name slot-name) case-convention))
 
 
 (defun foreign-slot-name->slot-name (foreign-slot-name)
   (let ((*package* (find-package '#:objective-c-classes)))
-    (export-and-return (read-from-string (name-underscored->hyphened
-                                          (name-camel-case->hyphened
+    (export-and-return (read-from-string (name-underscored->hyphenated
+                                          (name-camel-case->hyphenated
                                            foreign-slot-name))))))
 
 
-(defun name-underscored->hyphened (string)
+(defun name-underscored->hyphenated (string)
   (substitute #\- #\_ string))
 
 
-(defun name-hyphened->underscored (string)
+(defun name-hyphenated->underscored (string)
   (substitute #\_ #\- string))
 
 
@@ -169,13 +169,13 @@
           while word-start)))
 
 
-(defun name-hyphened->camel-case (string)
+(defun name-hyphenated->camel-case (string)
   (remove #\- (concatenate 'string
                            (string (char string 0))
                            (subseq (string-capitalise-lower-case string) 1))))
 
 
-(defun name-camel-case->hyphened (string)
+(defun name-camel-case->hyphenated (string)
   (with-output-to-string (out)
     (loop for previous-position = 0 then word-start
           for word-start = (position-if #'upper-case-p
@@ -188,5 +188,5 @@
           do (format out "-"))))
 
 
-(defun name-hyphened->nerd-caps (string)
+(defun name-hyphenated->nerd-caps (string)
   (remove #\- (string-capitalise-lower-case string)))
