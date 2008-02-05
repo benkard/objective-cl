@@ -20,25 +20,12 @@
 
 ;;; (@* "Message and selector names")
 (defun message-component->string (symbol)
-  (let* ((components (split-sequence #\- (symbol-name symbol)
-                                     :remove-empty-subseqs t))
-         (downcasep (notany #'lower-case-p (symbol-name symbol)))
-         (acc-string
-          (reduce #'(lambda (x y) (concatenate 'string x y))
-                  (mapcar #'(lambda (x)
-                              (if downcasep
-                                  (concatenate 'string
-                                               (string (char x 0))
-                                               (string-downcase (subseq x 1)))
-                                  x))
-                          (subseq components 1))
-                  :initial-value (if downcasep
-                                     (string-downcase (first components))
-                                     (first components)))))
+  (let ((case-converted-name
+         (name-hyphened->mixed-case (symbol-name symbol) :camel-case)))
     (if (eql (find-package '#:keyword)
              (symbol-package symbol))
-        (concatenate 'string acc-string ":")
-        acc-string)))
+        (concatenate 'string case-converted-name ":")
+        case-converted-name)))
 
 
 (defun symbol-list->message-name (symbol-list)
@@ -50,18 +37,21 @@
 
 ;;; (@* "Class names")
 (defun symbol->objc-class-name (symbol)
-  (let ((components (split-sequence #\- (symbol-name symbol)
-                                    :remove-empty-subseqs t)))
-    (reduce #'(lambda (x y) (concatenate 'string x y))
-            (mapcar #'(lambda (x)
-                        (concatenate 'string
-                                     (string (char x 0))
-                                     (string-downcase (subseq x 1))))
-                    (subseq components 1))
-            :initial-value (concatenate 'string
-                                        (string (char (first components) 0))
-                                        (string-upcase
-                                         (subseq (first components) 1))))))
+  (let* ((name (symbol-name symbol))
+         (hyphen-pos (position #\- name))
+         (head (if hyphen-pos
+                   (subseq name 0 hyphen-pos)
+                   nil))
+         (tail (if hyphen-pos
+                   (subseq name hyphen-pos)
+                   name))
+         (converted-tail
+          (name-hyphened->mixed-case tail :nerd-caps)))
+    (if head
+        (concatenate 'string
+                     (string-upcase head)
+                     converted-tail)
+        converted-tail)))
 
 
 (defun export-and-return (symbol)
@@ -116,14 +106,19 @@
                    (symbol-name (objc-class-name->symbol meta-class-name)))))))
 
 
+(defun name-hyphened->mixed-case (string &optional (case-convention :nerd-caps))
+  (let ((lower-case-string (name->canonised-lower-case string)))
+    (ecase case-convention
+      ((:camel-case) (name-hyphened->camel-case lower-case-string))
+      ((:nerd-caps) (name-hyphened->nerd-caps lower-case-string))
+      ((:underscored) (name-hyphened->underscored lower-case-string))
+      ((:hyphened) lower-case-string))))
+
+
 (defun slot-name->foreign-slot-name (slot-name
                                      &key (case-convention :camel-case))
-  (let ((string (name->canonised-lower-case (symbol-name slot-name))))
-    (ecase case-convention
-      ((:camel-case) (name-hyphened->camel-case string))
-      ((:nerd-caps) (name-hyphened->nerd-caps string))
-      ((:underscored) (name-hyphened->underscored string))
-      ((:hyphened) string))))
+  (name-hyphened->mixed-case (symbol-name slot-name)
+                             :case-convention case-convention))
 
 
 (defun name-hyphened->underscored (string)
