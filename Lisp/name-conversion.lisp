@@ -106,6 +106,15 @@
                    (symbol-name (objc-class-name->symbol meta-class-name)))))))
 
 
+(defun objc-fake-meta-class-name->symbol (meta-class-name)
+  (let ((*package* (find-package '#:objective-c-classes)))
+    (export-and-return
+     (intern
+      (concatenate 'string
+                   "++"
+                   (symbol-name (objc-class-name->symbol meta-class-name)))))))
+
+
 (defun name-hyphenated->mixed-case (string &optional (case-convention :nerd-caps))
   (let ((lower-case-string (name->canonised-lower-case string)))
     (ecase case-convention

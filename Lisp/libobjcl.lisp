@@ -296,37 +296,36 @@ conventional case for namespace identifiers in Objective-C."
                                (find-objc-meta-class
                                 (%objcl-class-name
                                  (pointer-to non-meta-superclass)))
-                               (find-class 'objective-c-class))))
+                               (find-class 'objective-c-class)))
+               ;; If there is no superclass, we are the root metaclass.
+               ;; As we cannot assign ourselves as our own metaclass
+               ;; (which is a pity, because it would be the correct thing
+               ;; to do), we generate a fake metaclass for ourselves that
+               ;; is almost the same as ourselves except for its own
+               ;; metaclass, which is OBJECTIVE-C-META-CLASS.  (As we are
+               ;; probably +NS-OBJECT, this fake metaclass will be called
+               ;; ++NS-OBJECT.)
+               ;;
+               ;; If the superclass is the root metaclass, we take it as
+               ;; our metaclass, because the root metaclass is the
+               ;; metaclass of all metaclasses.
+               ;;
+               ;; Otherwise, we use the metaclass of the superclass as
+               ;; our own, which will always get us the root metaclass.
+               (metaclass
+                (if non-meta-superclass
+                    (if (typep (class-of superclass)
+                               'objective-c-meta-class)
+                        superclass
+                        (class-of superclass))
+                    (c2mop:ensure-class
+                     (objc-fake-meta-class-name->symbol class-name-string)
+                     :metaclass 'objective-c-meta-class
+                     :pointer class-ptr
+                     :direct-superclasses (list superclass)))))
           (or (find-class class-name nil)
               (c2mop:ensure-class class-name
-                                  ;; If there is no superclass, we are
-                                  ;; the root metaclass.  As we cannot
-                                  ;; assign ourselves as our own
-                                  ;; metaclass (which is a pity, because
-                                  ;; it would be the correct thing to
-                                  ;; do), we use OBJECTIVE-C-META-CLASS
-                                  ;; as our metaclass and regrettably
-                                  ;; miss out on some features.  (Sorry,
-                                  ;; you can't get at +NS-OBJECT's
-                                  ;; slots.)
-                                  ;;
-                                  ;; If the superclass is the root
-                                  ;; metaclass, we take it as our
-                                  ;; metaclass, because the root
-                                  ;; metaclass is the metaclass of all
-                                  ;; metaclasses.
-                                  ;;
-                                  ;; Otherwise, we use the metaclass of
-                                  ;; the superclass as our own, which
-                                  ;; will always get us the root
-                                  ;; metaclass.
-                                  :metaclass (if non-meta-superclass
-                                                 (if (eq (class-name
-                                                          (class-of superclass))
-                                                         'objective-c-meta-class)
-                                                     superclass
-                                                     (class-of superclass))
-                                                 'objective-c-meta-class)
+                                  :metaclass metaclass
                                   :pointer class-ptr
                                   :direct-superclasses (list superclass)))))))
 
