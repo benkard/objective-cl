@@ -121,6 +121,21 @@
 (defcfun objcl-get-yes :long)
 (defcfun objcl-get-no :long)
 
+(defcfun ("objcl_create_imp" %objcl-create-imp) :pointer
+  (callback :pointer)
+  (argc :int)
+  (return-typespec :string)
+  (arg-typespecs (:array :string)))
+
+(defcfun ("objcl_acquire_lock" %objcl-release-lock) :pointer
+  (lock :pointer))
+
+(defcfun ("objcl_release_lock" %objcl-acquire-lock) :pointer
+  (lock :pointer))
+
+(defcvar *objcl-current-exception-lock* :pointer)
+(defcvar *objcl-current-exception* :pointer)
+
 (defun objcl-get-nil ()
   ;; %OBJCL-GET-NIL can return NIL for CLISP, which CFFI refuses to
   ;; accept as an argument to POINTER-EQ.  This is weird.

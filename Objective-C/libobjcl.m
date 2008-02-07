@@ -45,6 +45,9 @@ static NSAutoreleasePool *objcl_autorelease_pool = NULL;
 /* Preallocate an exception to throw when memory is all used up. */
 NSException *objcl_oom_exception = NULL;
 
+id objcl_current_exception = NULL;
+void *objcl_current_exception_lock = NULL;
+
 
 void
 objcl_initialise_runtime (void)
@@ -476,4 +479,94 @@ objcl_slot_type (IVAR_T ivar)
 #else
   return ivar->ivar_type;
 #endif
+}
+
+
+
+
+/* In order to be able to do exception propagation from Lisp code, we
+   have the Lisp layer save exceptions to objcl_current_exception.  Our
+   wrapper function is then able to raise the exception from where it
+   ought to be raised from: the Objective-C layer.
+
+   Note that it is the Lisp layer's duty to wrap Objective-C exceptions
+   around Lisp SERIOUS-CONDITIONs in order to propagate them. */
+static void
+imp_closure (ffi_cif *cif, void *result, void **args, void *user_data)
+{
+  id exception;
+
+  ffi_call (cif, user_data, result, args);
+
+  exception = objcl_current_exception;
+  objcl_current_exception = NULL;
+  objcl_release_lock (objcl_current_exception_lock);
+
+  if (exception)
+    [exception raise];
+}
+
+
+IMP
+objcl_create_imp (IMP callback,
+                  int argc,
+                  const char *return_typespec,
+                  const char *arg_typespecs[])
+{
+  ffi_type *return_type;
+  ffi_type *arg_types[argc + 2];
+  ffi_status status;
+  ffi_cif cif;
+  ffi_closure *closure;
+
+  int i;
+
+  static ffi_type *id_type = NULL;
+  static ffi_type *sel_type = NULL;
+
+  if (!id_type)
+    id_type = objcl_pyobjc_arg_signature_to_ffi_type ("@");
+
+  if (!sel_type)
+    sel_type = objcl_pyobjc_arg_signature_to_ffi_type (":");
+
+  return_type = objcl_pyobjc_signature_to_ffi_return_type (return_typespec);
+
+  arg_types[0] = id_type;
+  arg_types[1] = sel_type;
+
+  for (i = 0; i < argc; i++)
+    arg_types[i + 2] = objcl_pyobjc_arg_signature_to_ffi_type (arg_typespecs[i]);
+
+  status = ffi_prep_cif (&cif, FFI_DEFAULT_ABI, argc + 2, return_type, arg_types);
+  if (status != FFI_OK)
+    {
+      [[NSException exceptionWithName: @"MLKInvalidFFITypeException"
+                    reason: @"FFI type is invalid (this is probably a bug)."
+                    userInfo: nil] raise];
+    }
+
+  status = ffi_prep_closure (closure, &cif, imp_closure, (void *)callback);
+  if (status != FFI_OK)
+    {
+      [[NSException exceptionWithName: @"MLKClosureCreationFailure"
+                    reason: @"Creating an IMP closure failed (this is probably a bug)."
+                    userInfo: nil] raise];
+    }
+
+  return (IMP) closure;
+}
+
+
+void
+objcl_acquire_lock (void *lock)
+{
+#warning "FIXME"
+}
+
+
+void
+objcl_release_lock (void *lock)
+{
+#warning "FIXME"
 }

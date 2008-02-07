@@ -44,6 +44,8 @@ typedef struct objc_ivar *IVAR_T;
 #endif
 
 extern NSException *objcl_oom_exception;
+extern id objcl_current_exception;
+extern void *objcl_current_exception_lock;
 
 
 void
@@ -145,3 +147,15 @@ objcl_slot_name (IVAR_T ivar);
 
 const char *
 objcl_slot_type (IVAR_T ivar);
+
+IMP
+objcl_create_imp (IMP callback,
+                  int argc,
+                  const char *return_typespec,
+                  const char *arg_typespecs[]);
+
+void
+objcl_acquire_lock (void *lock);
+
+void
+objcl_release_lock (void *lock);
