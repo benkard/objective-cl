@@ -43,6 +43,18 @@ typedef Ivar IVAR_T;
 typedef struct objc_ivar *IVAR_T;
 #endif
 
+#ifdef HAVE_SYS_SEM_H
+#include <sys/sem.h>
+/* According to the Single Unix Specification, Version 3, the semun
+   union type must be defined by the application writer as follows: */
+union semun
+{
+  int              val;    /* Value for SETVAL */
+  struct semid_ds *buf;    /* Buffer for IPC_STAT, IPC_SET */
+  unsigned short  *array;  /* Array for GETALL, SETALL */
+};
+#endif
+
 extern NSException *objcl_oom_exception;
 extern id objcl_current_exception;
 extern void *objcl_current_exception_lock;
@@ -159,3 +171,6 @@ objcl_acquire_lock (void *lock);
 
 void
 objcl_release_lock (void *lock);
+
+void
+objcl_initialise_lock (void **lock);

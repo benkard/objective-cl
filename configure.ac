@@ -31,6 +31,8 @@ if test x$HAVE_LIBFFI = x1; then
   AC_CHECK_HEADERS([ffi.h ffi/ffi.h], [HAVE_ANY_FFI_H=1; break])
 fi
 
+AC_CHECK_HEADERS([sys/sem.h])
+
 AC_SUBST(HAVE_ANY_FFI_H)
 AC_SUBST(HAVE_LIBFFI)
 AC_CONFIG_HEADERS([config.h])

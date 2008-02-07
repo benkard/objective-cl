@@ -65,6 +65,8 @@ objcl_initialise_runtime (void)
 #ifdef __NEXT_RUNTIME__
   PyObjC_SetupRuntimeCompat ();
 #endif
+
+  objcl_initialise_lock (&objcl_current_exception_lock);
 }
 
 
@@ -559,14 +561,61 @@ objcl_create_imp (IMP callback,
 
 
 void
+objcl_initialise_lock (void **lock)
+{
+#ifdef HAVE_SYS_SEM_H
+  int sem;
+  union semun initop;
+
+  sem = semget (IPC_PRIVATE, 1, IPC_CREAT | 0600);
+  *lock = malloc (sizeof (int));
+  *((int *) *lock) = sem;
+
+  initop.val = 1;
+  semctl (sem, 0, SETVAL, initop);
+#else
+#warning "I do not know how to do locking on this platform."
+#endif
+}
+
+
+void
 objcl_acquire_lock (void *lock)
 {
-#warning "FIXME"
+#ifdef HAVE_SYS_SEM_H
+  struct sembuf op;
+  op.sem_num = 0; op.sem_op = +1; op.sem_flg = 0;
+
+  if ((semop (*((int *) lock), &op, 1)) < 0)
+    {
+      [[NSException exceptionWithName: @"MLKLockLossage"
+                    reason: @"Acquiring the exception lock failed (don't ask me why)."
+                    userInfo: nil] raise];
+    }
+
+  TRACE (@"Exception buffer locked.");
+#else
+#warning "I do not know how to do locking on this platform."
+#endif
 }
 
 
 void
 objcl_release_lock (void *lock)
 {
-#warning "FIXME"
+#ifdef HAVE_SYS_SEM_H
+  struct sembuf op;
+  op.sem_num = 0; op.sem_op = +1; op.sem_flg = 0;
+
+  if ((semop (*((int *) lock), &op, 1)) < 0)
+    {
+      [[NSException exceptionWithName: @"MLKLockLossage"
+                    reason: @"Acquiring the exception lock failed (don't ask me why)."
+                    userInfo: nil] raise];
+    }
+
+  TRACE (@"Exception buffer unlocked.");
+#else
+#warning "I do not know how to do locking on this platform."
+#endif
 }
