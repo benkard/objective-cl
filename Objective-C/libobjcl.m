@@ -22,6 +22,7 @@
 
 #import <Foundation/Foundation.h>
 #include <stdarg.h>
+#include <sys/mman.h>
 #include <objc/objc-api.h>
 
 #ifdef __NEXT_RUNTIME__
@@ -484,15 +485,13 @@ objcl_slot_type (IVAR_T ivar)
 }
 
 
-
-
 /* In order to be able to do exception propagation from Lisp code, we
    have the Lisp layer save exceptions to objcl_current_exception.  Our
    wrapper function is then able to raise the exception from where it
    ought to be raised from: the Objective-C layer.
 
    Note that it is the Lisp layer's duty to wrap Objective-C exceptions
-   around Lisp SERIOUS-CONDITIONs in order to propagate them. */
+   around Lisp SERIOUS-CONDITIONs in order to propagate those. */
 static void
 imp_closure (ffi_cif *cif, void *result, void **args, void *user_data)
 {
@@ -550,6 +549,13 @@ objcl_create_imp (IMP callback,
 
   status = ffi_prep_closure (closure, &cif, imp_closure, (void *)callback);
   if (status != FFI_OK)
+    {
+      [[NSException exceptionWithName: @"MLKClosureCreationFailure"
+                    reason: @"Creating an IMP closure failed (this is probably a bug)."
+                    userInfo: nil] raise];
+    }
+
+  if (mprotect (closure, sizeof (closure), PROT_READ | PROT_EXEC) == -1)
     {
       [[NSException exceptionWithName: @"MLKClosureCreationFailure"
                     reason: @"Creating an IMP closure failed (this is probably a bug)."
