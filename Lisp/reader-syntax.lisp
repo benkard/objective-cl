@@ -152,7 +152,7 @@ conciseness.
              (receiver (if (upper-case-p (peek-char))
                            ;; A class name.
                            (let ((*readtable* (copy-readtable)))
-                             (setf class-method-p t)
+                             (setq class-method-p t)
                              (setf (readtable-case *readtable*) :preserve)
                              `(find-objc-class
                                ,(symbol-name (read stream t nil t))))
@@ -173,7 +173,7 @@ conciseness.
 
         ;; Slurp the trailing #\].
         (assert (char= #\] (read-char)))
-        (setf args (nreverse args))
+        (setq args (nreverse args))
         `(,(if class-method-p
                'invoke-by-name
                #+nil 'objcl-invoke-instance-method
