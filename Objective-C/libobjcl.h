@@ -45,6 +45,7 @@ typedef struct objc_ivar *IVAR_T;
 
 #ifdef HAVE_SYS_SEM_H
 #include <sys/sem.h>
+#ifndef __APPLE__
 /* According to the Single Unix Specification, Version 3, the semun
    union type must be defined by the application writer as follows: */
 union semun
@@ -53,6 +54,7 @@ union semun
   struct semid_ds *buf;    /* Buffer for IPC_STAT, IPC_SET */
   unsigned short  *array;  /* Array for GETALL, SETALL */
 };
+#endif
 #endif
 
 extern NSException *objcl_oom_exception;
@@ -174,3 +176,24 @@ objcl_release_lock (void *lock);
 
 void
 objcl_initialise_lock (void **lock);
+
+Class
+objcl_create_class (const char *class_name,
+                    const char *superclass,
+                    int protocol_number,
+                    const char *protocol_names[],
+                    int ivar_number,
+                    const char *ivar_names[],
+                    const char *ivar_typespecs[]);
+
+void
+objcl_add_method (Class class,
+                  SEL method_name,
+                  IMP callback,
+                  int argc,
+                  const char *return_typespec,
+                  const char *arg_typespecs[],
+                  const char *signature);
+
+void
+objcl_finalise_class (Class class);

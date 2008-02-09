@@ -19,6 +19,7 @@
 
 #import "libobjcl.h"
 #import "PyObjC/libffi_support.h"
+#import "JIGS/ObjcRuntimeUtilities.h"
 
 #import <Foundation/Foundation.h>
 #include <stdarg.h>
@@ -49,12 +50,16 @@ NSException *objcl_oom_exception = NULL;
 id objcl_current_exception = NULL;
 void *objcl_current_exception_lock = NULL;
 
+static NSMutableDictionary *method_lists = NULL;
+static NSMutableDictionary *method_list_lengths = NULL;
+
 
 void
 objcl_initialise_runtime (void)
 {
   if (!objcl_autorelease_pool)
     objcl_autorelease_pool = [[NSAutoreleasePool alloc] init];
+
   if (!objcl_oom_exception)
     {
       objcl_oom_exception = [NSException exceptionWithName: @"MLKOutOfMemoryException"
@@ -68,6 +73,12 @@ objcl_initialise_runtime (void)
 #endif
 
   objcl_initialise_lock (&objcl_current_exception_lock);
+
+  if (!method_lists)
+    method_lists = [[NSMutableDictionary alloc] init];
+
+  if (!method_list_lengths)
+    method_list_lengths = [[NSMutableDictionary alloc] init];
 }
 
 
@@ -623,5 +634,135 @@ objcl_release_lock (void *lock)
   TRACE (@"Exception buffer unlocked.");
 #else
 #warning "I do not know how to do locking on this platform."
+#endif
+}
+
+
+Class
+objcl_create_class (const char *class_name,
+                    const char *superclass,
+                    int protocol_number,
+                    const char *protocol_names[],
+                    int ivar_number,
+                    const char *ivar_names[],
+                    const char *ivar_typespecs[])
+{
+#ifdef __NEXT_RUNTIME__
+  int i;
+  Class class;
+
+  objc_allocateClassPair (objcl_find_class (superclass), class_name, 0);
+  class = objcl_find_class (class_name);
+
+  for (i = 0; i < ivar_number; i++)
+    preclass_addIvar (class,
+                      ivar_names[i],
+                      objcl_sizeof_type (ivar_typespecs[i]),
+                      objcl_alignof_type (ivar_typespecs[i]),
+                      ivar_typespecs[i]);
+
+  for (i = 0; i < protocol_number; i++)
+    preclass_addProtocol (class,
+#ifdef __OBJC2__
+                          objc_getProtocol ((char *) protocol_names[i])
+#else
+                          objc_getClass (protocol_names[i])
+#endif
+                          );
+
+  return class;
+#else
+  ffi_cif cif;
+  ffi_status status;
+  ffi_type *arg_types[3 + ivar_number*2];
+  void *argv[3 + ivar_number*2];
+  int i;
+  BOOL return_value;
+
+  arg_types[0] = &ffi_type_pointer;
+  arg_types[1] = &ffi_type_pointer;
+  arg_types[2] = &ffi_type_sint;
+  for (i = 0; i < ivar_number*2; i++)
+    arg_types[3 + i] = &ffi_type_pointer;
+
+  argv[0] = &class_name;
+  argv[1] = &superclass;
+  argv[2] = &ivar_number;
+  for (i = 0; i < ivar_number; i++)
+    {
+      argv[3 + 2*i] = (void *) &ivar_names[2*i];
+      argv[3 + 2*i + 1] = (void *) &ivar_names[2*i + 1];
+    }
+
+  status = ffi_prep_cif (&cif, FFI_DEFAULT_ABI, ivar_number + 3, &ffi_type_uchar, arg_types);
+  if (status != FFI_OK)
+    {
+      [[NSException exceptionWithName: @"MLKInvalidFFITypeException"
+                    reason: @"FFI type is invalid (this is probably a bug)."
+                    userInfo: nil] raise];
+    }
+
+  ffi_call (&cif, FFI_FN (ObjcUtilities_new_class), &return_value, argv);
+
+  NSString *ns_class_name = [NSString stringWithUTF8String: class_name];
+  [method_lists setObject:
+                  [NSValue valueWithPointer: ObjcUtilities_alloc_method_list]
+                forKey: ns_class_name];
+  [method_list_lengths setObject: [NSNumber numberWithInt: 0]
+                       forKey: ns_class_name];
+
+  return objcl_find_class (class_name);
+#endif
+}
+
+
+void
+objcl_add_method (Class class,
+                  SEL method_name,
+                  IMP callback,
+                  int argc,
+                  const char *return_typespec,
+                  const char *arg_typespecs[],
+                  const char *signature)
+{
+  IMP imp;
+
+  imp = objcl_create_imp (callback, argc, return_typespec, arg_typespecs);
+
+#ifdef __NEXT_RUNTIME__
+  preclass_addMethod (class, method_name, imp, signature);
+#else
+  NSString *class_name = [NSString stringWithUTF8String: objcl_class_name (class)];
+  MethodList *method_list = [[method_lists objectForKey: class_name] pointerValue];
+  int index = [[method_list_lengths objectForKey: class_name] intValue];
+
+  ObjcUtilities_insert_method_in_list
+    (method_list,
+     index,
+     objcl_selector_name (method_name),
+     ObjcUtilities_build_runtime_Objc_signature (signature),
+     imp);
+
+  [method_list_lengths setObject: [NSNumber numberWithInt: index]
+                       forKey: class_name];
+#endif
+}
+
+
+void
+objcl_finalise_class (Class class)
+{
+#ifdef __NEXT_RUNTIME__
+  /* FIXME: Should we do this if class is a metaclass? */
+  objc_registerClassPair (class);
+#else
+  NSString *class_name = [NSString stringWithUTF8String:
+                                     objcl_class_name (class)];
+  ObjcUtilities_register_method_list
+    (class, [[method_lists objectForKey: class_name]
+              pointerValue]);
+
+  [method_lists removeObjectForKey: class_name];
+  [method_list_lengths removeObjectForKey: class_name];
 #endif
 }
