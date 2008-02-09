@@ -121,11 +121,11 @@
           class
      &allow-other-keys)
   (when (and (not foreign-name) (not foreign-slot))
-    (setq foreign-name (slot-name->foreign-slot-name name)
+    (setf foreign-name (slot-name->foreign-slot-name name)
           (slot-value slot-definition 'foreign-name) foreign-name))
   (cond ((and foreign-name foreign-slot))
         (foreign-name
-         (setq foreign-slot
+         (setf foreign-slot
                (or (find foreign-name
                          (mapcan #'objcl-class-direct-slots
                                  (c2mop:compute-class-precedence-list
@@ -137,7 +137,7 @@
                           class))
                (slot-value slot-definition 'foreign-slot) foreign-slot))
         (foreign-slot
-         (setq foreign-name (objcl-slot-name foreign-slot)
+         (setf foreign-name (objcl-slot-name foreign-slot)
                (slot-value slot-definition 'foreign-name) foreign-name)))
   (unless foreign-type
     (setf (slot-value slot-definition 'foreign-type)
