@@ -18,6 +18,7 @@
  */
 
 #import "libobjcl.h"
+#import "NSObject-ObjectiveCLWrapperLink.h"
 #import "PyObjC/libffi_support.h"
 #import "JIGS/ObjcRuntimeUtilities.h"
 
@@ -79,22 +80,30 @@ objcl_initialise_runtime (void)
 
   if (!method_list_lengths)
     method_list_lengths = [[NSMutableDictionary alloc] init];
+
+  objcl_initialise_instance_wrappers ();
+}
+
+
+static void
+release_unless_null (id *object)
+{
+  if (*object)
+    {
+      [*object release];
+      *object = NULL;
+    }
 }
 
 
 void
 objcl_shutdown_runtime (void)
 {
-  if (objcl_autorelease_pool)
-    {
-      [objcl_autorelease_pool release];
-      objcl_autorelease_pool = NULL;
-    }
-  if (objcl_oom_exception)
-    {
-      [objcl_oom_exception release];
-      objcl_oom_exception = NULL;
-    }
+  release_unless_null (&objcl_autorelease_pool);
+  release_unless_null (&objcl_oom_exception);
+  release_unless_null (&method_lists);
+  release_unless_null (&method_list_lengths);
+  objcl_shutdown_instance_wrappers ();
 }
 
 
@@ -661,14 +670,16 @@ objcl_create_class (const char *class_name,
                       objcl_alignof_type (ivar_typespecs[i]),
                       ivar_typespecs[i]);
 
+#ifdef __OBJC2__
+  /* FIXME: What to do for the NeXT Objective-C 1.0 and GNU runtimes
+     here? */
   for (i = 0; i < protocol_number; i++)
     preclass_addProtocol (class,
-#ifdef __OBJC2__
                           objc_getProtocol ((char *) protocol_names[i])
-#else
-                          objc_getClass (protocol_names[i])
-#endif
+                          /* ??? !__OBJC2__ ???
+                             objc_getClass (protocol_names[i]) */
                           );
+#endif
 
   return class;
 #else

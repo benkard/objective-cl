@@ -33,7 +33,7 @@ LIBRARY_NAME = libobjcl
 RPM_DISABLE_RELOCATABLE = YES
 ADDITIONAL_OBJCFLAGS = -Wall -g -DVERSION=\"$(VERSION)\" -I/usr/local/include
 
-libobjcl_OBJC_FILES = JIGS/ObjcRuntimeUtilities2.m libobjcl.m PyObjC/objc_support.m PyObjC/objc-runtime-apple.m PyObjC/objc-runtime-gnu.m PyObjC/objc-runtime-compat.m
+libobjcl_OBJC_FILES = JIGS/ObjcRuntimeUtilities2.m libobjcl.m NSObject-ObjectiveCLWrapperLink.m PyObjC/objc_support.m PyObjC/objc-runtime-apple.m PyObjC/objc-runtime-gnu.m PyObjC/objc-runtime-compat.m
 libobjcl_C_FILES = JIGS/ObjcRuntimeUtilities.c
 LIBRARIES_DEPEND_UPON = $(FND_LIBS) $(GUI_LIBS) $(OBJC_LIBS) $(SYSTEM_LIBS) $(CONFIG_SYSTEM_LIBS)
 
