@@ -5,6 +5,10 @@
 #import <Foundation/NSObject.h>
 #import <Foundation/NSString.h>
 
+#ifndef NULL
+#define NULL (void *)0
+#endif
+
 static NSMutableDictionary *instance_wrappers = NULL;
 
 void

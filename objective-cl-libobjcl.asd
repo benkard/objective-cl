@@ -22,6 +22,7 @@
 (in-package #:objcl-asdf)
 
 (defvar *objc-obj-dir*)
+(defvar *stuff-copied-p* nil)
 
 (defclass objc-source-file (source-file) ())
 (defclass objcl-c-source-file (objc-source-file) ()
@@ -111,38 +112,48 @@
   :serial t)
 
 
-(defmethod perform :before (o (c (eql (find-system "objective-cl-libobjcl"))))
+(defmethod perform :before (o (c objc-source-file))
   ;; Copy the Objective-C sources to the target directory.
-  (unless (null (output-files o c))
-    (let* ((source-dir (component-pathname (find-system "objective-cl-libobjcl")))
-           (sources
-            (mapcar #'(lambda (x)
-                        (enough-namestring x source-dir))
-                    (mapcan #'(lambda (x)
-                                (directory (merge-pathnames x source-dir)))
-                            '(#p"**/*.c" #p"**/*.m" #p"**/*.h"
-                              #p"**/GNUmakefile.*"
-                              #p"**/*.make" #p"**/GNUmakefile"
-                              #p"**/*.in" #p"**/configure" #p"**/configure.ac"
-                              #p"libffi/**/*" #p"libffi/**/*.*"))))
-           (output-dir
-            (merge-pathnames #p"../../"
-                             (directory-namestring (first (output-files o c))))))
-      (dolist (relative-source-file sources)
-        (let ((output-file (merge-pathnames relative-source-file output-dir))
-              (source-file (merge-pathnames relative-source-file source-dir)))
-          (ensure-directories-exist output-file)
-          (unless (and (probe-file output-file)
-                       (= (file-write-date source-file)
-                          (file-write-date output-file)))
-            (ignore-errors  ;; FIXME: We need to skip directories, so
-                            ;; that IGNORE-ERRORS can go away.
-              (with-open-file (in source-file
-                                  :element-type '(unsigned-byte 8))
-                (with-open-file (out output-file
-                                     :direction :output
-                                     :if-exists :supersede
-                                     :element-type '(unsigned-byte 8))
-                  (loop for byte = (read-byte in nil nil)
-                        while byte
-                        do (write-byte byte out)))))))))))
+  (let ((output-files
+         (output-files (make-instance 'compile-op)
+                       (find "libobjcl"
+                             (module-components
+                              (first
+                               (module-components
+                                (find-system "objective-cl-libobjcl"))))
+                             :key #'component-name
+                             :test #'string=))))
+    (unless (or *stuff-copied-p* (null output-files))
+      (setq *stuff-copied-p* t)
+      (let* ((source-dir (component-pathname (find-system "objective-cl-libobjcl")))
+             (sources
+              (mapcar #'(lambda (x)
+                          (enough-namestring x source-dir))
+                      (mapcan #'(lambda (x)
+                                  (directory (merge-pathnames x source-dir)))
+                              '(#p"**/*.c" #p"**/*.m" #p"**/*.h"
+                                #p"**/GNUmakefile.*"
+                                #p"**/*.make" #p"**/GNUmakefile"
+                                #p"**/*.in" #p"**/configure" #p"**/configure.ac"
+                                #p"libffi/**/*" #p"libffi/**/*.*"))))
+             (output-dir
+              (merge-pathnames #p"../../"
+                               (directory-namestring (first output-files)))))
+        (dolist (relative-source-file sources)
+          (let ((output-file (merge-pathnames relative-source-file output-dir))
+                (source-file (merge-pathnames relative-source-file source-dir)))
+            (ensure-directories-exist output-file)
+            (unless (and (probe-file output-file)
+                         (= (file-write-date source-file)
+                            (file-write-date output-file)))
+              (ignore-errors ;; FIXME: We need to skip directories, so
+                ;; that IGNORE-ERRORS can go away.
+                (with-open-file (in source-file
+                                    :element-type '(unsigned-byte 8))
+                  (with-open-file (out output-file
+                                       :direction :output
+                                       :if-exists :supersede
+                                       :element-type '(unsigned-byte 8))
+                    (loop for byte = (read-byte in nil nil)
+                          while byte
+                          do (write-byte byte out))))))))))))

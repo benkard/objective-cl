@@ -354,11 +354,13 @@ conventional case for namespace identifiers in Objective-C."
                                'objective-c-meta-class)
                         superclass
                         (class-of superclass))
-                    (c2mop:ensure-class
-                     (objc-fake-meta-class-name->symbol class-name-string)
-                     :metaclass 'objective-c-meta-class
-                     :pointer class-ptr
-                     :direct-superclasses (list superclass)))))
+                    (let ((fake-metaclass-name
+                           (objc-fake-meta-class-name->symbol class-name-string)))
+                      (or (find-class fake-metaclass-name nil)
+                          (c2mop:ensure-class fake-metaclass-name
+                                              :metaclass 'objective-c-meta-class
+                                              :pointer class-ptr
+                                              :direct-superclasses (list superclass)))))))
           (or (find-class class-name nil)
               (c2mop:ensure-class class-name
                                   :metaclass metaclass
