@@ -649,7 +649,7 @@ objcl_release_lock (void *lock)
 
 Class
 objcl_create_class (const char *class_name,
-                    const char *superclass,
+                    Class superclass,
                     int protocol_number,
                     const char *protocol_names[],
                     int ivar_number,
@@ -660,7 +660,7 @@ objcl_create_class (const char *class_name,
   int i;
   Class class;
 
-  objc_allocateClassPair (objcl_find_class (superclass), class_name, 0);
+  objc_allocateClassPair (superclass, class_name, 0);
   class = objcl_find_class (class_name);
 
   for (i = 0; i < ivar_number; i++)
@@ -689,6 +689,7 @@ objcl_create_class (const char *class_name,
   void *argv[3 + ivar_number*2];
   int i;
   BOOL return_value;
+  const char *superclass_name;
 
   arg_types[0] = &ffi_type_pointer;
   arg_types[1] = &ffi_type_pointer;
@@ -696,8 +697,10 @@ objcl_create_class (const char *class_name,
   for (i = 0; i < ivar_number*2; i++)
     arg_types[3 + i] = &ffi_type_pointer;
 
+  superclass_name = objcl_class_name (superclass);
+
   argv[0] = &class_name;
-  argv[1] = &superclass;
+  argv[1] = &superclass_name;
   argv[2] = &ivar_number;
   for (i = 0; i < ivar_number; i++)
     {

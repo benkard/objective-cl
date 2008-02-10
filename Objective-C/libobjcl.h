@@ -179,7 +179,7 @@ objcl_initialise_lock (void **lock);
 
 Class
 objcl_create_class (const char *class_name,
-                    const char *superclass,
+                    Class superclass,
                     int protocol_number,
                     const char *protocol_names[],
                     int ivar_number,

@@ -133,6 +133,27 @@
 (defcfun ("objcl_release_lock" %objcl-acquire-lock) :pointer
   (lock :pointer))
 
+(defcfun ("objcl_create_class" %objcl-create-class) :pointer
+  (class-name :string)
+  (superclass :pointer)
+  (protocol-numer :int)
+  (protocol-names (:array :string))
+  (ivar-number :int)
+  (ivar-names (:array :string))
+  (ivar-typespecs (:array :string)))
+
+(defcfun ("objcl_add_method" %objcl-add-method) :void
+  (class :pointer)
+  (method-name :pointer)
+  (callback :pointer)
+  (argc :int)
+  (return-typespec :string)
+  (arg-typespecs (:array :string))
+  (signature :string))
+
+(defcfun ("objcl_finalise_class" %objcl-finalise-class) :void
+  (class :pointer))
+
 (defcvar *objcl-current-exception-lock* :pointer)
 (defcvar *objcl-current-exception* :pointer)
 
