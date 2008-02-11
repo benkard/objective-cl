@@ -39,6 +39,17 @@
                  :initform (cffi:null-pointer)))))
 
 
+
+
+(defmethod make-load-form ((instance c-pointer-wrapper) &optional environment)
+  (declare (ignore environment))
+  ;; (TYPE-OF INSTANCE) works because MAKE-POINTER-WRAPPER accepts
+  ;; subclasses of ID as well as ID itself.
+  `(make-pointer-wrapper ',(type-of instance)
+                         :pointer (make-pointer
+                                   ,(pointer-address (pointer-to instance)))))
+
+
 ;; The following may be needed by some implementations (namely Allegro
 ;; CL).
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -104,6 +115,13 @@ The following calls are all equivalent:
    selector
    #'(lambda (receiver &rest args)
        (apply #'invoke-by-name receiver selector args))))
+
+
+(defmethod make-load-form ((selector selector) &optional environment)
+  (declare (ignore environment))
+  `(make-pointer-wrapper 'selector
+                         :pointer (make-pointer
+                                   ,(pointer-address (pointer-to selector)))))
 
 
 (defclass id (c-pointer-wrapper)

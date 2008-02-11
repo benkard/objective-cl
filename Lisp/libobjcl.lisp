@@ -18,9 +18,10 @@
 (in-package #:mulk.objective-cl)
 
 
-(dolist (subdir '("shared_obj/" "obj/"))
-  (pushnew (merge-pathnames subdir objcl-asdf:*objc-obj-dir*)
-           cffi:*foreign-library-directories*))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (dolist (subdir '("shared_obj/" "obj/"))
+    (pushnew (merge-pathnames subdir objcl-asdf:*objc-obj-dir*)
+             cffi:*foreign-library-directories*)))
 
 (define-foreign-library libobjcl
   (:unix (:or "libobjcl.so"

@@ -24,6 +24,13 @@
 
 
 (defun make-pointer-wrapper (class &rest initargs &key pointer &allow-other-keys)
+  (when (or (null-pointer-p pointer)
+            (pointer-eq (objcl-get-nil) pointer))
+    (return-from make-pointer-wrapper
+      ;; We can't simply return +NIL+ here, because this function might
+      ;; be called at load-time (see the MAKE-LOAD-FORM methods in
+      ;; data-types.lisp).
+      (make-instance 'id :pointer (objcl-get-nil))))
   (when (not (eq 'selector class))
     (cond ((%objcl-object-is-meta-class pointer)
            (return-from make-pointer-wrapper
