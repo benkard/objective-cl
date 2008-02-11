@@ -42,7 +42,7 @@
                           :directory
                           (pathname-directory
                            (merge-pathnames
-                            (make-pathname :directory '(:relative ".."))
+                            (make-pathname :directory '(:relative ".." ".."))
                             (first
                              (output-files
                               o
