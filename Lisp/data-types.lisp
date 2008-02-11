@@ -63,9 +63,11 @@
 
 ;; FIXME: I'm not confident about this, but it is needed in order to
 ;; make (DEFCLASS SELECTOR ...) work.
-(defmethod c2mop:validate-superclass ((class c2mop:funcallable-standard-class)
-                                      (superclass standard-class))
-  t)
+(#+clisp ext:without-package-lock #+clisp (#:clos)
+ #-clisp progn
+  (defmethod c2mop:validate-superclass ((class c2mop:funcallable-standard-class)
+                                        (superclass standard-class))
+    t))
 
 
 (defclass selector (c2mop:funcallable-standard-object c-pointer-wrapper)
