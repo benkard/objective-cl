@@ -113,6 +113,7 @@
                        ;; object wrapper cannot be used anymore.  We're
                        ;; right within its finalisation phase, after
                        ;; all.
+                       (weak-remhash address hash-table)
                        (primitive-invoke pointer "release" :void)))
                 (trivial-garbage:finalize new-wrapper #'finalizer)))
             new-wrapper)))))

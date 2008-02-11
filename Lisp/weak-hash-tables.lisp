@@ -33,6 +33,8 @@
             ;; Clean up.
             (remhash key hash-table)))))
 
+  (setf (fdefinition 'weak-remhash) (fdefinition 'remhash))
+
   (defun (setf weak-gethash) (value key hash-table)
     (setf (gethash key hash-table)
           (trivial-garbage:make-weak-pointer value))))
@@ -47,6 +49,7 @@
                                           :test 'eql))
 
   (setf (fdefinition 'weak-gethash) (fdefinition 'gethash))
+  (setf (fdefinition 'weak-remhash) (fdefinition 'remhash))
 
   (defun (setf weak-gethash) (value key hash-table)
     (setf (gethash key hash-table) value)))

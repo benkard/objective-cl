@@ -19,7 +19,7 @@
 
 
 (defmacro atomically (&body body)
-  ;; Use a reentrant global lock here.
+  ;; FIXME: Use a reentrant global lock here.
   `(progn ,@body))
 
 

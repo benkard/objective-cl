@@ -332,7 +332,7 @@ easier to use with __apply__.
                   ;; an Objective-C object.  In the latter case,
                   ;; INITIALIZE-INSTANCE does the memory management for
                   ;; us.
-                  (error (make-condition 'exception :pointer error-cell)))
+                  (error (make-pointer-wrapper 'exception :pointer error-cell)))
                 (case return-type
                   ((id objective-c-class exception selector)
                    (let ((*skip-retaining*

@@ -826,7 +826,7 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
     (let ((array-pointer (%objcl-class-direct-slots class-ptr
                                                     count-ptr
                                                     element-size-ptr)))
-      (unless (null-pointer-p array-pointer)
+      (unless (zerop (mem-ref count-ptr :unsigned-int))
         (unwind-protect
             (loop with element-size = (mem-ref element-size-ptr :unsigned-int)
                   with count = (mem-ref count-ptr :unsigned-int)
