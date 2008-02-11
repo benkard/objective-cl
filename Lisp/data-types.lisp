@@ -63,11 +63,15 @@
 
 ;; FIXME: I'm not confident about this, but it is needed in order to
 ;; make (DEFCLASS SELECTOR ...) work.
-(#+clisp ext:without-package-lock #+clisp (#:clos)
- #-clisp progn
-  (defmethod c2mop:validate-superclass ((class c2mop:funcallable-standard-class)
-                                        (superclass standard-class))
-    t))
+;;
+;; On the other hand, CLISP's implementation notes specify this method
+;; to return true by default for "some `obvious' cases" [29.12] such as
+;; this one.  Therefore, we needn't override it.  In fact, we can't, at
+;; least without disabling #<PACKAGE CLOS>'s package lock.
+#-clisp
+(defmethod c2mop:validate-superclass ((class c2mop:funcallable-standard-class)
+                                      (superclass standard-class))
+  t)
 
 
 (defclass selector (c2mop:funcallable-standard-object c-pointer-wrapper)
