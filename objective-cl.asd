@@ -28,15 +28,18 @@
   ((:module "Lisp"
     :components ((:file "defpackage")
                  (:file "constant-data"      :depends-on ("defpackage"))
-                 (:file "data-types"         :depends-on ("defpackage"
-                                                          "conditions"))
+                 (:file "conditions"         :depends-on ("defpackage"))
                  (:file "parameters"         :depends-on ("defpackage"))
                  (:file "name-conversion"    :depends-on ("defpackage"))
+                 (:file "data-types"         :depends-on ("defpackage"
+                                                          "conditions"))
                  (:file "internal-utilities" :depends-on ("defpackage"
                                                           "data-types"))
                  (:file "weak-hash-tables"   :depends-on ("defpackage"))
-                 (:file "conditions"         :depends-on ("defpackage"))
                  (:file "performance-hacks"  :depends-on ("defpackage"))
+                 (:file "policy"             :depends-on ("defpackage"
+                                                          "parameters"
+                                                          "libobjcl"))
                  (:file "libobjcl"           :depends-on ("defpackage"
                                                           "constant-data"
                                                           "data-types"
@@ -50,6 +53,10 @@
                  (:file "type-handling"      :depends-on ("defpackage"
                                                           "libobjcl"
                                                           "init"))
+                 (:file "memory-management"  :depends-on ("defpackage"
+                                                          "weak-hash-tables"
+                                                          "parameters"
+                                                          "conditions"))
                  (:file "method-invocation"  :depends-on ("defpackage"
                                                           "type-handling"
                                                           "name-conversion"
@@ -61,13 +68,6 @@
                                                           "conditions"
                                                           "memory-management"
                                                           "policy"))
-                 (:file "policy"             :depends-on ("defpackage"
-                                                          "parameters"
-                                                          "libobjcl"))
-                 (:file "memory-management"  :depends-on ("defpackage"
-                                                          "weak-hash-tables"
-                                                          "parameters"
-                                                          "conditions"))
                  (:file "reader-syntax"      :depends-on ("defpackage"
                                                           "method-invocation"))
                  (:file "utilities"          :depends-on ("init"
