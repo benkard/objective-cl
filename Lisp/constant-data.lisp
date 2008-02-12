@@ -72,6 +72,37 @@
     (complex  . #\j)))
 
 
+(defparameter *objcl-typespec-map*
+  '((id                  . id)
+    (objective-c-class   . class)
+    (exception           . exc)
+    (selector            . sel)
+    (:char               . chr)
+    (:unsigned-char      . uchr)
+    (:short              . sht)
+    (:unsigned-short     . usht)
+    (:int                . int)
+    (:unsigned-int       . uint)
+    (:long               . lng)
+    (:unsigned-long      . ulng)
+    (:long-long          . lng-lng)
+    (:unsigned-long-long . ulng-lng)
+    (:float              . flt)
+    (:double             . dbl)
+    (bit-field           . bfld)
+    (:boolean            . bool)
+    (:void               . void)
+    (:unknown            . undef)
+    (pointer             . ptr)
+    (:string             . charptr)
+    (:atom               . atom)
+    (array               . (ary-b ary-e))
+    (union               . (union-b union-e))
+    (struct              . (struct-b struct-e))
+    (vector              . vector)
+    (complex             . complex)))
+
+
 (defparameter *objcl-type-map*
   '((id       . id)
     (class    . objective-c-class)
@@ -128,3 +159,9 @@
 (declaim (ftype (function (symbol) symbol) type-name->c-type))
 (defun type-name->c-type (type-name)
   (cdr (assoc type-name *objcl-c-type-map*)))
+
+(defun typespec-name->type-name (typespec-name)
+  (cdr (assoc typespec-name *objcl-typespec-map*)))
+
+(defun typespec-name->type-id (typespec-name)
+  (type-name->type-id (typespec-name->type-name typespec-name)))

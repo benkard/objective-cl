@@ -221,3 +221,55 @@ Returns: (VALUES typespec byte-position string-position)"
               byte-position)
             #-(or) nil
             string-position)))
+
+
+(defun print-typespec-to-string (typespec)
+  (with-output-to-string (out)
+    (print-typespec typespec out)))
+
+
+(defun print-typespec (typespec &optional (stream *standard-output*))
+  "Convert a TYPESPEC into a typestring and write the result to a STREAM."
+  (destructuring-bind (type-name modifiers &rest rest)
+      typespec
+    (dolist (modifier modifiers)
+      (format stream "~A" (ecase modifier
+                            (const #\r)
+                            (in #\n)
+                            (inout #\N)
+                            (out #\o)
+                            (bycopy #\O)
+                            (oneway #\V)
+                            (byref #\R)
+                            (opaque ""))))
+    (case type-name
+      ((struct union) (destructuring-bind (name . children) rest
+                        (format stream "~C~A"
+                                (ecase type-name
+                                  (struct #\{)
+                                  (union #\())
+                                name)
+                        (unless (member 'opaque modifiers)
+                          (format stream "=")
+                          (dolist (child children)
+                            (print-typespec child stream)))
+                        (format stream "~C" (ecase type-name
+                                              (struct #\})
+                                              (union #\))))))
+      ((bit-field) (if (eq +runtime-type+ :gnu)
+                       (destructuring-bind (alignment length . children) rest
+                         (format stream "b~D" alignment)
+                         (dolist (child children)
+                           (print-typespec child stream))
+                         (format stream "~D" length))
+                       (destructuring-bind (alignment length . children) rest
+                         (declare (ignore alignment children))
+                         (format stream "b~D" length))))
+      ((array) (destructuring-bind (length . children) rest
+                 (format stream "[~D" length)
+                 (dolist (child children)
+                   (print-typespec child stream))
+                 (format stream "]")))
+      (t (format stream "~A" (typespec-name->type-id type-name))
+         (dolist (child rest)
+           (print-typespec child stream))))))
