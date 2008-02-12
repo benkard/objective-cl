@@ -32,7 +32,8 @@
                                                           "conditions"))
                  (:file "parameters"         :depends-on ("defpackage"))
                  (:file "name-conversion"    :depends-on ("defpackage"))
-                 (:file "internal-utilities" :depends-on ("defpackage"))
+                 (:file "internal-utilities" :depends-on ("defpackage"
+                                                          "data-types"))
                  (:file "weak-hash-tables"   :depends-on ("defpackage"))
                  (:file "conditions"         :depends-on ("defpackage"))
                  (:file "performance-hacks"  :depends-on ("defpackage"))
