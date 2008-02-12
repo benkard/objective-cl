@@ -54,34 +54,32 @@ void *objcl_current_exception_lock = NULL;
 static NSMutableDictionary *method_lists = NULL;
 static NSMutableDictionary *method_list_lengths = NULL;
 
+static int init_count = 0;
+
 
 void
 objcl_initialise_runtime (void)
 {
-  if (!objcl_autorelease_pool)
-    objcl_autorelease_pool = [[NSAutoreleasePool alloc] init];
-
-  if (!objcl_oom_exception)
+  if (init_count <= 0)
     {
+      objcl_autorelease_pool = [[NSAutoreleasePool alloc] init];
       objcl_oom_exception = [NSException exceptionWithName: @"MLKOutOfMemoryException"
                                          reason: @"Out of memory"
                                          userInfo: nil];
       [objcl_oom_exception retain];
-    }
 
 #ifdef __NEXT_RUNTIME__
-  PyObjC_SetupRuntimeCompat ();
+      PyObjC_SetupRuntimeCompat ();
 #endif
 
-  objcl_initialise_lock (&objcl_current_exception_lock);
-
-  if (!method_lists)
-    method_lists = [[NSMutableDictionary alloc] init];
-
-  if (!method_list_lengths)
-    method_list_lengths = [[NSMutableDictionary alloc] init];
-
-  objcl_initialise_instance_wrappers ();
+      objcl_initialise_lock (&objcl_current_exception_lock);
+      method_lists = [[NSMutableDictionary alloc] init];
+      method_list_lengths = [[NSMutableDictionary alloc] init];
+      objcl_initialise_instance_wrappers ();
+      init_count = 1;
+    }
+  else
+    init_count++;
 }
 
 
@@ -99,11 +97,17 @@ release_unless_null (id *object)
 void
 objcl_shutdown_runtime (void)
 {
-  release_unless_null (&objcl_autorelease_pool);
-  release_unless_null (&objcl_oom_exception);
-  release_unless_null (&method_lists);
-  release_unless_null (&method_list_lengths);
-  objcl_shutdown_instance_wrappers ();
+  init_count--;
+  if (init_count == 0)
+    {
+      release_unless_null (&objcl_autorelease_pool);
+      release_unless_null (&objcl_oom_exception);
+      release_unless_null (&method_lists);
+      release_unless_null (&method_list_lengths);
+      objcl_shutdown_instance_wrappers ();
+    }
+  else if (init_count < 0)
+    init_count = 0;
 }
 
 
