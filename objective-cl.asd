@@ -58,7 +58,11 @@
                                                           "parameters"
                                                           "init"
                                                           "conditions"
-                                                          "memory-management"))
+                                                          "memory-management"
+                                                          "policy"))
+                 (:file "policy"             :depends-on ("defpackage"
+                                                          "parameters"
+                                                          "libobjcl"))
                  (:file "memory-management"  :depends-on ("defpackage"
                                                           "weak-hash-tables"
                                                           "parameters"

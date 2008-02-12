@@ -106,19 +106,17 @@
                       (primitive-invoke (find-objc-class 'ns-string)
                                         :string-with-u-t-f-8-string 'id
                                         "Klum.")))
-   ((ensure-same +yes+
-                 (primitive-invoke (find-objc-class 'ns-string)
-                                   :is-subclass-of-class
-                                   (first (parse-typespec "c" t))
-                                   (find-objc-class 'ns-object))))
+   ((ensure (primitive-invoke (find-objc-class 'ns-string)
+                              :is-subclass-of-class
+                              (first (parse-typespec "c" t))
+                              (find-objc-class 'ns-object))))
    ;; performSelector:withObject: cannot be used with non-id return
    ;; types.
    #+(or)
-   ((ensure-same +yes+
-                 (primitive-invoke (find-objc-class 'ns-string)
-                                   '(:perform-selector :with-object) :char
-                                   (selector "isSubclassOfClass:")
-                                   (find-objc-class 'ns-object))))))
+   ((ensure (primitive-invoke (find-objc-class 'ns-string)
+                              '(:perform-selector :with-object) :char
+                              (selector "isSubclassOfClass:")
+                              (find-objc-class 'ns-object))))))
 
 
 (deftestsuite method-invocation (objective-cl)

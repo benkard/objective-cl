@@ -20,6 +20,8 @@
 
 (defvar *runtime-initialisation-level* 0)
 
+(defvar *boolean-return-exceptions* (make-hash-table :test #'equal))
+
 (defvar *skip-retaining* nil)
 
 (defvar *in-make-pointer-wrapper-p* nil

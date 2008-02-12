@@ -423,6 +423,13 @@ easier to use with __apply__.
                  (make-pointer-wrapper (car return-type)
                     :pointer (cffi:mem-ref objc-return-value-cell
                                            return-c-type))))
+              ((:char :unsigned-char)
+               ;; FIXME: This is non-trivial.  See policy.lisp for
+               ;; details.
+               (objc-char->lisp-value (cffi:mem-ref objc-return-value-cell
+                                                    return-c-type)
+                                      receiver
+                                      selector))
               ((:void) (values))
               (otherwise (cffi:mem-ref objc-return-value-cell
                                        return-c-type)))))))))
@@ -563,6 +570,12 @@ easier to use with __apply__.
 (defcoercion bool (x)
   (declare (ignore x))
   +yes+)
+
+
+;; Note that this refers to the Lisp BOOLEAN type, not the Objective-C
+;; BOOL type.
+(defcoercion boolean ((x number))
+  (not (zerop x)))
 
 
 (defcoercion string ((x string))
