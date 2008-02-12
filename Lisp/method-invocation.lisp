@@ -242,7 +242,7 @@ easier to use with __apply__.
 
 (defun primitive-invoke (receiver method-name return-type &rest args)
   (flet ((ad-hoc-value->typespec (arg)
-           (typecase arg
+           (etypecase arg
              ;; According to Allegro CL, strings
              ;; are POINTERP (and thus elements of
              ;; the C-POINTER type), so they have
@@ -254,16 +254,19 @@ easier to use with __apply__.
              ;; CL, so all integers are POINTERP,
              ;; too.
              (string '(:string ()))
+             (selector '(selector ()))
              (c-pointer-wrapper '(id ()))
              (c-pointer '(:pointer ()))
-             (t `(,return-type ())))))
+             (integer '(:int ())))))
     (let ((return-typespec `(,return-type ()))
-          (arg-typespecs (mapcar #'ad-hoc-value->typespec args)))
+          (arg-typespecs (list* '(id ())
+                                '(selector ())
+                                (mapcar #'ad-hoc-value->typespec args))))
       (low-level-invoke receiver
                         (selector method-name)
-                        (type-name->type-id (car return-typespec))
+                        (print-typespec-to-string return-typespec)
                         return-typespec
-                        (mapcar #'type-name->type-id (mapcar #'car arg-typespecs))
+                        (mapcar #'print-typespec-to-string arg-typespecs)
                         arg-typespecs
                         (+ 2 (length args))
                         args))))
@@ -274,18 +277,18 @@ easier to use with __apply__.
     (cons (cffi:pointer-address (pointer-to class))
           (cffi:pointer-address (pointer-to selector)))
   (let* ((signature
-          (or (if (eq instance-or-class :instance)
-                  (primitive-invoke class
-                                    "instanceMethodSignatureForSelector:"
-                                    'id
-                                    selector)
-                  (primitive-invoke class
-                                    "methodSignatureForSelector:"
-                                    'id
-                                    selector))
-              (error (make-condition 'message-not-understood
-                                     :class class
-                                     :selector selector))))
+          (objc-or (if (eq instance-or-class :instance)
+                       (primitive-invoke class
+                                         "instanceMethodSignatureForSelector:"
+                                         'id
+                                         selector)
+                       (primitive-invoke class
+                                         "methodSignatureForSelector:"
+                                         'id
+                                         selector))
+                   (error (make-condition 'message-not-understood
+                                          :class class
+                                          :selector selector))))
          (argc (primitive-invoke signature "numberOfArguments" :unsigned-int))
          (method-return-typestring (primitive-invoke signature
                                                      "methodReturnType"
@@ -348,8 +351,12 @@ easier to use with __apply__.
                        `(cffi:mem-ref objc-arg-buffer ,type
                                       (* ,num +pessimistic-allocation-size+))))
             ;; Prepare the arguments.
-            (setf (argref :pointer 0) (pointer-to receiver))
-            (setf (argref :pointer 1) (pointer-to selector))
+            (setf (argref :pointer 0) (if (pointerp receiver)
+                                          receiver
+                                          (pointer-to receiver)))
+            (setf (argref :pointer 1) (if (pointerp selector)
+                                          selector
+                                          (pointer-to selector)))
             (loop for i from 2
                   for arg in args
                   for arg-type in (cddr arg-types) ;skip the first two arguments
