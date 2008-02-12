@@ -23,7 +23,7 @@
                           #:struct #:union #:pointer #:oneway #:out #:in
                           #:inout #:const #:parse-typespec #:objective-c-class
                           #:bit-field #:opaque #:bycopy #:byref
-                          #:primitive-invoke))
+                          #:primitive-invoke #:print-typespec-to-string))
 (in-package #:mulk.objective-cl.tests)
 
 
@@ -234,6 +234,89 @@
                  '(pointer ()
                    (pointer ()
                     (struct (opaque) "OpaqueStruct")))))))
+
+
+(deftestsuite printing-typespecs (objective-cl)
+  ()
+  (:equality-test #'equal)
+  (:tests
+   ((ensure-same (print-typespec-to-string '(id ()))
+                 "@"))
+   ((ensure-same (print-typespec-to-string '(selector ()))
+                 ":"))
+   ((ensure-same (print-typespec-to-string '(struct () "_NSRange"
+                                             (:unsigned-int ())
+                                             (:unsigned-int ())))
+                 "{_NSRange=II}"))
+   ((ensure-same (print-typespec-to-string '(pointer (oneway out inout in const)
+                                             (array (oneway)
+                                              10
+                                              (complex (const) (:double nil)))))
+                 ;; Actually, the order of the qualifiers doesn't
+                 ;; matter, which means that this test is dumber than
+                 ;; it ought to be.
+                 "VoNnr^V[10rjd]"))
+   ((ensure-same (print-typespec-to-string '(:int (bycopy byref)))
+                 ;; Here, too, the order of the qualifiers is irrelevant.
+                 "ORi"))
+   ((ensure-same (print-typespec-to-string '(union () "?"))
+                 "(?=)"))
+   ((ensure-same (print-typespec-to-string
+                  (if (eq objcl::+runtime-type+ :gnu)
+                      '(struct () "?"
+                        (bit-field (const) 123 456
+                         (complex (const) (:float ())))
+                        (:int ())
+                        (:int ())
+                        (:int ()))
+                      '(struct () "?"
+                        (bit-field (const) nil 123 nil)
+                        (complex (const) (:float ()))
+                        (:unrecognised ((:type-specifier #\4)))
+                        (:unrecognised ((:type-specifier #\5)))
+                        (:unrecognised ((:type-specifier #\6)))
+                        (:int ())
+                        (:int ())
+                        (:int ()))))
+                 "{?=rb123rjf456iii}"))
+   ((ensure-same (print-typespec-to-string '(pointer ()
+                                             (array () 100
+                                              (struct () "?" (:int ()) (:int ())))))
+                 "^[100{?=ii}]"))
+   ((ensure-same (print-typespec-to-string '(struct () "?"
+                                             (:boolean ())
+                                             (:int ())
+                                             (:unsigned-int ())
+                                             (:long ())
+                                             (:unsigned-long ())
+                                             (:long-long ())
+                                             (:unsigned-long-long ())
+                                             (:float ())
+                                             (:double ())
+                                             (id ()) (objective-c-class ()) (selector ())
+                                             (:string ())
+                                             (:unknown ())))
+                 "{?=BiIlLqQfd@#:*?}"))
+   ((ensure-same (print-typespec-to-string '(struct () "?"
+                                             (:char ())
+                                             (:unsigned-char ())))
+                 "{?=cC}"))
+   ((ensure-same (print-typespec-to-string '(struct () "?"
+                                             (:short ())
+                                             (:unsigned-short ())))
+                 "{?=sS}"))
+   ((ensure-same (print-typespec-to-string
+                  '(struct () "Mulk"
+                    (:string ())
+                    (struct () "Untermulk"
+                     (struct () "Unteruntermulk"))
+                    (:int ())))
+                 "{Mulk=*{Untermulk={Unteruntermulk=}}i}"))
+   ((ensure-same (print-typespec-to-string
+                  '(pointer ()
+                    (pointer ()
+                     (struct (opaque) "OpaqueStruct"))))
+                 "^^{OpaqueStruct}"))))
 
 
 (deftestsuite data-coercion (objective-cl)
