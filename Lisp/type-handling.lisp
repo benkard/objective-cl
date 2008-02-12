@@ -175,22 +175,30 @@ Returns: (VALUES typespec byte-position string-position)"
                                  (#\c (if (and (eq +runtime-type+ :next)
                                                (or return-type-p
                                                    (featurep 'cffi-features:ppc32)))
-                                          :int
+                                          (prog1 :int
+                                            (push '(nominally :char)
+                                                  qualifiers))
                                           :char))
                                  (#\C (if (and (eq +runtime-type+ :next)
                                                (or return-type-p
                                                    (featurep 'cffi-features:ppc32)))
-                                          :unsigned-int
+                                          (prog1 :unsigned-int
+                                            (push '(nominally :unsigned-char)
+                                                  qualifiers))
                                           :unsigned-char))
                                  (#\s (if (and (eq +runtime-type+ :next)
                                                (or return-type-p
                                                    (featurep 'cffi-features:ppc32)))
-                                          :int
+                                          (prog1 :int
+                                            (push '(nominally :short)
+                                                  qualifiers))
                                           :short))
                                  (#\S (if (and (eq +runtime-type+ :next)
                                                (or return-type-p
                                                    (featurep 'cffi-features:ppc32)))
-                                          :unsigned-int
+                                          (prog1 :unsigned-int
+                                            (push '(nominally :unsigned-short)
+                                                  qualifiers))
                                           :unsigned-short))
                                  (#\i :int)
                                  (#\I :unsigned-int)
@@ -233,7 +241,7 @@ Returns: (VALUES typespec byte-position string-position)"
   (destructuring-bind (type-name modifiers &rest rest)
       typespec
     (dolist (modifier modifiers)
-      (format stream "~A" (ecase modifier
+      (format stream "~A" (case modifier
                             (const #\r)
                             (in #\n)
                             (inout #\N)
@@ -241,7 +249,13 @@ Returns: (VALUES typespec byte-position string-position)"
                             (bycopy #\O)
                             (oneway #\V)
                             (byref #\R)
-                            (opaque ""))))
+                            (opaque "")
+                            (otherwise
+                             (assert (listp modifier))
+                             (ecase (first modifier)
+                               ((nominally) (setq type-name
+                                                  (second modifier))))
+                             ""))))
     (case type-name
       ((struct union) (destructuring-bind (name . children) rest
                         (format stream "~C~A"

@@ -415,7 +415,15 @@ easier to use with __apply__.
                                             objc-arg-ptrs)))
             (unless (cffi:null-pointer-p error-cell)
               (error (make-condition 'exception :pointer error-cell)))
-            (case (car return-type)
+            (case (let ((nominal-type (find-if #'(lambda (x)
+                                                   (and (consp x)
+                                                        (eq (car x) 'nominally)))
+                                               (cadr return-type))))
+                    ;; Do the modifiers include something like
+                    ;; (NOMINALLY :UNSIGNED-CHAR)?
+                    (if nominal-type
+                        (cadr nominal-type)
+                        (car return-type)))
               ((id objective-c-class exception selector)
                (let ((*skip-retaining*
                       (or *skip-retaining*

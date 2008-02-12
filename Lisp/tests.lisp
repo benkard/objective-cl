@@ -23,7 +23,8 @@
                           #:struct #:union #:pointer #:oneway #:out #:in
                           #:inout #:const #:parse-typespec #:objective-c-class
                           #:bit-field #:opaque #:bycopy #:byref
-                          #:primitive-invoke #:print-typespec-to-string))
+                          #:primitive-invoke #:print-typespec-to-string
+                          #:nominally))
 (in-package #:mulk.objective-cl.tests)
 (in-root-suite)
 
@@ -194,8 +195,8 @@
                    (:char ())
                    (:unsigned-char ()))
                   (struct () "?"
-                   (:int ())
-                   (:unsigned-int ())))
+                   (:int ((nominally :char)))
+                   (:unsigned-int ((nominally :unsigned-char)))))
                 :test #'equalp)))
   (let ((funky-spec (parse-typespec "{?=sS}")))
     (is (member funky-spec
@@ -203,8 +204,8 @@
                    (:short ())
                    (:unsigned-short ()))
                   (struct () "?"
-                   (:int ())
-                   (:unsigned-int ())))
+                   (:int ((nominally :short)))
+                   (:unsigned-int ((nominally :unsigned-short)))))
                 :test #'equalp)))
   (is (equal (parse-typespec "{Mulk=*{Untermulk={Unteruntermulk=}}i}")
              '(struct () "Mulk"
