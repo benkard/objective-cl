@@ -167,51 +167,51 @@ Returns: (VALUES typespec byte-position string-position)"
                                             :start (1+ string-position)
                                             :junk-allowed t)
                            (setq string-position new-string-pos)
-                           bit-field-length)
-                         nil)))
+                           bit-field-length))))
               (otherwise
-               (prog1 (list (case init-char
-                              (#\B :boolean) ;XXX :int?
-                              (#\c (if (and (eq +runtime-type+ :next)
-                                            (or return-type-p
-                                                (featurep 'cffi-features:ppc32)))
-                                       :int
-                                       :char))
-                              (#\C (if (and (eq +runtime-type+ :next)
-                                            (or return-type-p
-                                                (featurep 'cffi-features:ppc32)))
-                                       :unsigned-int
-                                       :unsigned-char))
-                              (#\s (if (and (eq +runtime-type+ :next)
-                                            (or return-type-p
-                                                (featurep 'cffi-features:ppc32)))
-                                       :int
-                                       :short))
-                              (#\S (if (and (eq +runtime-type+ :next)
-                                            (or return-type-p
-                                                (featurep 'cffi-features:ppc32)))
-                                       :unsigned-int
-                                       :unsigned-short))
-                              (#\i :int)
-                              (#\I :unsigned-int)
-                              (#\l :long)
-                              (#\L :unsigned-long)
-                              (#\q :long-long)
-                              (#\Q :unsigned-long-long)
-                              (#\f :float)
-                              (#\d :double)
-                              (#\v :void)
-                              (#\@ 'id)
-                              (#\# 'objective-c-class)
-                              (#\: 'selector)
-                              (#\* :string)
-                              (#\? :unknown)
-                              (otherwise
-                               (prog1 :unrecognised
-                                 (push (list :type-specifier init-char)
-                                       qualifiers))))
-                            qualifiers)
-                      (incf string-position))))
+               (let ((children (list)))
+                 (prog1 (list* (case init-char
+                                 (#\B :boolean) ;XXX :int?
+                                 (#\c (if (and (eq +runtime-type+ :next)
+                                               (or return-type-p
+                                                   (featurep 'cffi-features:ppc32)))
+                                          :int
+                                          :char))
+                                 (#\C (if (and (eq +runtime-type+ :next)
+                                               (or return-type-p
+                                                   (featurep 'cffi-features:ppc32)))
+                                          :unsigned-int
+                                          :unsigned-char))
+                                 (#\s (if (and (eq +runtime-type+ :next)
+                                               (or return-type-p
+                                                   (featurep 'cffi-features:ppc32)))
+                                          :int
+                                          :short))
+                                 (#\S (if (and (eq +runtime-type+ :next)
+                                               (or return-type-p
+                                                   (featurep 'cffi-features:ppc32)))
+                                          :unsigned-int
+                                          :unsigned-short))
+                                 (#\i :int)
+                                 (#\I :unsigned-int)
+                                 (#\l :long)
+                                 (#\L :unsigned-long)
+                                 (#\q :long-long)
+                                 (#\Q :unsigned-long-long)
+                                 (#\f :float)
+                                 (#\d :double)
+                                 (#\v :void)
+                                 (#\@ 'id)
+                                 (#\# 'objective-c-class)
+                                 (#\: 'selector)
+                                 (#\* :string)
+                                 (#\? :unknown)
+                                 (otherwise
+                                  (prog1 :unrecognised
+                                    (push init-char children))))
+                               qualifiers
+                               children)
+                        (incf string-position)))))
             #+(or)  ; too greedy (=> bit-fields can't see their length!)
             (multiple-value-bind (byte-position new-string-pos)
                 (parse-integer typestring
@@ -270,6 +270,7 @@ Returns: (VALUES typespec byte-position string-position)"
                  (dolist (child children)
                    (print-typespec child stream))
                  (format stream "]")))
+      ((:unrecognised) (format stream "~{~A~}" rest))
       (t (format stream "~A" (typespec-name->type-id type-name))
          (dolist (child rest)
            (print-typespec child stream))))))
