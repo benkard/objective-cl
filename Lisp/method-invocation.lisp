@@ -241,111 +241,32 @@ easier to use with __apply__.
 
 
 (defun primitive-invoke (receiver method-name return-type &rest args)
-  "An invocation mechanism with ad-hoc argument conversion."
-  (with-foreign-string-pool (register-temporary-string)
-    (let* ((raw-argc (the argument-number (length args)))
-           (real-argc (+ raw-argc 2))
-           (return-c-type (case return-type
-                            ((id objective-c-class exception selector) :pointer)
-                            (otherwise return-type)))
-           (selector (if (typep method-name 'selector)
-                         method-name
-                         (find-selector method-name))))
-      (labels ((alloc-string-and-register (string)
-                 (register-temporary-string
-                  (cffi:foreign-string-alloc string))))
-        ;; We allocate a conservatively-sized buffer for arguments of
-        ;; primitive types called OBJC-ARG-BUFFER.  Non-primitive types
-        ;; don't need allocation, anyway, because we can just pass the
-        ;; pointer directly.  It's unfortunate that we can't do this for
-        ;; `id' values, because we can't just pass a pointer to the `id'
-        ;; SAP (which would be highly implementation-dependent and might
-        ;; even change at any time, especially during GC).
-        ;;
-        ;; In any case, OBJC-ARGS-PTRS is the array of pointers which
-        ;; the libffi docs call AVALUES.  It must therefore contain
-        ;; pointers pointing into the argument buffer (or, in the case
-        ;; of a newly allocated C string, to that string).  This is what
-        ;; the DOTIMES form below tries to ensure.
-        (cffi:with-foreign-objects ((arg-types '(:pointer :char)
-                                               (the fixnum (length args)))
-                                    (objc-arg-ptrs '(:pointer :void)
-                                                   real-argc)
-                                    (return-value-cell (if (eq return-c-type :void)
-                                                           :int
-                                                           return-c-type))
-                                    (objc-arg-buffer +pessimistic-allocation-type+
-                                                     real-argc))
-          (dotimes (i real-argc)
-            (setf (cffi:mem-aref objc-arg-ptrs '(:pointer :void) i)
-                  (cffi:inc-pointer objc-arg-buffer
-                                    (* i +pessimistic-allocation-size+))))
-          (macrolet ((argref (type num)
-                       `(cffi:mem-ref objc-arg-buffer ,type
-                                      (* ,num +pessimistic-allocation-size+))))
-            (flet ((ad-hoc-arglist->objc-arglist! (args)
-                     (setf (argref '(:pointer :void) 0)
-                           (if (pointerp receiver)
-                               receiver
-                               (pointer-to receiver))
-                           (argref '(:pointer :void) 1)
-                           (pointer-to selector))
-                     (loop for arg in args
-                           for i from 0 to raw-argc
-                           do (let* ((type-name (lisp-value->type-name arg)))
-                                (typecase arg
-                                  ;; According to Allegro CL, strings
-                                  ;; are POINTERP (and thus elements of
-                                  ;; the C-POINTER type), so they have
-                                  ;; to come first in this TYPECASE
-                                  ;; form.  Weird.
-                                  ;;
-                                  ;; By the way, pointers are
-                                  ;; represented as integers in Allegro
-                                  ;; CL, so all integers are POINTERP,
-                                  ;; too.
-                                  (string
-                                   (setf (argref :string (+ i 2))
-                                         (alloc-string-and-register arg)))
-                                  ((or c-pointer-wrapper
-                                       c-pointer)
-                                   (setf (argref :pointer (+ i 2))
-                                         (typecase arg
-                                           (c-pointer-wrapper (pointer-to arg))
-                                           (t arg))))
-                                  (t (setf (argref (type-name->c-type type-name)
-                                                   (+ i 2))
-                                           arg)))
-                                (setf (cffi:mem-aref arg-types '(:pointer :char) i)
-                                      (alloc-string-and-register
-                                       (type-name->type-id type-name)))))))
-              (ad-hoc-arglist->objc-arglist! args)
-              (let ((error-cell
-                     (%objcl-invoke-with-types raw-argc
-                                               (type-name->type-id return-type)
-                                               arg-types
-                                               return-value-cell
-                                               objc-arg-ptrs)))
-                (unless (cffi:null-pointer-p error-cell)
-                  ;; Note that we do not FOREIGN-FREE the error cell,
-                  ;; because it is either a null pointer or a pointer to
-                  ;; an Objective-C object.  In the latter case,
-                  ;; INITIALIZE-INSTANCE does the memory management for
-                  ;; us.
-                  (error (make-pointer-wrapper 'exception :pointer error-cell)))
-                (case return-type
-                  ((id objective-c-class exception selector)
-                   (let ((*skip-retaining*
-                          (or *skip-retaining*
-                              (constructor-name-p (selector-name selector))))
-                         (pointer (cffi:mem-ref return-value-cell
-                                                return-c-type)))
-                     (if (cffi:null-pointer-p pointer)
-                         nil
-                         (make-pointer-wrapper return-type :pointer pointer))))
-                  ((:void) (values))
-                  (otherwise (cffi:mem-ref return-value-cell
-                                           return-c-type)))))))))))
+  (flet ((ad-hoc-value->typespec (arg)
+           (typecase arg
+             ;; According to Allegro CL, strings
+             ;; are POINTERP (and thus elements of
+             ;; the C-POINTER type), so they have
+             ;; to come first in this TYPECASE
+             ;; form.  Weird.
+             ;;
+             ;; By the way, pointers are
+             ;; represented as integers in Allegro
+             ;; CL, so all integers are POINTERP,
+             ;; too.
+             (string '(:string ()))
+             (c-pointer-wrapper '(id ()))
+             (c-pointer '(:pointer ()))
+             (t `(,return-type ())))))
+    (let ((return-typespec `(,return-type ()))
+          (arg-typespecs (mapcar #'ad-hoc-value->typespec args)))
+      (low-level-invoke receiver
+                        (selector method-name)
+                        (type-name->type-id (car return-typespec))
+                        return-typespec
+                        (mapcar #'type-name->type-id (mapcar #'car arg-typespecs))
+                        arg-typespecs
+                        (+ 2 (length args))
+                        args))))
 
 
 (define-cached-function retrieve-method-signature-info
