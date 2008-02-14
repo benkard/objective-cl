@@ -288,3 +288,16 @@ Returns: (VALUES typespec byte-position string-position)"
       (t (format stream "~A" (typespec-name->type-id type-name))
          (dolist (child rest)
            (print-typespec child stream))))))
+
+
+(defun typespec-nominal-type (typespec)
+  ;; Do the modifiers include something like (NOMINALLY :UNSIGNED-CHAR)?
+  ;; Return NIL if that is not the case, otherwise return the nominal
+  ;; type found.
+  (cadr (find-if #'(lambda (x) (and (consp x)
+                                    (eq (car x) 'nominally)))
+                 (cadr typespec))))
+
+
+(defun typespec-primary-type (typespec)
+  (car typespec))

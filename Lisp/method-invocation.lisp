@@ -309,12 +309,12 @@ easier to use with __apply__.
 
 
 (defun typespec->c-type (typespec)
-  (case (car typespec)
+  (case (typespec-primary-type typespec)
     ((:pointer pointer struct union id objective-c-class exception array
       selector)
      :pointer)
     ((:string) :string)
-    (otherwise (car typespec))))
+    (otherwise (typespec-primary-type typespec))))
 
 
 (defun low-level-invoke (receiver selector return-typestring return-type
@@ -428,22 +428,15 @@ easier to use with __apply__.
                                             objc-arg-ptrs)))
             (unless (cffi:null-pointer-p error-cell)
               (error (make-condition 'exception :pointer error-cell)))
-            (case (let ((nominal-type (find-if #'(lambda (x)
-                                                   (and (consp x)
-                                                        (eq (car x) 'nominally)))
-                                               (cadr return-type))))
-                    ;; Do the modifiers include something like
-                    ;; (NOMINALLY :UNSIGNED-CHAR)?
-                    (if nominal-type
-                        (cadr nominal-type)
-                        (car return-type)))
+            (case (or (typespec-nominal-type return-type)
+                      (typespec-primary-type return-type))
               ((id objective-c-class exception selector)
                (let ((*skip-retaining*
                       (or *skip-retaining*
                           (constructor-name-p (selector-name selector)))))
                  (make-pointer-wrapper (car return-type)
-                    :pointer (cffi:mem-ref objc-return-value-cell
-                                           return-c-type))))
+                                       :pointer (cffi:mem-ref objc-return-value-cell
+                                                              return-c-type))))
               ((:char :unsigned-char)
                ;; FIXME: This is non-trivial.  See policy.lisp for
                ;; details.
