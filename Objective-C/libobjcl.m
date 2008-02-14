@@ -43,16 +43,16 @@ objcl_null_log (NSString *s, ...)
 }
 
 
-static NSAutoreleasePool *objcl_autorelease_pool = NULL;
+static NSAutoreleasePool *objcl_autorelease_pool = nil;
 
 /* Preallocate an exception to throw when memory is all used up. */
-NSException *objcl_oom_exception = NULL;
+NSException *objcl_oom_exception = nil;
 
-id objcl_current_exception = NULL;
+id objcl_current_exception = nil;
 void *objcl_current_exception_lock = NULL;
 
-static NSMutableDictionary *method_lists = NULL;
-static NSMutableDictionary *method_list_lengths = NULL;
+static NSMutableDictionary *method_lists = nil;
+static NSMutableDictionary *method_list_lengths = nil;
 
 static int init_count = 0;
 
@@ -177,7 +177,7 @@ objcl_invoke_with_types (int argc,
     }
   NS_ENDHANDLER
 
-  return NULL;
+  return nil;
 }
 #endif
 
@@ -203,8 +203,8 @@ objcl_find_meta_class (const char *class_name)
 #else
   /* FIXME: Is this correct? */
   Class class = objcl_find_class (class_name);
-  if (class == NULL || class == nil)
-    return NULL;
+  if (class == NULL || class == Nil)
+    return Nil;
   else
     return class_get_meta_class (class);
 #endif
@@ -298,7 +298,7 @@ objcl_get_method_implementation (id object,
 
   if (objcl_object_is_class (object))
     {
-      if (superclass_for_send_super == nil)
+      if (superclass_for_send_super == Nil)
         target_class = object;
       else
         target_class = superclass_for_send_super;
@@ -308,7 +308,7 @@ objcl_get_method_implementation (id object,
     }
   else
     {
-      if (superclass_for_send_super == nil)
+      if (superclass_for_send_super == Nil)
         target_class = [object class];
       else
         target_class = superclass_for_send_super;
@@ -321,7 +321,7 @@ objcl_get_method_implementation (id object,
 #endif
     }
 #else
-  if (superclass_for_send_super == nil)
+  if (superclass_for_send_super == Nil)
     return objc_msg_lookup (object, selector);
   else
     {
@@ -554,10 +554,10 @@ imp_closure (ffi_cif *cif, void *result, void **args, void *user_data)
   ffi_call (cif, user_data, result, args);
 
   exception = objcl_current_exception;
-  objcl_current_exception = NULL;
+  objcl_current_exception = nil;
   objcl_release_lock (objcl_current_exception_lock);
 
-  if (exception)
+  if (exception != nil)
     [exception raise];
 }
 
