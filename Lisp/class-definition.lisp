@@ -232,6 +232,8 @@
                                      direct-default-initargs
                                      pointer
                                      wrapped-foreign-class)
+  (declare (ignore documentation name plist direct-superclasses direct-slots
+                   direct-default-initargs pointer wrapped-foreign-class))
   (call-next-method))
 
 (defmethod reinitialize-instance ((class objective-c-class)
@@ -243,6 +245,8 @@
                                        direct-default-initargs
                                        pointer
                                        wrapped-foreign-class)
+  (declare (ignore documentation name plist direct-superclasses direct-slots
+                   direct-default-initargs pointer wrapped-foreign-class))
   (call-next-method))
 
 (defmethod initialize-instance ((class objective-c-meta-class)
@@ -253,6 +257,8 @@
                                      direct-slots
                                      direct-default-initargs
                                      pointer)
+  (declare (ignore documentation name plist direct-superclasses direct-slots
+                   direct-default-initargs pointer))
   (call-next-method))
 
 (defmethod reinitialize-instance ((class objective-c-meta-class)
@@ -263,6 +269,8 @@
                                        direct-slots
                                        direct-default-initargs
                                        pointer)
+  (declare (ignore documentation name plist direct-superclasses direct-slots
+                   direct-default-initargs pointer))
   (call-next-method))
 
 
