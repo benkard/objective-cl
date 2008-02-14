@@ -406,7 +406,20 @@ easier to use with __apply__.
                         ;; it's the best we can do.
                         (setf (argref arg-c-type i)
                               (pointer-to (coerce-object arg 'id))))
-                       (t (setf (argref arg-c-type i) arg)))))
+                       (t (setf (argref arg-c-type i)
+                                (case arg
+                                  ;; Do the right thing for booleans.
+                                  ;;
+                                  ;; Note that Objective-C method
+                                  ;; invocations do not understand
+                                  ;; generalised booleans.  Among other
+                                  ;; things, this means that passing 0
+                                  ;; for a boolean is the same as
+                                  ;; passing NIL, not the same as
+                                  ;; passing T.
+                                  ((nil) 0)
+                                  ((t) 1)
+                                  (otherwise arg)))))))
           (let* ((error-cell
                   (%objcl-invoke-with-types (- argc 2)
                                             return-typestring
