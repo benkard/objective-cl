@@ -18,7 +18,7 @@
 (defpackage #:mulk.objective-cl.tests
   (:nicknames #:objcl-tests #:objective-cl-tests #:mulk.objcl-tests)
   (:use #:stefil #:mulk.objective-cl #:cl)
-  (:export #:run-all-tests)
+  (:export #:run-all-tests #:objective-cl)
   (:shadowing-import-from #:objcl
                           #:struct #:union #:pointer #:oneway #:out #:in
                           #:inout #:const #:parse-typespec #:objective-c-class
