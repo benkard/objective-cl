@@ -9,14 +9,6 @@ void
 objcl_shutdown_instance_wrappers (void);
 
 @interface NSObject (ObjectiveCLWrapperLink)
--(const char *) __objectiveCLWrapperID;
--(void) __setObjectiveCLWrapperID: (const char *)wrapper_id;
--(void) __removeObjectiveCLWrapperID;
-
-/* Classes can't be wrapped at the moment. */
-/*
-+(const char *) __objectiveCLWrapperID;
-+(const char *) __setObjectiveCLWrapperID: (const char *)wrapper_id;
-+(const char *) __removeObjectiveCLWrapperID;
-*/
+-(BOOL) __objcl_isBackedByLispInstance;
+-(void) __objcl_setBackedByLispInstance: (BOOL)backed_p;
 @end /* NSObject (ObjectiveCL) */

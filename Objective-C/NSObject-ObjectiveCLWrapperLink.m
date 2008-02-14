@@ -1,51 +1,40 @@
 /* -*- mode: objc; coding: utf-8 -*- */
 
 #import "NSObject-ObjectiveCLWrapperLink.h"
-#import <Foundation/NSDictionary.h>
+#import <Foundation/NSSet.h>
 #import <Foundation/NSObject.h>
 #import <Foundation/NSString.h>
 
-#ifndef NULL
-#define NULL (void *)0
-#endif
-
-static NSMutableDictionary *instance_wrappers = NULL;
+static NSMutableSet *lisp_backed_objects = nil;
 
 void
 objcl_initialise_instance_wrappers (void)
 {
-  if (!instance_wrappers)
-    instance_wrappers = [[NSMutableDictionary alloc] init];
+  if (lisp_backed_objects == nil)
+    lisp_backed_objects = [[NSMutableSet alloc] init];
 }
 
 void
 objcl_shutdown_instance_wrappers (void)
 {
-  if (instance_wrappers)
+  if (lisp_backed_objects != nil)
     {
-      [instance_wrappers release];
-      instance_wrappers = NULL;
+      [lisp_backed_objects release];
+      lisp_backed_objects = nil;
     }
 }
 
 @implementation NSObject (ObjectiveCLWrapperLink)
--(const char *) __objectiveCLWrapperID
+-(BOOL) __objcl_isBackedByLispInstance
 {
-  NSString *string = [instance_wrappers objectForKey: self];
-  if (string != nil)
-    return [string UTF8String];
+  return [lisp_backed_objects containsObject: self];
+}
+
+-(void) __objcl_setBackedByLispInstance: (BOOL)backed_p
+{
+  if (backed_p)
+    [lisp_backed_objects addObject: self];
   else
-    return NULL;
-}
-
--(void) __setObjectiveCLWrapperID: (const char *)wrapper_id
-{
-  [instance_wrappers setObject: [NSString stringWithUTF8String: wrapper_id]
-                     forKey: self];
-}
-
--(void) __removeObjectiveCLWrapperID
-{
-  [instance_wrappers removeObjectForKey: self];
+    [lisp_backed_objects removeObject: self];
 }
 @end /* NSObject (ObjectiveCL) */
