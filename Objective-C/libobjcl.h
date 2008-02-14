@@ -70,6 +70,7 @@ objcl_shutdown_runtime (void);
 
 id
 objcl_invoke_with_types (int argc,
+                         Class superclass_for_send_super,
                          char *return_typespec,
                          char *arg_typespecs[],
                          void *return_value,
@@ -105,7 +106,8 @@ objcl_selector_name (SEL selector);
 
 IMP
 objcl_get_method_implementation (id object,
-                                 SEL selector);
+                                 SEL selector,
+                                 Class superclass_for_send_super);
 
 BOOL
 objcl_object_is_class (id obj);

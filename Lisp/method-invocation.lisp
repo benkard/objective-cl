@@ -216,6 +216,7 @@ easier to use with __apply__.
               argc (+ 2 (length args)))
       (low-level-invoke receiver
                         selector
+                        (null-pointer)
                         method-return-typestring
                         method-return-type
                         method-arg-typestrings
@@ -264,6 +265,7 @@ easier to use with __apply__.
                                 (mapcar #'ad-hoc-value->typespec args))))
       (low-level-invoke receiver
                         (selector method-name)
+                        (null-pointer)
                         (print-typespec-to-string return-typespec)
                         return-typespec
                         (mapcar #'print-typespec-to-string arg-typespecs)
@@ -317,7 +319,8 @@ easier to use with __apply__.
     (otherwise (typespec-primary-type typespec))))
 
 
-(defun low-level-invoke (receiver selector return-typestring return-type
+(defun low-level-invoke (receiver selector superclass-pointer-for-send-super
+                         return-typestring return-type
                          arg-typestrings arg-types argc args)
   (let ((return-c-type (typespec->c-type return-type))
         (arg-c-types (mapcar #'typespec->c-type arg-types)))
@@ -422,6 +425,7 @@ easier to use with __apply__.
                                   (otherwise arg)))))))
           (let* ((error-cell
                   (%objcl-invoke-with-types (- argc 2)
+                                            superclass-pointer-for-send-super
                                             return-typestring
                                             objc-arg-typestrings
                                             objc-return-value-cell

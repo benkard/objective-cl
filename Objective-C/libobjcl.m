@@ -114,6 +114,7 @@ objcl_shutdown_runtime (void)
 #ifdef USE_LIBFFI
 id
 objcl_invoke_with_types (int argc,
+                         Class superclass_for_send_super,
                          char *return_typespec,
                          char *arg_typespecs[],
                          void *return_value,
@@ -140,7 +141,8 @@ objcl_invoke_with_types (int argc,
   NS_DURING
     {
       TRACE (@"get-method");
-      method = objcl_get_method_implementation (receiver, method_selector);
+      method = objcl_get_method_implementation (receiver, method_selector,
+                                                superclass_for_send_super);
       TRACE (@"method == NULL");
       if (method == NULL)
         [[NSException exceptionWithName: @"MLKNoApplicableMethod"
@@ -284,22 +286,50 @@ objcl_selector_name (SEL selector)
 
 IMP
 objcl_get_method_implementation (id object,
-                                 SEL selector)
+                                 SEL selector,
+                                 Class superclass_for_send_super)
 {
+  /* If superclass_for_send_super == nil, this is just plain old method
+     implementation hunting.  If it isn't, though, we're trying to do a
+     super call, which can get a bit hairy quickly. */
   TRACE (@"method-impl %p %p", object, selector);
 #ifdef __NEXT_RUNTIME__
+  Class target_class;
+
   if (objcl_object_is_class (object))
-    return method_getImplementation (class_getClassMethod (object, selector));
+    {
+      if (superclass_for_send_super == nil)
+        target_class = object;
+      else
+        target_class = superclass_for_send_super;
+
+      return method_getImplementation (class_getClassMethod (target_class,
+                                                             selector));
+    }
   else
     {
+      if (superclass_for_send_super == nil)
+        target_class = [object class];
+      else
+        target_class = superclass_for_send_super;
+
 #ifdef __OBJC2__
-      return class_getMethodImplementation ([object class], selector);
+      return class_getMethodImplementation (target_class, selector);
 #else
-      return method_getImplementation (class_getInstanceMethod ([object class], selector));
+      return method_getImplementation (class_getInstanceMethod (target_class,
+                                                                selector));
 #endif
     }
 #else
-  return objc_msg_lookup (object, selector);
+  if (superclass_for_send_super == nil)
+    return objc_msg_lookup (object, selector);
+  else
+    {
+      Super super_struct;
+      super_struct.self = object;
+      super_struct.class = superclass_for_send_super;
+      return objc_msg_lookup_super (&super_struct, selector);
+    }
 #endif
 }
 

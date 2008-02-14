@@ -39,6 +39,7 @@
 
 (defcfun ("objcl_invoke_with_types" %objcl-invoke-with-types) :pointer
   (argc :int)
+  (superclass-for-send-super :pointer)
   (return_typespec :string)
   (arg_typespecs (:array :string))
   (return_value (:pointer :void))
