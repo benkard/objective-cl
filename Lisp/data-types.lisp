@@ -178,7 +178,7 @@ a suitable class method instead as you would in Objective-C.
 
 (define-condition exception (error)
     ((pointer :type     c-pointer
-              :accessor pointer-to
+              :reader   pointer-to
               :initarg  :pointer))
   (:report (lambda (condition stream)
              (format stream
@@ -256,12 +256,16 @@ an __exception__, you can simply send it the `self' message.
 
 
 (defun make-struct-wrapper (pointer typespec managedp)
-  (make-instance (ecase (typespec-primary-type typespec)
-                   (struct 'tagged-struct)
-                   (union 'tagged-union))
-     :typespec typespec
-     :pointer pointer
-     :lisp-managed managedp))
+  (let ((new-wrapper (make-instance (ecase (typespec-primary-type typespec)
+                                      (struct 'tagged-struct)
+                                      (union 'tagged-union))
+                        :typespec typespec
+                        :pointer pointer
+                        :lisp-managed managedp)))
+    (when managedp
+      (trivial-garbage:finalize new-wrapper
+                                #'(lambda ()
+                                    (foreign-free pointer))))))
 
 
 (defgeneric objcl-eql (obj1 obj2))

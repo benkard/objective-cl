@@ -301,6 +301,21 @@ conventional case for namespace identifiers in Objective-C."
                                                class-name-string))
                                   :pointer class-ptr
                                   :wrapped-foreign-class class-name-string
+                                  ;; FIXME: It might be desirable to do
+                                  ;; set the list of direct superclasses
+                                  ;; to something like the following:
+                                  ;;
+                                  ;;  (if (string= class-name-string "NSException")
+                                  ;;      (list superclass (find-class 'serious-condition))
+                                  ;;      (list superclass))
+                                  ;;
+                                  ;; This will fail, as subclassing
+                                  ;; CONDITION means not subclassing a
+                                  ;; STANDARD-CLASS.  Also, care would
+                                  ;; have to be taken not to use
+                                  ;; MAKE-INSTANCE but MAKE-CONDITION
+                                  ;; for anything derived from
+                                  ;; NSException.
                                   :direct-superclasses (list superclass)))))))
 
 
