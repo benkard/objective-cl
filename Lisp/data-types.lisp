@@ -235,14 +235,19 @@ an __exception__, you can simply send it the `self' message.
 ;; FIXME: Document.
 (defclass foreign-struct (foreign-value)
      ((name :type (or null string)
-            :accessor struct-name
+            :accessor foreign-struct-name
             :initarg :name)))
 
 
 ;; The following are for private use only.
 (defclass opaque-struct (foreign-struct) ())
-(defclass tagged-struct (foreign-struct) ())
+
+(defclass tagged-struct (foreign-struct)
+     ((typespec :reader foreign-value-typespec
+                :initarg :typespec)))
+
 (defclass opaque-union (opaque-struct) ())
+
 (defclass tagged-union (tagged-struct) ())
 
 
@@ -251,11 +256,13 @@ an __exception__, you can simply send it the `self' message.
 ;; support passing them as arguments.)
 (defclass foreign-array (foreign-value)
   ((element-type :type symbol
-                 :accessor tagged-array-element-type
+                 :reader foreign-array-element-type
                  :initarg :element-type)
    (length :type integer
-           :accessor tagged-array-length)
-   (typespec :accessor foreign-value-typespec)))
+           :reader foreign-array-length
+           :initarg :type)
+   (typespec :reader foreign-value-typespec
+             :initarg :typespec)))
 
 
 ;; FIXME: Document.
