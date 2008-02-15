@@ -141,6 +141,18 @@ objcl_invoke_with_types (int argc,
   NS_DURING
     {
       TRACE (@"get-method");
+      /* FIXME: The NeXT runtime wants to use special functions for
+         structure and floating-point returns.
+
+         Note that there is no objc_msgSendSuper_fpret.  The reason is
+         that objc_msgSendSuper will never be passed nil as the instance
+         to call a method on, while using objc_msgSend_fpret is
+         important only so that sending a message to nil may return a
+         sane value.
+
+         Which means that if we don't allow nil to be messaged, we
+         probably don't need to bother with objc_msgSend_fpret,
+         either. */
       method = objcl_get_method_implementation (receiver, method_selector,
                                                 superclass_for_send_super);
       TRACE (@"method == NULL");
