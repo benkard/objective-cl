@@ -275,11 +275,21 @@ invocations will return numbers.)
 
 (defmethod print-object ((exception exception) stream)
   (print-unreadable-object (exception stream)
-    (format stream "~S ~A {~X}"
-            (type-of exception)
-            (primitive-invoke (primitive-invoke exception "name" 'id)
-                              "UTF8String" :string)
-            (primitive-invoke exception "hash" :unsigned-int))))
+    (with-slots (pointer) exception
+      (format stream "~S ~A {~X}"
+              (type-of exception)
+              (primitive-invoke (primitive-invoke exception "name" 'id)
+                                "UTF8String" :string)
+              (cffi:pointer-address pointer)))))
+
+
+(defmethod print-object ((struct foreign-struct) stream)
+  (print-unreadable-object (struct stream)
+    (with-slots (pointer name) struct
+      (format stream "~S of type ~A {~X}"
+              (type-of struct)
+              name
+              (cffi:pointer-address pointer)))))
 
 
 ;;; (@* "Structure and Union Definition")

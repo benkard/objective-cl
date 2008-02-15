@@ -302,6 +302,7 @@ an __exception__, you can simply send it the `self' message.
       (let ((new-wrapper (make-instance (ecase (typespec-primary-type typespec)
                                           (struct 'tagged-struct)
                                           (union 'tagged-union))
+                            :name (third typespec)
                             :typespec typespec
                             :pointer pointer
                             :lisp-managed-cell managedp-cell)))
