@@ -332,8 +332,11 @@ easier to use with __apply__.
                                                           (- argc 2))
                                     (objc-arg-ptrs :pointer argc)
                                     (objc-return-value-cell
-                                     ;; FIXME: This won't work for
-                                     ;; structs, arrays and unions!
+                                     ;; Note that this cell is not used
+                                     ;; if the method returns a struct,
+                                     ;; array or union.  For these, see
+                                     ;; OBJC-STRUCT-RETURN-VALUE-CELL
+                                     ;; below.
                                      (if (eq return-c-type :void)
                                          :int
                                          return-c-type))
@@ -423,12 +426,22 @@ easier to use with __apply__.
                                   ((nil) 0)
                                   ((t) 1)
                                   (otherwise arg)))))))
-          (let* ((error-cell
+          (let* ((objc-struct-return-value-cell
+                  (if (member (typespec-primary-type return-type)
+                              '(struct union array))
+                      ;; Note that sizeof(char) is defined to be 1.  That
+                      ;; is, sizeof returns a size in units of chars, not
+                      ;; in units of bytes.
+                      (foreign-alloc :char :count (%objcl-sizeof-type
+                                                   return-typestring))
+                      nil))
+                 (error-cell
                   (%objcl-invoke-with-types (- argc 2)
                                             superclass-pointer-for-send-super
                                             return-typestring
                                             objc-arg-typestrings
-                                            objc-return-value-cell
+                                            (or objc-struct-return-value-cell
+                                                objc-return-value-cell)
                                             objc-arg-ptrs)))
             (unless (cffi:null-pointer-p error-cell)
               (error (make-condition 'exception :pointer error-cell)))
@@ -448,6 +461,10 @@ easier to use with __apply__.
                                                     return-c-type)
                                       receiver
                                       selector))
+              ((struct union array)
+               ;; The caller is responsible for FOREIGN-FREEing the
+               ;; return value.
+               objc-struct-return-value-cell)
               ((:void) (values))
               (otherwise (cffi:mem-ref objc-return-value-cell
                                        return-c-type)))))))))
