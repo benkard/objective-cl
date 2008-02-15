@@ -59,7 +59,7 @@
   symbol)
 
 
-(defun objc-class-name->symbol (class-name)
+(define-cached-function objc-class-name->symbol (class-name) class-name
   (let ((prefix-end (1- (position-if #'lower-case-p class-name))))
     (cond ((and prefix-end (> prefix-end 0))
            ;; There are n upper case chars at the head of the name.
