@@ -30,11 +30,12 @@
                  (:file "constant-data"      :depends-on ("defpackage"))
                  (:file "conditions"         :depends-on ("defpackage"))
                  (:file "parameters"         :depends-on ("defpackage"))
-                 (:file "name-conversion"    :depends-on ("defpackage"))
                  (:file "data-types"         :depends-on ("defpackage"
                                                           "conditions"))
                  (:file "internal-utilities" :depends-on ("defpackage"
                                                           "data-types"))
+                 (:file "name-conversion"    :depends-on ("defpackage"
+                                                          "internal-utilities"))
                  (:file "weak-hash-tables"   :depends-on ("defpackage"))
                  (:file "performance-hacks"  :depends-on ("defpackage"))
                  (:file "policy"             :depends-on ("defpackage"

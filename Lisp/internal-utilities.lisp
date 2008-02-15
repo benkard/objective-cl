@@ -27,22 +27,6 @@
   (member symbol *features*))
 
 
-(defun objc-null (value)
-  (or (null value)
-      (and (typep value 'c-pointer-wrapper)
-           (objc-pointer-null (pointer-to value)))))
-
-
-(defmacro objc-or (&rest forms)
-  (let ((sym (gensym)))
-    `(let ((,sym ,(first forms)))
-       (if (objc-null ,sym)
-           ,(if (rest forms)
-                `(objc-or ,@(rest forms))
-                'nil)
-           ,sym))))
-
-
 (defmacro with-foreign-string-pool ((register-fn-name) &body body)
   (let ((pool-var (gensym)))
     `(let ((,pool-var (list)))

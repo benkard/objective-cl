@@ -156,7 +156,9 @@ objcl_slot_value (id obj, const char *ivar_name);
 /* The following function returns a freshly consed array that the caller
    must deallocate. */
 IVAR_T *
-objcl_class_direct_slots (Class class, unsigned int *count, unsigned int *element_size);
+objcl_class_direct_slots (Class class,
+                          unsigned int *count,
+                          unsigned int *element_size);
 
 const char *
 objcl_slot_name (IVAR_T ivar);

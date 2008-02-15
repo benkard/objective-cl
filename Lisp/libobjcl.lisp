@@ -375,6 +375,22 @@ conventional case for namespace identifiers in Objective-C."
       (cffi:pointer-eq pointer (objcl-get-nil))))
 
 
+(defun objc-null (value)
+  (or (null value)
+      (and (typep value 'c-pointer-wrapper)
+           (objc-pointer-null (pointer-to value)))))
+
+
+(defmacro objc-or (&rest forms)
+  (let ((sym (gensym)))
+    `(let ((,sym ,(first forms)))
+       (if (objc-null ,sym)
+           ,(if (rest forms)
+                `(objc-or ,@(rest forms))
+                'nil)
+           ,sym))))
+
+
 (declaim (ftype (function (string) (or null selector))
                 find-selector-by-name))
 (defun find-selector-by-name (selector-name)
