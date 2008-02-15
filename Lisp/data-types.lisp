@@ -232,23 +232,24 @@ an __exception__, you can simply send it the `self' message.
                          :documentation "Whether we need to handle deallocation.")))
 
 
-(defclass opaque-struct (foreign-value)
-  ((name :type (or null string)
-         :accessor struct-name
-         :initarg :name)))
+;; FIXME: Document.
+(defclass foreign-struct (foreign-value)
+     ((name :type (or null string)
+            :accessor struct-name
+            :initarg :name)))
 
-(defclass tagged-struct (foreign-value)
-  ((name :type (or null string)
-         :accessor struct-name
-         :initarg :name)
-   (typespec :accessor foreign-value-typespec
-             :initarg :typespec)))
 
+;; The following are for private use only.
+(defclass opaque-struct (foreign-struct) ())
+(defclass tagged-struct (foreign-struct) ())
 (defclass opaque-union (opaque-struct) ())
-
 (defclass tagged-union (tagged-struct) ())
 
-(defclass tagged-array (foreign-value)
+
+;; FIXME: Either document or throw away.  (Does the C language actually
+;; support returning arrays from functions?  It certainly does not
+;; support passing them as arguments.)
+(defclass foreign-array (foreign-value)
   ((element-type :type symbol
                  :accessor tagged-array-element-type
                  :initarg :element-type)
@@ -257,17 +258,25 @@ an __exception__, you can simply send it the `self' message.
    (typespec :accessor foreign-value-typespec)))
 
 
+;; FIXME: Document.
 (defgeneric foreign-value-lisp-managed-p (foreign-value))
 (defmethod foreign-value-lisp-managed-p ((foreign-value foreign-value))
   (with-slots (lisp-managed-cell) foreign-value
     (aref lisp-managed-cell)))
 
 
+;; FIXME: Document.
 (defgeneric (setf foreign-value-lisp-managed-p) (managedp foreign-value))
 (defmethod (setf foreign-value-lisp-managed-p)
     (managedp (foreign-value foreign-value))
   (with-slots (lisp-managed-cell) foreign-value
-    (setf (aref lisp-managed-cell) managedp)))
+    (setf (aref lisp-managed-cell) (if managedp t nil))))
+
+
+;; FIXME: Document.
+(defgeneric foreign-value-pointer (foreign-value))
+(defmethod foreign-value-pointer ((foreign-value foreign-value))
+  (pointer-to foreign-value))
 
 
 (defun make-struct-wrapper (pointer typespec managedp)

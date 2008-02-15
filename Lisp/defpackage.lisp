@@ -31,6 +31,8 @@
            #:objc-class-name
            #:selector-name
            #:selector
+           #:define-returns-boolean-exception
+           #:undefine-returns-boolean-exception
 
            ;; Generic functions
            #:objc-eql
@@ -52,13 +54,17 @@
            #:id
            #:selector
            #:exception
+           #:foreign-value
+           #:foreign-struct
+           #:foreign-union
 
            ;; Conditions
            #:message-not-understood
            #:no-such-selector
 
            ;; Metaclasses
-           #:objective-c-class))
+           #:objective-c-class
+           #:objective-c-metaclass))
 
 
 (defpackage #:mulk.objective-cl-features

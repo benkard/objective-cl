@@ -18,6 +18,7 @@
 (in-package #:mulk.objective-cl)
 
 
+;; FIXME: Document.
 (defun define-returns-boolean-exception (selector-designator)
   (let ((key (typecase selector-designator
                (string selector-designator)
@@ -25,6 +26,7 @@
     (setf (gethash key *boolean-return-exceptions*) t)))
 
 
+;; FIXME: Document.
 (defun undefine-returns-boolean-exceptions (selector-designator)
   (let ((key (typecase selector-designator
                (string selector-designator)

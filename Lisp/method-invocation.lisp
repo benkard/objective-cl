@@ -455,15 +455,16 @@ easier to use with __apply__.
                                        :pointer (cffi:mem-ref objc-return-value-cell
                                                               return-c-type))))
               ((:char :unsigned-char)
-               ;; FIXME: This is non-trivial.  See policy.lisp for
+               ;; FIXME?  This is non-trivial.  See policy.lisp for
                ;; details.
                (objc-char->lisp-value (cffi:mem-ref objc-return-value-cell
                                                     return-c-type)
                                       receiver
                                       selector))
               ((struct union array)
-               ;; The caller is responsible for FOREIGN-FREEing the
-               ;; return value.
+               ;; The caller is responsible for preventing the return
+               ;; value from being garbage-collected by setting
+               ;; FOREIGN-VALUE-LISP-MANAGED-P to false.
                (make-struct-wrapper objc-struct-return-value-cell
                                     return-type
                                     t))
