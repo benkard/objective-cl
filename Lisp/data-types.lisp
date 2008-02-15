@@ -36,12 +36,7 @@
        ((pointer :type     c-pointer
                  :reader   pointer-to
                  :initarg  :pointer
-                 :initform (cffi:null-pointer))
-        (lisp-managed :type boolean
-                      :accessor foreign-value-lisp-managed-p
-                      :initarg :lisp-managed
-                      :initform nil
-                      :documentation "Whether we need to handle deallocation."))))
+                 :initform (cffi:null-pointer)))))
 
 
 (defmethod make-load-form ((instance c-pointer-wrapper) &optional environment)
@@ -230,12 +225,19 @@ an __exception__, you can simply send it the `self' message.
   __id__"))
 
 
-(defclass opaque-struct (c-pointer-wrapper)
+(defclass foreign-value (c-pointer-wrapper)
+     ((lisp-managed-cell :type (array boolean ())
+                         :accessor foreign-value-lisp-managed-cell-p
+                         :initarg :lisp-managed-cell
+                         :documentation "Whether we need to handle deallocation.")))
+
+
+(defclass opaque-struct (foreign-value)
   ((name :type (or null string)
          :accessor struct-name
          :initarg :name)))
 
-(defclass tagged-struct (c-pointer-wrapper)
+(defclass tagged-struct (foreign-value)
   ((name :type (or null string)
          :accessor struct-name
          :initarg :name)
@@ -246,7 +248,7 @@ an __exception__, you can simply send it the `self' message.
 
 (defclass tagged-union (tagged-struct) ())
 
-(defclass tagged-array (c-pointer-wrapper)
+(defclass tagged-array (foreign-value)
   ((element-type :type symbol
                  :accessor tagged-array-element-type
                  :initarg :element-type)
@@ -255,17 +257,40 @@ an __exception__, you can simply send it the `self' message.
    (typespec :accessor foreign-value-typespec)))
 
 
+(defgeneric foreign-value-lisp-managed-p (foreign-value))
+(defmethod foreign-value-lisp-managed-p ((foreign-value foreign-value))
+  (with-slots (lisp-managed-cell) foreign-value
+    (aref lisp-managed-cell)))
+
+
+(defgeneric (setf foreign-value-lisp-managed-p) (managedp foreign-value))
+(defmethod (setf foreign-value-lisp-managed-p)
+    (managedp (foreign-value foreign-value))
+  (with-slots (lisp-managed-cell) foreign-value
+    (setf (aref lisp-managed-cell) managedp)))
+
+
 (defun make-struct-wrapper (pointer typespec managedp)
-  (let ((new-wrapper (make-instance (ecase (typespec-primary-type typespec)
-                                      (struct 'tagged-struct)
-                                      (union 'tagged-union))
-                        :typespec typespec
-                        :pointer pointer
-                        :lisp-managed managedp)))
-    (when managedp
-      (trivial-garbage:finalize new-wrapper
-                                #'(lambda ()
-                                    (foreign-free pointer))))))
+  ;; We use a zero-dimensional array that the finaliser can close over
+  ;; so that it (the finaliser) can decide whether to garbage-collect
+  ;; the foreign data.
+  ;;
+  ;; Using the instance slot directly would be both easier and more
+  ;; transparent, of course, but it also wouldn't work, because during
+  ;; finalisation, the instance is not in a usable state anymore.
+  (let ((managedp-cell (make-array '() :element-type 'boolean
+                                       :initial-element managedp)))
+    (flet ((finaliser ()
+             (when (aref managedp-cell)
+               (foreign-free pointer))))
+      (let ((new-wrapper (make-instance (ecase (typespec-primary-type typespec)
+                                          (struct 'tagged-struct)
+                                          (union 'tagged-union))
+                            :typespec typespec
+                            :pointer pointer
+                            :lisp-managed-cell managedp-cell)))
+        (when managedp
+          (trivial-garbage:finalize new-wrapper #'finaliser))))))
 
 
 (defgeneric objcl-eql (obj1 obj2))
