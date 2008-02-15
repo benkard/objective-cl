@@ -36,9 +36,12 @@
        ((pointer :type     c-pointer
                  :reader   pointer-to
                  :initarg  :pointer
-                 :initform (cffi:null-pointer)))))
-
-
+                 :initform (cffi:null-pointer))
+        (lisp-managed :type boolean
+                      :accessor foreign-value-lisp-managed-p
+                      :initarg :lisp-managed
+                      :initform nil
+                      :documentation "Whether we need to handle deallocation."))))
 
 
 (defmethod make-load-form ((instance c-pointer-wrapper) &optional environment)
@@ -236,40 +239,29 @@ an __exception__, you can simply send it the `self' message.
   ((name :type (or null string)
          :accessor struct-name
          :initarg :name)
-   (children :type list
-             :accessor struct-children
-             :initarg :children)))
+   (typespec :accessor foreign-value-typespec
+             :initarg :typespec)))
 
-(defclass opaque-union (c-pointer-wrapper)
-  ((name :type (or null string)
-         :accessor struct-name
-         :initarg :name)))
+(defclass opaque-union (opaque-struct) ())
 
-(defclass tagged-union (c-pointer-wrapper)
-  ((name :type (or null string)
-         :accessor struct-name
-         :initarg :name)
-   (children :type list
-             :accessor struct-children
-             :initarg :children)))
+(defclass tagged-union (tagged-struct) ())
 
 (defclass tagged-array (c-pointer-wrapper)
   ((element-type :type symbol
                  :accessor tagged-array-element-type
-                 :initarg :element-type)))
+                 :initarg :element-type)
+   (length :type integer
+           :accessor tagged-array-length)
+   (typespec :accessor foreign-value-typespec)))
 
 
-(defgeneric type-info (thing))
-
-(defmethod type-info ((thing opaque-struct))
-  (with-slots (name)
-        thing
-    (list* 'struct '(opaque) name)))
-
-(defmethod type-info ((thing tagged-struct))
-  (with-slots (name children)
-        thing
-    (list* 'struct '() name (mapcar #'type-info children))))
+(defun make-struct-wrapper (pointer typespec managedp)
+  (make-instance (ecase (typespec-primary-type typespec)
+                   (struct 'tagged-struct)
+                   (union 'tagged-union))
+     :typespec typespec
+     :pointer pointer
+     :lisp-managed managedp))
 
 
 (defgeneric objcl-eql (obj1 obj2))

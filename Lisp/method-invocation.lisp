@@ -464,7 +464,9 @@ easier to use with __apply__.
               ((struct union array)
                ;; The caller is responsible for FOREIGN-FREEing the
                ;; return value.
-               objc-struct-return-value-cell)
+               (make-struct-wrapper objc-struct-return-value-cell
+                                    return-type
+                                    t))
               ((:void) (values))
               (otherwise (cffi:mem-ref objc-return-value-cell
                                        return-c-type)))))))))
