@@ -783,3 +783,17 @@ objcl_finalise_class (Class class)
   [method_list_lengths removeObjectForKey: class_name];
 #endif
 }
+
+
+int
+objcl_class_backed_by_lisp_class_p (Class class)
+{
+  return [class __objcl_isBackedByLispClass];
+}
+
+
+void
+objcl_class_set_backed_by_lisp_class (Class class, int backed_p)
+{
+  [class __objcl_setBackedByLispClass: backed_p];
+}

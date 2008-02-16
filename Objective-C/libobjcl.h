@@ -187,3 +187,9 @@ objcl_add_method (Class class,
 
 void
 objcl_finalise_class (Class class);
+
+int
+objcl_class_backed_by_lisp_class_p (Class class);
+
+void
+objcl_class_set_backed_by_lisp_class (Class class, int backed_p);

@@ -156,6 +156,17 @@
 (defcfun ("objcl_finalise_class" %objcl-finalise-class) :void
   (class :pointer))
 
+(defcfun ("objcl_class_backed_by_lisp_class_p"
+          %objcl-class-backed-by-lisp-class-p)
+    :int
+  (class :pointer))
+
+(defcfun ("objcl_class_set_backed_by_lisp_class"
+          %objcl-class-set-backed-by-lisp-class)
+    :void
+  (class :pointer)
+  (backed-p :int))
+
 (defcvar *objcl-current-exception-lock* :pointer)
 (defcvar *objcl-current-exception* :pointer)
 
@@ -867,3 +878,9 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
                     then (inc-pointer current-slot element-size)
                   collecting (mem-ref current-slot :pointer))
           (foreign-free array-pointer))))))
+
+(defun objcl-class-backed-by-lisp-class-p/pointer (class-ptr)
+  (not (zerop (%objcl-class-backed-by-lisp-class-p class-ptr))))
+
+(defun objcl-class-set-backed-by-lisp-class/pointer (class-ptr backed-p)
+  (%objcl-class-set-backed-by-lisp-class class-ptr (if backed-p 1 0)))
