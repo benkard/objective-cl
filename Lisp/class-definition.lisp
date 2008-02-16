@@ -209,18 +209,44 @@
 
 (defmethod initialize-instance :around ((class objective-c-class)
                                         &rest args
-                                        &key pointer
+                                        &key pointer name
+                                             direct-superclasses
+                                             direct-slots
                                         &allow-other-keys)
-  ;; We scavenge the class and its superclasses for foreign slots and
-  ;; add them to our :DIRECT-SLOTS keyword argument.
   (let ((key-args (copy-list args)))
-    (dolist (objc-slot (objcl-class-direct-slots/pointer pointer))      
-      (pushnew (list :name (foreign-slot-name->slot-name
-                            (objcl-slot-name objc-slot))
-                     :foreign-name (objcl-slot-name objc-slot)
-                     :foreign-type (parse-typespec (objcl-slot-type objc-slot)))
-               (getf key-args :direct-slots)
-               :key #'(lambda (slotd) (getf slotd :name))))
+    (cond
+      ((or (null pointer) (null-pointer-p pointer))
+       (setf (slot-value class 'registered-p) nil)
+       (let* ((ivars (remove-if-not #'(lambda (c)
+                                        (typep c 'foreign-direct-slot-definition))
+                                    direct-slots))
+              (new-class-pointer
+               (%objcl-create-class (symbol->objc-class-name name)
+                                    (pointer-to (find-if
+                                                 #'(lambda (c)
+                                                     (typep c 'objective-c-class))
+                                                 direct-superclasses))
+                                    0
+                                    (null-pointer)
+                                    (length ivars)
+                                    (mapcar #'slot-definition-foreign-name
+                                            ivars)
+                                    (mapcar #'(lambda (x)
+                                                (print-typespec-to-string
+                                                 (slot-definition-foreign-type x)))
+                                            ivars))))
+         (setf (getf key-args :pointer) new-class-pointer)))
+      (t
+       (setf (slot-value class 'registered-p) t)
+       ;; We scavenge the class and its superclasses for foreign slots and
+       ;; add them to our :DIRECT-SLOTS keyword argument.
+       (dolist (objc-slot (objcl-class-direct-slots/pointer pointer))      
+         (pushnew (list :name (foreign-slot-name->slot-name
+                               (objcl-slot-name objc-slot))
+                        :foreign-name (objcl-slot-name objc-slot)
+                        :foreign-type (parse-typespec (objcl-slot-type objc-slot)))
+                  (getf key-args :direct-slots)
+                  :key #'(lambda (slotd) (getf slotd :name))))))
     (apply #'call-next-method class key-args)))
 
 (defmethod initialize-instance ((class objective-c-class)
@@ -272,6 +298,17 @@
   (declare (ignore documentation name plist direct-superclasses direct-slots
                    direct-default-initargs pointer))
   (call-next-method))
+
+
+(defmethod make-instance :before ((class objective-c-class)
+                                  &key
+                                  &allow-other-keys)
+  (foreign-class-ensure-registered class))
+
+
+(defun foreign-class-ensure-registered (class)
+  ;; FIXME
+  )
 
 
 ;;;; (@* "Quick tests")
