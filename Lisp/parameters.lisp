@@ -20,6 +20,8 @@
 
 (defvar *runtime-initialisation-level* 0)
 
+(defvar *object-locks* (make-hash-table :test 'eql))
+
 (defvar *boolean-return-exceptions* (make-hash-table :test #'equal))
 
 (defvar *skip-retaining* nil)

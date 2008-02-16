@@ -19,8 +19,31 @@
 
 
 (defmacro atomically (&body body)
-  ;; FIXME: Use a reentrant global lock here.
-  `(progn ,@body))
+  ;; FIXME
+  `(progn ,@body)
+  #+(or)
+  `(prog2
+     (objcl-acquire-global-lock)
+     ,@body
+     (objcl-release-global-lock)))
+
+
+(defmacro with-exclusive-access ((&rest objects) &body body)
+  (etypecase objects
+    (null `(progn ,@body))
+    (cons `(with-lock ,(first objects)
+             (with-exclusive-access (,(rest objects))
+               ,@body)))))
+
+
+(defmacro with-lock (object &body body)
+  ;; FIXME: Implement LOCK-FOR-OBJECT.
+  (let ((lock (gensym "LOCK")))
+    `(let ((,lock (lock-for-object ,object)))
+       (prog2
+         (%objcl-acquire-lock ,lock)
+         (progn ,@body)
+         (%objcl-release-lock ,lock)))))
 
 
 (defun featurep (symbol)
