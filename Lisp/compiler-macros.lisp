@@ -18,6 +18,20 @@
 (in-package #:mulk.objective-cl)
 
 
+(defun selector-load-time-form (method-name)
+  `(load-time-value (handler-case
+                        (find-selector ',method-name)
+                      (serious-condition ()
+                        (warn
+                         (make-condition 'simple-style-warning
+                                         :format-control
+                                         "~S designates an unknown ~
+                                               method selector."
+                                         :format-arguments
+                                         (list ',method-name)))
+                        ',method-name))))
+
+
 ;; Optimise constant method names away by converting them to selectors
 ;; at load-time.
 (define-compiler-macro primitive-invoke (&whole form
@@ -27,18 +41,7 @@
            (not (and (listp method-name)
                      (eq 'load-time-value (car method-name)))))
       `(primitive-invoke ,receiver
-                         (load-time-value (handler-case
-                                              (find-selector ,method-name)
-                                            (serious-condition ()
-                                              (warn
-                                               (make-condition
-                                                'simple-style-warning
-                                                :format-control
-                                                "~S designates an unknown ~
-                                                 method selector."
-                                                :format-arguments
-                                                (list ,method-name)))
-                                              ,method-name)))
+                         ,(selector-load-time-form (eval method-name))
                          ,return-type ,@args)
       form))
 
@@ -51,17 +54,7 @@
                      (eq 'load-time-value (car method-name)))))
       `(invoke-by-name
         ,receiver
-        (load-time-value (handler-case
-                             (find-selector ,method-name)
-                           (serious-condition ()
-                             (warn
-                              (make-condition 'simple-style-warning
-                                              :format-control
-                                              "~S designates an unknown ~
-                                               method selector."
-                                              :format-arguments
-                                              (list ,method-name)))
-                             ,method-name)))
+        ,(selector-load-time-form (eval method-name))
         ,@args)
       form))
 
@@ -72,17 +65,7 @@
   (if (and (constantp method-name)
            (not (and (listp method-name)
                      (eq 'load-time-value (car method-name)))))
-      `(load-time-value (handler-case
-                            (find-selector ,method-name)
-                          (serious-condition ()
-                            (warn
-                             (make-condition 'simple-style-warning
-                                             :format-control
-                                             "~S designates an unknown ~
-                                               method selector."
-                                             :format-arguments
-                                             (list ,method-name)))
-                            ,method-name)))
+      (selector-load-time-form (eval method-name))
       form))
 
 
@@ -97,15 +80,5 @@
                          message-components)
     `(invoke-by-name
       ,receiver
-      (load-time-value (handler-case
-                           (find-selector ',method-name)
-                         (serious-condition ()
-                           (warn
-                            (make-condition 'simple-style-warning
-                                            :format-control
-                                            "~S designates an unknown ~
-                                               method selector."
-                                            :format-arguments
-                                            (list ',method-name)))
-                           ',method-name)))
+      ,(selector-load-time-form method-name)
       ,@args)))
