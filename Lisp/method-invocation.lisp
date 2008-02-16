@@ -451,9 +451,10 @@ easier to use with __apply__.
                (let ((*skip-retaining*
                       (or *skip-retaining*
                           (constructor-name-p (selector-name selector)))))
-                 (make-pointer-wrapper (car return-type)
-                                       :pointer (cffi:mem-ref objc-return-value-cell
-                                                              return-c-type))))
+                 (intern-pointer-wrapper (car return-type)
+                                         :pointer (cffi:mem-ref
+                                                   objc-return-value-cell
+                                                   return-c-type))))
               ((:char :unsigned-char)
                ;; FIXME?  This is non-trivial.  See policy.lisp for
                ;; details.

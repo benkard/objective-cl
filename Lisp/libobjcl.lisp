@@ -412,7 +412,7 @@ conventional case for namespace identifiers in Objective-C."
   (let ((selector-ptr (%objcl-find-selector selector-name)))
     (if (cffi:null-pointer-p selector-ptr)
         nil
-        (make-pointer-wrapper 'selector :pointer selector-ptr))))
+        (intern-pointer-wrapper 'selector :pointer selector-ptr))))
 
 
 (defun intern-selector-by-name (selector-name)
@@ -420,7 +420,7 @@ conventional case for namespace identifiers in Objective-C."
     (assert (not (cffi:null-pointer-p selector-ptr))
             (selector-ptr)
             "%OBJCL-INTERN-SELECTOR must always return a selector.")
-    (make-pointer-wrapper 'selector :pointer selector-ptr)))
+    (intern-pointer-wrapper 'selector :pointer selector-ptr)))
 
 
 (declaim (ftype (function ((or objective-c-class id exception)) string)
@@ -718,7 +718,7 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
   (let ((superclass-ptr (%objcl-class-superclass class-ptr)))
     (if (and (not (null-pointer-p superclass-ptr))
              (%objcl-object-is-class superclass-ptr))
-        (make-pointer-wrapper t :pointer superclass-ptr)
+        (intern-pointer-wrapper t :pointer superclass-ptr)
         nil)))
 
 (defun objcl-class-superclass (class)
