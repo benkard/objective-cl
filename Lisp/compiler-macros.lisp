@@ -34,38 +34,30 @@
 
 ;; Optimise constant method names away by converting them to selectors
 ;; at load-time.
+;;
+;; Optimise all (SELECTOR ...) forms.  This is important in order to
+;; make (FUNCALL (SELECTOR ...) ...) efficient.
+(define-compiler-macro selector (&whole form method-name)
+  (if (constantp method-name)
+      (selector-load-time-form (eval method-name))
+      form))
+
+
+;; Have PRIMITIVE-INVOKE take advantage of the compiler macro for
+;; SELECTOR.
 (define-compiler-macro primitive-invoke (&whole form
                                          receiver method-name return-type
                                          &rest args)
-  (if (and (constantp method-name)
-           (not (and (listp method-name)
-                     (eq 'load-time-value (car method-name)))))
-      `(primitive-invoke ,receiver
-                         ,(selector-load-time-form (eval method-name))
-                         ,return-type ,@args)
+  (if (constantp method-name)
+      `(primitive-invoke ,receiver (selector ,method-name) ,return-type ,@args)
       form))
 
 
 ;; Do the same optimisations for INVOKE-BY-NAME as for PRIMITIVE-INVOKE.
 (define-compiler-macro invoke-by-name (&whole form
                                        receiver method-name &rest args)
-  (if (and (constantp method-name)
-           (not (and (listp method-name)
-                     (eq 'load-time-value (car method-name)))))
-      `(invoke-by-name
-        ,receiver
-        ,(selector-load-time-form (eval method-name))
-        ,@args)
-      form))
-
-
-;; Optimise all (SELECTOR ...) forms.  This is important in order to
-;; make (FUNCALL (SELECTOR ...) ...) efficient.
-(define-compiler-macro selector (&whole form method-name)
-  (if (and (constantp method-name)
-           (not (and (listp method-name)
-                     (eq 'load-time-value (car method-name)))))
-      (selector-load-time-form (eval method-name))
+  (if (constantp method-name)
+      `(invoke-by-name ,receiver (selector ,method-name) ,@args)
       form))
 
 
@@ -78,7 +70,4 @@
                              (second message-start)
                              message-start)
                          message-components)
-    `(invoke-by-name
-      ,receiver
-      ,(selector-load-time-form method-name)
-      ,@args)))
+    `(invoke-by-name ,receiver (selector ',method-name) ,@args)))
