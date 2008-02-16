@@ -80,6 +80,10 @@
                                                           "init"
                                                           "method-invocation"
                                                           "data-types"))
+                 (:file "instance-management" :depends-on ("defpackage"
+                                                           "libobjcl"
+                                                           "init"
+                                                           "method-invocation"))
                  (:file "compiler-macros"    :depends-on ("defpackage"
                                                           "method-invocation"
                                                           "conditions")))))

@@ -37,7 +37,10 @@
              (find-objc-meta-class-by-name (%objcl-class-name pointer))))
           ((%objcl-object-is-class pointer)
            (return-from intern-pointer-wrapper
-             (find-objc-class-by-name (%objcl-class-name pointer))))))
+             (find-objc-class-by-name (%objcl-class-name pointer))))
+          ((objcl-object-backed-by-lisp-class-p/pointer pointer)
+           (return-from intern-pointer-wrapper
+             (apply #'intern-lisp-managed-foreign-instance initargs)))))
   (let* ((hash-table (ecase class
                        ((id) *id-objects*)
                        ((exception) *exception-objects*)

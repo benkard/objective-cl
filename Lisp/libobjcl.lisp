@@ -167,6 +167,11 @@
   (class :pointer)
   (backed-p :int))
 
+(defcfun ("objcl_object_backed_by_lisp_class_p"
+          %objcl-object-backed-by-lisp-class-p)
+    :int
+  (class :pointer))
+
 (defcvar *objcl-current-exception-lock* :pointer)
 (defcvar *objcl-current-exception* :pointer)
 
@@ -884,3 +889,6 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
 
 (defun objcl-class-set-backed-by-lisp-class/pointer (class-ptr backed-p)
   (%objcl-class-set-backed-by-lisp-class class-ptr (if backed-p 1 0)))
+
+(defun objcl-object-backed-by-lisp-class-p/pointer (object-ptr)
+  (not (zerop (%objcl-object-backed-by-lisp-class-p object-ptr))))

@@ -193,3 +193,6 @@ objcl_class_backed_by_lisp_class_p (Class class);
 
 void
 objcl_class_set_backed_by_lisp_class (Class class, int backed_p);
+
+int
+objcl_object_backed_by_lisp_class_p (id object);
