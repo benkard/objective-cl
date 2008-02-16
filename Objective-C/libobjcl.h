@@ -17,7 +17,9 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#import "Foundation/Foundation.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSLock.h"
+
 #include <objc/objc-api.h>
 
 #include "../config.h"
@@ -43,23 +45,10 @@ typedef Ivar IVAR_T;
 typedef struct objc_ivar *IVAR_T;
 #endif
 
-#ifdef HAVE_SYS_SEM_H
-#include <sys/sem.h>
-#ifndef __APPLE__
-/* According to the Single Unix Specification, Version 3, the semun
-   union type must be defined by the application writer as follows: */
-union semun
-{
-  int              val;    /* Value for SETVAL */
-  struct semid_ds *buf;    /* Buffer for IPC_STAT, IPC_SET */
-  unsigned short  *array;  /* Array for GETALL, SETALL */
-};
-#endif
-#endif
 
 extern NSException *objcl_oom_exception;
 extern id objcl_current_exception;
-extern void *objcl_current_exception_lock;
+extern NSRecursiveLock *objcl_current_exception_lock;
 
 
 void
@@ -173,13 +162,10 @@ objcl_create_imp (IMP callback,
                   const char *arg_typespecs[]);
 
 void
-objcl_acquire_lock (void *lock);
+objcl_acquire_lock (id lock);
 
 void
-objcl_release_lock (void *lock);
-
-void
-objcl_initialise_lock (void **lock);
+objcl_release_lock (id lock);
 
 Class
 objcl_create_class (const char *class_name,

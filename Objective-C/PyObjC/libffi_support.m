@@ -13,8 +13,9 @@
 #include "pyobjc.h"
 
 #import <Foundation/NSDictionary.h>
-#import <Foundation/NSString.h>
 #import <Foundation/NSHost.h>
+#import <Foundation/NSString.h>
+#import <Foundation/NSValue.h>
 
 #ifdef MACOSX
 /*

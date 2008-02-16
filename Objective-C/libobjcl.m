@@ -22,7 +22,8 @@
 #import "PyObjC/libffi_support.h"
 #import "JIGS/ObjcRuntimeUtilities.h"
 
-#import <Foundation/Foundation.h>
+#import "Foundation/Foundation.h"
+
 #include <stdarg.h>
 #include <sys/mman.h>
 #include <objc/objc-api.h>
@@ -49,7 +50,7 @@ static NSAutoreleasePool *objcl_autorelease_pool = nil;
 NSException *objcl_oom_exception = nil;
 
 id objcl_current_exception = nil;
-void *objcl_current_exception_lock = NULL;
+NSRecursiveLock *objcl_current_exception_lock = nil;
 
 static NSMutableDictionary *method_lists = nil;
 static NSMutableDictionary *method_list_lengths = nil;
@@ -72,7 +73,7 @@ objcl_initialise_runtime (void)
       PyObjC_SetupRuntimeCompat ();
 #endif
 
-      objcl_initialise_lock (&objcl_current_exception_lock);
+      objcl_current_exception_lock = [[NSRecursiveLock alloc] init];
       method_lists = [[NSMutableDictionary alloc] init];
       method_list_lengths = [[NSMutableDictionary alloc] init];
       objcl_initialise_instance_wrappers ();
@@ -101,6 +102,7 @@ objcl_shutdown_runtime (void)
   if (init_count == 0)
     {
       release_unless_null (&objcl_autorelease_pool);
+      release_unless_null (&objcl_current_exception_lock);
       release_unless_null (&objcl_oom_exception);
       release_unless_null (&method_lists);
       release_unless_null (&method_list_lengths);
@@ -633,63 +635,18 @@ objcl_create_imp (IMP callback,
 
 
 void
-objcl_initialise_lock (void **lock)
+objcl_acquire_lock (id lock)
 {
-#ifdef HAVE_SYS_SEM_H
-  int sem;
-  union semun initop;
-
-  sem = semget (IPC_PRIVATE, 1, IPC_CREAT | 0600);
-  *lock = malloc (sizeof (int));
-  *((int *) *lock) = sem;
-
-  initop.val = 1;
-  semctl (sem, 0, SETVAL, initop);
-#else
-#warning "I do not know how to do locking on this platform."
-#endif
+  [lock lock];
+  TRACE (@"Lock %@ acquired.", lock);
 }
 
 
 void
-objcl_acquire_lock (void *lock)
+objcl_release_lock (id lock)
 {
-#ifdef HAVE_SYS_SEM_H
-  struct sembuf op;
-  op.sem_num = 0; op.sem_op = +1; op.sem_flg = 0;
-
-  if ((semop (*((int *) lock), &op, 1)) < 0)
-    {
-      [[NSException exceptionWithName: @"MLKLockLossage"
-                    reason: @"Acquiring the exception lock failed (don't ask me why)."
-                    userInfo: nil] raise];
-    }
-
-  TRACE (@"Exception buffer locked.");
-#else
-#warning "I do not know how to do locking on this platform."
-#endif
-}
-
-
-void
-objcl_release_lock (void *lock)
-{
-#ifdef HAVE_SYS_SEM_H
-  struct sembuf op;
-  op.sem_num = 0; op.sem_op = +1; op.sem_flg = 0;
-
-  if ((semop (*((int *) lock), &op, 1)) < 0)
-    {
-      [[NSException exceptionWithName: @"MLKLockLossage"
-                    reason: @"Acquiring the exception lock failed (don't ask me why)."
-                    userInfo: nil] raise];
-    }
-
-  TRACE (@"Exception buffer unlocked.");
-#else
-#warning "I do not know how to do locking on this platform."
-#endif
+  [lock unlock];
+  TRACE (@"Lock %@ released.", lock);
 }
 
 
