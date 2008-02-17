@@ -23,11 +23,12 @@
 (defun intern-lisp-managed-foreign-instance (&rest initargs &key pointer)
   (let ((key (cffi:pointer-address pointer)))
     (or (gethash key *lisp-managed-instances* nil)
-        (apply #'make-instance
-               (intern-pointer-wrapper
-                'class
-                :pointer (%objcl-object-get-class pointer))
-               initargs))))
+        (setf (gethash key *lisp-managed-instances*)
+              (apply #'make-instance
+                     (intern-pointer-wrapper
+                      'class
+                      :pointer (%objcl-object-get-class pointer))
+                     initargs)))))
 
 (defun unintern-lisp-managed-foreign-instance (instance)
   (remhash (cffi:pointer-address (pointer-to instance))
