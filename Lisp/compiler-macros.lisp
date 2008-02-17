@@ -63,11 +63,14 @@
 
 ;; This compiler macro is a bit more complicated than the preceding
 ;; ones.
-(define-compiler-macro invoke (receiver message-start &rest message-components)
+(define-compiler-macro invoke (&whole form
+                               receiver message-start &rest message-components)
   (multiple-value-bind (method-name args)
       (split-method-call (if (and (consp message-start)
                                   (eq (first message-start) 'quote))
                              (second message-start)
                              message-start)
                          message-components)
-    `(invoke-by-name ,receiver (selector ',method-name) ,@args)))
+    (if (constantp method-name)
+        `(invoke-by-name ,receiver (selector ',method-name) ,@args)
+        form)))
