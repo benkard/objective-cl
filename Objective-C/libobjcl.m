@@ -730,8 +730,8 @@ objcl_create_class (const char *class_name,
   argv[2] = &ivar_number;
   for (i = 0; i < ivar_number; i++)
     {
-      argv[3 + 2*i] = (void *) &ivar_names[2*i];
-      argv[3 + 2*i + 1] = (void *) &ivar_names[2*i + 1];
+      argv[3 + 2*i] = (void *) &ivar_names[i];
+      argv[3 + 2*i + 1] = (void *) &ivar_typespecs[i];
     }
 
   status = ffi_prep_cif (&cif, FFI_DEFAULT_ABI, ivar_number*2 + 3, &ffi_type_uchar, arg_types);
