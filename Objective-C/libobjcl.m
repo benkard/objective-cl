@@ -734,7 +734,7 @@ objcl_create_class (const char *class_name,
       argv[3 + 2*i + 1] = (void *) &ivar_names[2*i + 1];
     }
 
-  status = ffi_prep_cif (&cif, FFI_DEFAULT_ABI, ivar_number + 3, &ffi_type_uchar, arg_types);
+  status = ffi_prep_cif (&cif, FFI_DEFAULT_ABI, ivar_number*2 + 3, &ffi_type_uchar, arg_types);
   if (status != FFI_OK)
     {
       [[NSException exceptionWithName: @"MLKInvalidFFITypeException"
