@@ -487,15 +487,19 @@ objcl_set_slot_value (id obj, const char *ivar_name, void *value)
 }
 
 
-void *
-objcl_slot_value (id obj, const char *ivar_name)
+void
+objcl_get_slot_value (id obj, const char *ivar_name, void *value_out)
 {
-  void *value;
   /* Caching Ivars may be useful here.  Using those instead of strings
      is claimed to be faster. */
+
   /* For the GNU runtime, this function is defined in objc-runtime-gnu.m. */
-  object_getInstanceVariable (obj, ivar_name, &value);
-  return value;
+
+  /* NOTE: Contrary to what the official Objective-C runtime docs claim,
+     value_out is actually a (void *) rather than a (void **).
+     Likewise, the result that is copied to value_out is the slot value
+     itself, not a pointer to it. */
+  object_getInstanceVariable (obj, ivar_name, value_out);
 }
 
 

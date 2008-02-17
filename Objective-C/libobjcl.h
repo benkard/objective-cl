@@ -139,8 +139,8 @@ objcl_alignof_type (const char *typespec);
 void
 objcl_set_slot_value (id obj, const char *ivar_name, void *value);
 
-void *
-objcl_slot_value (id obj, const char *ivar_name);
+void
+objcl_get_slot_value (id obj, const char *ivar_name, void *value_out);
 
 /* The following function returns a freshly consed array that the caller
    must deallocate. */

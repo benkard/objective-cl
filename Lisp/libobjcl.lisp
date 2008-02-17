@@ -104,9 +104,10 @@
   (slot-name :string)
   (value :pointer)) ; void
 
-(defcfun ("objcl_slot_value" %objcl-slot-value) :pointer
+(defcfun ("objcl_get_slot_value" %objcl-get-slot-value) :void
   (obj :pointer) ; id
-  (slot-name :string))
+  (slot-name :string)
+  (value-out :pointer))
 
 (defcfun ("objcl_class_direct_slots" %objcl-class-direct-slots) :pointer
   (class :pointer) ; Class
@@ -849,14 +850,6 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
 
 
 ;;;; (@* "Slot access")
-(defun objcl-set-slot-value (instance slot-name value)
-  ;; FIXME
-  (error "To be done."))
-
-(defun objcl-slot-value (instance slot-name)
-  ;; FIXME
-  (error "To be done."))
-
 (defun objcl-slot-type (slot)
   (%objcl-slot-type slot))
 
