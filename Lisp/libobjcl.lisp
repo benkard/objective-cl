@@ -57,6 +57,9 @@
 (defcfun ("objcl_class_superclass" %objcl-class-superclass) :pointer
   (obj :pointer))
 
+(defcfun ("objcl_class_metaclass" %objcl-class-metaclass) :pointer
+  (obj :pointer))
+
 (defcfun ("objcl_find_selector" %objcl-find-selector) :pointer
   (selector-name :string))
 
@@ -768,12 +771,12 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
                                                          list)
                                                  :pointer)))
         (%objcl-create-class class-name
-                         (pointer-to superclass)
-                         (length protocol-names)
-                         %protocol-names
-                         (length ivar-names)
-                         %ivar-names
-                         %ivar-typestrings)))))
+                             (pointer-to superclass)
+                             (length protocol-names)
+                             %protocol-names
+                             (length ivar-names)
+                             %ivar-names
+                             %ivar-typestrings)))))
 
 ;;; (@* "Low-level Data Conversion")
 (eval-when (:compile-toplevel :load-toplevel)

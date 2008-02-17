@@ -284,6 +284,17 @@ objcl_class_superclass (Class class)
 }
 
 
+MetaClass
+objcl_class_metaclass (Class class)
+{
+#ifdef __NEXT_RUNTIME__
+  return objc_getMetaClass (class);
+#else
+  return class_get_meta_class (class);
+#endif
+}
+
+
 const char *
 objcl_selector_name (SEL selector)
 {

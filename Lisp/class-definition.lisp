@@ -220,9 +220,11 @@
             (0 (find-objc-class "NSObject"))
             (1 (first objective-c-superclasses))
             (otherwise
-             (error "At most one Objective-C class may be derived at once."))))
-         (ivars (remove-if-not #'(lambda (c)
-                                   (typep c 'foreign-direct-slot-definition))
+             (error "Tried to derive all of ~S at the same time.  ~
+                    (At most one Objective-C class may be derived at once.)"
+                    objective-c-superclasses))))
+         (ivars (remove-if-not #'(lambda (x)
+                                   (getf x :foreign-type nil))
                                direct-slots))
          (new-class-pointer
           (objcl-create-class (symbol->objc-class-name name)
@@ -230,23 +232,29 @@
                                            (typep c 'objective-c-class))
                                        direct-superclasses)
                               nil
-                              (mapcar #'slot-definition-foreign-name
+                              (mapcar #'(lambda (x)
+                                          (getf x :foreign-name
+                                                (slot-name->foreign-slot-name
+                                                 (getf x :name))))
                                       ivars)
                               (mapcar #'(lambda (x)
-                                          (slot-definition-foreign-type x))
+                                          (getf x :foreign-type))
                                       ivars)))
          (metaclass
-          (ensure-class name
+          (ensure-class (objc-meta-class-name->symbol
+                         (symbol->objc-class-name name))
                         :metaclass (class-of (class-of superclass))
-                        :pointer new-class-pointer
-                        :direct-superclasses (list (class-of superclass))))
+                        :pointer (%objcl-class-metaclass new-class-pointer)
+                        :direct-superclasses (list (class-of superclass))
+                        :new-foreign-class-p t))
          (class
           (ensure-class name
                         :metaclass metaclass
                         :pointer new-class-pointer
                         :direct-slots direct-slots
                         :direct-superclasses direct-superclasses
-                        :direct-default-initargs direct-default-initargs)))
+                        :direct-default-initargs direct-default-initargs
+                        :new-foreign-class-p t)))
     class))
 
 
@@ -281,6 +289,11 @@
         (t (call-next-method))))
 
 
+(defmethod reinitialize-instance ((class objective-c-class)
+                                  &key &allow-other-keys)
+  (call-next-method))
+
+
 (defmethod initialize-instance :around ((class objective-c-class)
                                         &rest args
                                         &key pointer
@@ -305,7 +318,8 @@
 (defmethod make-instance :before ((class objective-c-class)
                                   &key
                                   &allow-other-keys)
-  (foreign-class-ensure-registered class))
+  (unless (typep class 'objective-c-meta-class)
+    (foreign-class-ensure-registered class)))
 
 
 (defun foreign-class-ensure-registered (class)
@@ -339,6 +353,6 @@
             :initform nil
             :initarg :foos
             :accessor mlk-string-foos)
-      (foo-count :foreign-type '(:integer ())))
+      (foo-count :foreign-type (:int ())))
   (:metaclass #+(or) objective-c-class
               ns:+ns-object))

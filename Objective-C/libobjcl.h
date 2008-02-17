@@ -90,6 +90,9 @@ objcl_class_name (Class class);
 Class
 objcl_class_superclass (Class class);
 
+MetaClass
+objcl_class_metaclass (Class class);
+
 const char *
 objcl_selector_name (SEL selector);
 
