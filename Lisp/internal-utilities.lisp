@@ -50,12 +50,16 @@
   (member symbol *features*))
 
 
-(defmacro with-foreign-string-pool ((register-fn-name) &body body)
+(defmacro with-foreign-string-pool ((register-fn-name
+                                     allocate-fn-name) &body body)
   (let ((pool-var (gensym)))
     `(let ((,pool-var (list)))
-       (flet ((,register-fn-name (x)
-                (push x ,pool-var)
-                x))
+       (labels ((,register-fn-name (x)
+                  (push x ,pool-var)
+                  x)
+                (,allocate-fn-name (string)
+                  (,register-fn-name
+                   (cffi:foreign-string-alloc string))))
          (unwind-protect
              (progn ,@body)
            (dolist (x ,pool-var)
