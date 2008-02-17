@@ -288,7 +288,7 @@ Class
 objcl_class_metaclass (Class class)
 {
 #ifdef __NEXT_RUNTIME__
-  return objc_getMetaClass (class);
+  return objc_getMetaClass (objcl_class_name (class));
 #else
   return class_get_meta_class (class);
 #endif
