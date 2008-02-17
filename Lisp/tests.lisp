@@ -24,7 +24,7 @@
                           #:inout #:const #:parse-typespec #:objective-c-class
                           #:bit-field #:opaque #:bycopy #:byref
                           #:primitive-invoke #:print-typespec-to-string
-                          #:nominally))
+                          #:nominally #:find-objc-meta-class))
 (in-package #:mulk.objective-cl.tests)
 (in-root-suite)
 
@@ -345,3 +345,46 @@
                           :with-object (invoke
                                         (find-objc-class 'ns-object)
                                         'self)))))
+
+
+(defvar *class-counter* 0)
+
+
+(deftest class-definition ()
+  ;; FIXME: This test is broken.
+  ;;
+  ;; Reason:
+  ;;
+  ;;  OBJECTIVE-CL> (invoke-by-name
+  ;;                 (invoke #<EXCEPTION NSGenericException {845E8E0}> 'reason)
+  ;;                 "UTF8String")
+  ;;  "subclass MLKTestString0(instance) should override length"
+  ;;
+  (let ((class-name (intern (format nil "~A~D"
+                                    '#:mlk-test-string
+                                    (incf *class-counter*))))
+        (class nil)
+        (instance nil))
+    (setq class
+          (is (c2mop:ensure-class class-name
+                                  :direct-superclasses
+                                  (list (find-objc-class "NSString"))
+                                  :direct-slots '((:name foos
+                                                   :type list
+                                                   :initform nil
+                                                   :initargs (:foos))
+                                                  (:name foo-count
+                                                   :foreign-type (:int ())))
+                                  :metaclass (find-objc-meta-class "NSObject"))))
+    (is (typep class 'objective-c-class))
+    (setq instance (is (invoke class :string-with-u-t-f-8-string "Mulk.")))
+    #+nil (is (typep instance class))
+    (is (objc-equal instance
+                    (invoke (find-objc-class 'ns-string)
+                            :string-with-u-t-f-8-string "Mulk.")))
+    (setf (slot-value instance 'foos) '(a b c))
+    (setf (slot-value instance 'foo-count) 3)
+    (is (equal (slot-value instance 'foos)
+               (slot-value (invoke instance 'self) 'foos)))
+    (is (equal (slot-value instance 'foo-count)
+               (slot-value (invoke instance 'self) 'foo-count)))))
