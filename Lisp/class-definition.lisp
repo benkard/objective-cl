@@ -169,18 +169,25 @@
       ;; FIXME: What to do about memory management here?  Strings are
       ;; possibly the most problematic case here.
       ;;
-      ;; FIXME: This won't work at all right now, because
-      ;; %OBJCL-SET-SLOT-VALUE expects a pointer to the value that it
-      ;; should store as an argument, not the value itself.  For structs
-      ;; and related things that can't be reasonably passed by value,
-      ;; this is good news.  For everything else, it means just a bit
-      ;; more work.
-      (cerror "Do nothing" "FIXME")
-      #+(or)
-      (%objcl-set-slot-value
-       instance
-       foreign-name
-       (cffi:convert-to-foreign value (typespec->c-type foreign-type))))))
+      ;; Note: %OBJCL-SET-SLOT-VALUE expects a pointer to the value that
+      ;; it should store as an argument, not the value itself.  For
+      ;; structs and related things that can't be reasonably passed by
+      ;; value, this is good news.  For everything else, it means just a
+      ;; bit more work.
+      (case (typespec-primary-type foreign-type)
+        ((struct union id class)
+         (%objcl-set-slot-value (pointer-to instance)
+                                foreign-name
+                                (typecase value
+                                  (c-pointer value)
+                                  (t (pointer-to value)))))
+         (otherwise
+          (with-foreign-object (slot-cell (typespec->c-type foreign-type))
+            (setf (mem-ref slot-cell (typespec->c-type foreign-type))
+                  value)
+            (%objcl-set-slot-value (pointer-to instance)
+                                   foreign-name
+                                   slot-cell)))))))
 
 
 (defmethod c2mop:slot-boundp-using-class ((class objective-c-class)
