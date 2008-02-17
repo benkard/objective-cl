@@ -24,7 +24,8 @@
                           #:inout #:const #:parse-typespec #:objective-c-class
                           #:bit-field #:opaque #:bycopy #:byref
                           #:primitive-invoke #:print-typespec-to-string
-                          #:nominally #:find-objc-meta-class))
+                          #:nominally #:find-objc-meta-class
+                          #:objcl-object-backed-by-lisp-class-p))
 (in-package #:mulk.objective-cl.tests)
 (in-root-suite)
 
@@ -371,22 +372,52 @@
                                   (list (find-objc-class "NSObject"))
                                   :direct-slots '((:name foos
                                                    :type list
-                                                   :initform nil
                                                    :initargs (:foos))
                                                   (:name foo-count
                                                    :foreign-type (:int ())))
                                   :metaclass (find-objc-meta-class "NSObject"))))
+
+    ;; Sanity checks.
     (is (typep class 'objective-c-class))
     (setq instance (is (invoke (invoke class 'alloc) 'init)))
+
+    ;; Object identity preservation.
+    (is (eql instance
+             (invoke instance 'self)))
+
     #+(or) (setq instance (is (invoke class :string-with-u-t-f-8-string "Mulk.")))
-    #+(or) (is (typep instance class))
-    #+(or)
-    (is (objc-equal instance
-                    (invoke (find-objc-class 'ns-string)
-                            :string-with-u-t-f-8-string "Mulk.")))
+    #+(or) (is (objc-equal instance
+                           (invoke (find-objc-class 'ns-string)
+                                   :string-with-u-t-f-8-string "Mulk.")))
+
+    ;; FIXME: What's wrong with the following line?  It makes CMUCL
+    ;; throw weird errors.
+    #+(or) (is (typep instance class-name))
+
+    ;; Slot initialisation.
+    (is (not (slot-boundp instance 'foos)))
+    (is (slot-boundp instance 'foo-count)) ;foreign slots are always SLOT-BOUNDP
+
+    ;; Slot handling.
     (setf (slot-value instance 'foos) '(a b c))
     (setf (slot-value instance 'foo-count) 3)
+
+    (is (slot-boundp instance 'foos))
+
+    ;; Native slots.
+    (is (objcl-object-backed-by-lisp-class-p instance))
+
     (is (equal (slot-value instance 'foos)
                (slot-value (invoke instance 'self) 'foos)))
+    (is (typep (slot-value (invoke instance 'self) 'foos)
+               'list))
+    (is (equal (slot-value (invoke instance 'self) 'foos)
+               '(a b c)))
+
+    ;; Foreign slots.
     (is (equal (slot-value instance 'foo-count)
-               (slot-value (invoke instance 'self) 'foo-count)))))
+               (slot-value (invoke instance 'self) 'foo-count)))
+    (is (typep (slot-value (invoke instance 'self) 'foo-count)
+               'integer))
+    (is (equal (slot-value (invoke instance 'self) 'foo-count)
+               3))))
