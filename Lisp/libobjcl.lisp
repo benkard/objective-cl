@@ -372,7 +372,7 @@ conventional case for namespace identifiers in Objective-C."
                                  (pointer-to
                                   (foreign-class-ensure-registered
                                    non-meta-superclass))))
-                               (find-class 'objective-c-class)))
+                               (find-class 'objective-c-meta-class)))
                ;; If there is no superclass, we are the root metaclass.
                ;; As we cannot assign ourselves as our own metaclass
                ;; (which is a pity, because it would be the correct thing

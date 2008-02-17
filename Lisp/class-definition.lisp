@@ -208,47 +208,102 @@
   (call-next-method))
 
 
+(defun ensure-objective-c-class-pair (name
+                                      direct-superclasses
+                                      direct-slots
+                                      direct-default-initargs)
+  (let* ((objective-c-superclasses
+          (remove-if-not #'(lambda (c) (typep c 'objective-c-class))
+                         direct-superclasses))
+         (superclass
+          (case (length objective-c-superclasses)
+            (0 (find-objc-class "NSObject"))
+            (1 (first objective-c-superclasses))
+            (otherwise
+             (error "At most one Objective-C class may be derived at once."))))
+         (ivars (remove-if-not #'(lambda (c)
+                                   (typep c 'foreign-direct-slot-definition))
+                               direct-slots))
+         (new-class-pointer
+          (%objcl-create-class (symbol->objc-class-name name)
+                               (pointer-to (find-if
+                                            #'(lambda (c)
+                                                (typep c 'objective-c-class))
+                                            direct-superclasses))
+                               0
+                               (null-pointer)
+                               (length ivars)
+                               (mapcar #'slot-definition-foreign-name
+                                       ivars)
+                               (mapcar #'(lambda (x)
+                                           (print-typespec-to-string
+                                            (slot-definition-foreign-type x)))
+                                       ivars)))
+         (metaclass
+          (ensure-class name
+                        :metaclass (class-of (class-of superclass))
+                        :pointer new-class-pointer
+                        :direct-superclasses (list (class-of superclass))))
+         (class
+          (ensure-class name
+                        :metaclass metaclass
+                        :pointer new-class-pointer
+                        :direct-slots direct-slots
+                        :direct-superclasses direct-superclasses
+                        :direct-default-initargs direct-default-initargs)))
+    class))
+
+
+(defmethod make-instance ((class objective-c-meta-class)
+                          &key pointer
+                               name
+                               direct-superclasses
+                               direct-slots
+                               direct-default-initargs
+                          &allow-other-keys)
+  (cond ((or (null pointer) (null-pointer-p pointer))
+         ;; If we're creating a new Objective-C class,
+         ;; (CALL-NEXT-METHOD) cannot possibly work, as the metaclass is
+         ;; not yet in existence.  Therefore, we first cancel whatever
+         ;; MAKE-INSTANCE is trying to do right now and take over from
+         ;; here ourselves.
+         ;;
+         ;; Of course, ENSURE-OBJECTIVE-C-CLASS-PAIR is going to call
+         ;; ENSURE-CLASS at some point, which will make MAKE-INSTANCE
+         ;; run again, but this time with a sane metaclass already set
+         ;; and ready to be instantiated.
+         ;;
+         ;; Note that this behaviour is (as far as I can tell)
+         ;; compatible with what Clozure CL does.
+         (let ((class
+                (ensure-objective-c-class-pair name
+                                               direct-superclasses
+                                               direct-slots
+                                               direct-default-initargs)))
+           (setf (foreign-class-registered-p class) nil)
+           class))
+        (t (call-next-method))))
+
+
 (defmethod initialize-instance :around ((class objective-c-class)
                                         &rest args
-                                        &key pointer name
-                                             direct-superclasses
-                                             direct-slots
+                                        &key pointer
+                                             (new-foreign-class-p nil)
                                         &allow-other-keys)
-  (let ((key-args (copy-list args)))
-    (cond
-      ((or (null pointer) (null-pointer-p pointer))
-       (setf (foreign-class-registered-p class) nil)
-       (let* ((ivars (remove-if-not #'(lambda (c)
-                                        (typep c 'foreign-direct-slot-definition))
-                                    direct-slots))
-              (new-class-pointer
-               (%objcl-create-class (symbol->objc-class-name name)
-                                    (pointer-to (find-if
-                                                 #'(lambda (c)
-                                                     (typep c 'objective-c-class))
-                                                 direct-superclasses))
-                                    0
-                                    (null-pointer)
-                                    (length ivars)
-                                    (mapcar #'slot-definition-foreign-name
-                                            ivars)
-                                    (mapcar #'(lambda (x)
-                                                (print-typespec-to-string
-                                                 (slot-definition-foreign-type x)))
-                                            ivars))))
-         (setf (getf key-args :pointer) new-class-pointer)))
-      (t
-       (setf (foreign-class-registered-p class) t)
-       ;; We scavenge the class and its superclasses for foreign slots and
-       ;; add them to our :DIRECT-SLOTS keyword argument.
-       (dolist (objc-slot (objcl-class-direct-slots/pointer pointer))      
-         (pushnew (list :name (foreign-slot-name->slot-name
-                               (objcl-slot-name objc-slot))
-                        :foreign-name (objcl-slot-name objc-slot)
-                        :foreign-type (parse-typespec (objcl-slot-type objc-slot)))
-                  (getf key-args :direct-slots)
-                  :key #'(lambda (slotd) (getf slotd :name))))))
-    (apply #'call-next-method class key-args)))
+  (cond ((not new-foreign-class-p)
+         (let ((key-args (copy-list args)))
+           ;; We scavenge the class and its superclasses for foreign
+           ;; slots and add them to our :DIRECT-SLOTS keyword argument.
+           (dolist (objc-slot (objcl-class-direct-slots/pointer pointer))
+             (pushnew (list :name (foreign-slot-name->slot-name
+                                   (objcl-slot-name objc-slot))
+                            :foreign-name (objcl-slot-name objc-slot)
+                            :foreign-type (parse-typespec (objcl-slot-type objc-slot)))
+                      (getf key-args :direct-slots)
+                      :key #'(lambda (slotd) (getf slotd :name))))
+           (prog1 (apply #'call-next-method class key-args)
+             (setf (foreign-class-registered-p class) t))))
+        (t (call-next-method))))
 
 
 (defmethod make-instance :before ((class objective-c-class)
@@ -282,3 +337,12 @@
             :initform 100))
   (:metaclass objective-c-classes::+ns-string)
   (:wrapped-foreign-class "NSString"))
+#+(or)
+(defclass mlk-string (ns-string)
+     ((foos :type list
+            :initform nil
+            :initarg :foos
+            :accessor mlk-string-foos)
+      (foo-count :foreign-type '(:integer ())))
+  (:metaclass #+(or) objective-c-class
+              ns:+ns-object))

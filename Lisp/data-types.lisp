@@ -166,7 +166,6 @@ a suitable class method instead as you would in Objective-C.
 (defclass objective-c-class (standard-class c-pointer-wrapper)
   ((registered-p :type boolean
                  :accessor foreign-class-registered-p
-                 :initform nil
                  :documentation
                  "Whether the class has been registered with the Objective-C runtime.")))
 
