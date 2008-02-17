@@ -747,6 +747,33 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
 (defun objcl-class-superclass (class)
   (objcl-class-superclass/pointer (pointer-to class)))
 
+(defun objcl-create-class (class-name superclass
+                           protocol-names
+                           ivar-names ivar-typespecs)
+  (let* ((ivar-typestrings (mapcar #'print-typespec-to-string ivar-typespecs)))
+    (with-foreign-string-pool (register-temporary-string
+                               allocate-temporary-string)
+      (with-foreign-objects ((%protocol-names :pointer (length protocol-names))
+                             (%ivar-names :pointer (length ivar-names))
+                             (%ivar-typestrings :pointer (length ivar-typestrings)))
+        (flet ((fill-foreign-array-from-list (array list type)
+                 (loop for element in list
+                       for i from 0
+                       do (setf (mem-aref array type i) element))))
+          (loop for (array . list) in (list (cons %protocol-names protocol-names)
+                                            (cons %ivar-names ivar-names)
+                                            (cons %ivar-typestrings ivar-typestrings))
+                do (fill-foreign-array-from-list array
+                                                 (mapcar #'allocate-temporary-string
+                                                         list)
+                                                 :pointer)))
+        (%objcl-create-class class-name
+                         (pointer-to superclass)
+                         (length protocol-names)
+                         %protocol-names
+                         (length ivar-names)
+                         %ivar-names
+                         %ivar-typestrings)))))
 
 ;;; (@* "Low-level Data Conversion")
 (eval-when (:compile-toplevel :load-toplevel)

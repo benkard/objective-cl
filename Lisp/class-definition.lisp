@@ -225,20 +225,16 @@
                                    (typep c 'foreign-direct-slot-definition))
                                direct-slots))
          (new-class-pointer
-          (%objcl-create-class (symbol->objc-class-name name)
-                               (pointer-to (find-if
-                                            #'(lambda (c)
-                                                (typep c 'objective-c-class))
-                                            direct-superclasses))
-                               0
-                               (null-pointer)
-                               (length ivars)
-                               (mapcar #'slot-definition-foreign-name
-                                       ivars)
-                               (mapcar #'(lambda (x)
-                                           (print-typespec-to-string
-                                            (slot-definition-foreign-type x)))
-                                       ivars)))
+          (objcl-create-class (symbol->objc-class-name name)
+                              (find-if #'(lambda (c)
+                                           (typep c 'objective-c-class))
+                                       direct-superclasses)
+                              nil
+                              (mapcar #'slot-definition-foreign-name
+                                      ivars)
+                              (mapcar #'(lambda (x)
+                                          (slot-definition-foreign-type x))
+                                      ivars)))
          (metaclass
           (ensure-class name
                         :metaclass (class-of (class-of superclass))
