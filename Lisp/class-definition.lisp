@@ -248,14 +248,18 @@
                         :direct-superclasses (list (class-of superclass))
                         :new-foreign-class-p t))
          (class
-          (ensure-class name
+          (ensure-class (intern (symbol-name name) '#:objective-c-classes)
                         :metaclass metaclass
                         :pointer new-class-pointer
                         :direct-slots direct-slots
                         :direct-superclasses direct-superclasses
                         :direct-default-initargs direct-default-initargs
                         :new-foreign-class-p t)))
-    class))
+    (unless (eq (intern (symbol-name name) '#:objective-c-classes) name)
+      (setf (find-class name) class)
+      (setf (find-class (intern (symbol-name (class-name metaclass))))
+            metaclass)
+      class)))
 
 
 (defmethod make-instance ((class objective-c-meta-class)
