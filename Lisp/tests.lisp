@@ -368,7 +368,7 @@
     (setq class
           (is (c2mop:ensure-class class-name
                                   :direct-superclasses
-                                  (list (find-objc-class "NSString"))
+                                  (list (find-objc-class "NSObject"))
                                   :direct-slots '((:name foos
                                                    :type list
                                                    :initform nil
@@ -377,8 +377,10 @@
                                                    :foreign-type (:int ())))
                                   :metaclass (find-objc-meta-class "NSObject"))))
     (is (typep class 'objective-c-class))
-    (setq instance (is (invoke class :string-with-u-t-f-8-string "Mulk.")))
-    #+nil (is (typep instance class))
+    (setq instance (is (invoke (invoke class 'alloc) 'init)))
+    #+(or) (setq instance (is (invoke class :string-with-u-t-f-8-string "Mulk.")))
+    #+(or) (is (typep instance class))
+    #+(or)
     (is (objc-equal instance
                     (invoke (find-objc-class 'ns-string)
                             :string-with-u-t-f-8-string "Mulk.")))
