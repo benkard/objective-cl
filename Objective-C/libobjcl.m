@@ -499,6 +499,14 @@ objcl_get_slot_value (id obj, const char *ivar_name, void *value_out)
      value_out is actually a (void *) rather than a (void **).
      Likewise, the result that is copied to value_out is the slot value
      itself, not a pointer to it. */
+
+  /* NOTE UPDATE: Actually, it's trickier than that.  The docs for
+     NeXTstep 3.3 say: ``These functions cannot reliably be used to set
+     and get instance variables that are not pointers.''  This makes the
+     behaviour and documentation a bit less confusing, because it means
+     that value_out is, in fact, assigned a pointer to the value of the
+     slot under the assumption that the slot itself references its value
+     via a pointer. */
   object_getInstanceVariable (obj, ivar_name, value_out);
 }
 

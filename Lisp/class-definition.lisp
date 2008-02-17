@@ -217,7 +217,7 @@
   (let ((key-args (copy-list args)))
     (cond
       ((or (null pointer) (null-pointer-p pointer))
-       (setf (slot-value class 'registered-p) nil)
+       (setf (foreign-class-registered-p class) nil)
        (let* ((ivars (remove-if-not #'(lambda (c)
                                         (typep c 'foreign-direct-slot-definition))
                                     direct-slots))
@@ -238,7 +238,7 @@
                                             ivars))))
          (setf (getf key-args :pointer) new-class-pointer)))
       (t
-       (setf (slot-value class 'registered-p) t)
+       (setf (foreign-class-registered-p class) t)
        ;; We scavenge the class and its superclasses for foreign slots and
        ;; add them to our :DIRECT-SLOTS keyword argument.
        (dolist (objc-slot (objcl-class-direct-slots/pointer pointer))      
@@ -250,56 +250,6 @@
                   :key #'(lambda (slotd) (getf slotd :name))))))
     (apply #'call-next-method class key-args)))
 
-(defmethod initialize-instance ((class objective-c-class)
-                                &key documentation
-                                     name
-                                     plist
-                                     direct-superclasses
-                                     direct-slots
-                                     direct-default-initargs
-                                     pointer
-                                     wrapped-foreign-class)
-  (declare (ignore documentation name plist direct-superclasses direct-slots
-                   direct-default-initargs pointer wrapped-foreign-class))
-  (call-next-method))
-
-(defmethod reinitialize-instance ((class objective-c-class)
-                                  &key documentation
-                                       name
-                                       plist
-                                       direct-superclasses
-                                       direct-slots
-                                       direct-default-initargs
-                                       pointer
-                                       wrapped-foreign-class)
-  (declare (ignore documentation name plist direct-superclasses direct-slots
-                   direct-default-initargs pointer wrapped-foreign-class))
-  (call-next-method))
-
-(defmethod initialize-instance ((class objective-c-meta-class)
-                                &key documentation
-                                     name
-                                     plist
-                                     direct-superclasses
-                                     direct-slots
-                                     direct-default-initargs
-                                     pointer)
-  (declare (ignore documentation name plist direct-superclasses direct-slots
-                   direct-default-initargs pointer))
-  (call-next-method))
-
-(defmethod reinitialize-instance ((class objective-c-meta-class)
-                                  &key documentation
-                                       name
-                                       plist
-                                       direct-superclasses
-                                       direct-slots
-                                       direct-default-initargs
-                                       pointer)
-  (declare (ignore documentation name plist direct-superclasses direct-slots
-                   direct-default-initargs pointer))
-  (call-next-method))
-
 
 (defmethod make-instance :before ((class objective-c-class)
                                   &key
@@ -308,8 +258,11 @@
 
 
 (defun foreign-class-ensure-registered (class)
-  ;; FIXME
-  )
+  (with-exclusive-access (class)
+    (unless (foreign-class-registered-p class)
+      (setf (foreign-class-registered-p class) t)
+      (%objcl-finalise-class (pointer-to class))))
+  class)
 
 
 ;;;; (@* "Quick tests")

@@ -18,26 +18,26 @@
 (in-package #:mulk.objective-cl)
 
 
+(defvar *global-lock* (cons nil nil))
+
+
 (defmacro atomically (&body body)
-  ;; FIXME
-  `(progn ,@body)
-  #+(or)
-  `(prog2
-     (objcl-acquire-global-lock)
-     ,@body
-     (objcl-release-global-lock)))
+  `(with-exclusive-access (*global-lock*)
+     ,@body))
 
 
 (defmacro with-exclusive-access ((&rest objects) &body body)
   (etypecase objects
     (null `(progn ,@body))
     (cons `(with-lock ,(first objects)
-             (with-exclusive-access (,(rest objects))
+             (with-exclusive-access ,(rest objects)
                ,@body)))))
 
 
 (defmacro with-lock (object &body body)
   ;; FIXME: Implement LOCK-FOR-OBJECT.
+  `(progn ,@body)
+  #+(or)
   (let ((lock (gensym "LOCK")))
     `(let ((,lock (lock-for-object ,object)))
        (prog2

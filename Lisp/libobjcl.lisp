@@ -309,8 +309,12 @@ conventional case for namespace identifiers in Objective-C."
     (if (objc-pointer-null class-ptr)
         nil
         (let ((class-name (objc-class-name->symbol class-name-string))
-              (superclass (or (objcl-class-superclass/pointer class-ptr)
-                              (find-class 'id))))
+              (superclass (let ((potential-superclass
+                                 (objcl-class-superclass/pointer class-ptr)))
+                            (if potential-superclass
+                                (foreign-class-ensure-registered
+                                 potential-superclass)
+                                (find-class 'id)))))
           (or (find-class class-name nil)
               (c2mop:ensure-class class-name
                                   :metaclass (class-name
@@ -365,7 +369,9 @@ conventional case for namespace identifiers in Objective-C."
                (superclass (if non-meta-superclass
                                (find-objc-meta-class
                                 (%objcl-class-name
-                                 (pointer-to non-meta-superclass)))
+                                 (pointer-to
+                                  (foreign-class-ensure-registered
+                                   non-meta-superclass))))
                                (find-class 'objective-c-class)))
                ;; If there is no superclass, we are the root metaclass.
                ;; As we cannot assign ourselves as our own metaclass
