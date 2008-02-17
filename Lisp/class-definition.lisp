@@ -150,8 +150,10 @@
                                           foreign-effective-slot-definition))
   (with-slots (foreign-name foreign-type) effective-slot-definition
     ;; FIXME: Do proper value conversion here (like LOW-LEVEL-INVOKE).
-    (cffi:with-foreign-object (return-value-cell (typespec->c-type foreign-type))
-      (%objcl-get-slot-value (pointer-to instance) foreign-name return-value-cell)
+    (cffi:with-foreign-object
+        (return-value-cell (typespec->c-type foreign-type))
+      (%objcl-get-slot-value (pointer-to instance)
+                             foreign-name return-value-cell)
       (mem-ref return-value-cell (typespec->c-type foreign-type)))))
 
 
@@ -175,19 +177,29 @@
       ;; value, this is good news.  For everything else, it means just a
       ;; bit more work.
       (case (typespec-primary-type foreign-type)
-        ((struct union id class)
+        ((struct union id class array)
          (%objcl-set-slot-value (pointer-to instance)
                                 foreign-name
                                 (typecase value
                                   (c-pointer value)
                                   (t (pointer-to value)))))
-         (otherwise
+         ((:pointer)
+          ;; FIXME: Does this make sense?  No.  Does it work?  Must
+          ;; check.
           (with-foreign-object (slot-cell (typespec->c-type foreign-type))
             (setf (mem-ref slot-cell (typespec->c-type foreign-type))
                   value)
             (%objcl-set-slot-value (pointer-to instance)
                                    foreign-name
-                                   slot-cell)))))))
+                                   slot-cell)))
+         (otherwise
+          ;; BIG RED FIXME: WTF is _wrong_ with this
+          ;; object_getInstanceVariable stuff?
+          ;;
+          ;; Pure lossage!
+          (%objcl-set-slot-value (pointer-to instance)
+                                 foreign-name
+                                 (make-pointer value)))))))
 
 
 (defmethod c2mop:slot-boundp-using-class ((class objective-c-class)
