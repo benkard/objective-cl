@@ -734,6 +734,14 @@ objcl_create_class (const char *class_name,
       argv[3 + 2*i + 1] = (void *) &ivar_typespecs[i];
     }
 
+  TRACE (@"Arg 0: %s", *((char **) argv[0]));
+  TRACE (@"Arg 1: %s", *((char **) argv[1]));
+  TRACE (@"Arg 2: %d", *((int *) argv[2]));
+  for (i = 3; i < 3 + 2*ivar_number; i++)
+    {
+      TRACE (@"Arg %d: %s", i, *((char **) argv[i]));
+    }
+
   status = ffi_prep_cif (&cif, FFI_DEFAULT_ABI, ivar_number*2 + 3, &ffi_type_uchar, arg_types);
   if (status != FFI_OK)
     {
@@ -742,7 +750,9 @@ objcl_create_class (const char *class_name,
                     userInfo: nil] raise];
     }
 
+  TRACE (@"ObjcUtilities_new_class");
   ffi_call (&cif, FFI_FN (ObjcUtilities_new_class), &return_value, argv);
+  TRACE (@"ObjcUtilities_new_class end");
 
   NSString *ns_class_name = [NSString stringWithUTF8String: class_name];
   [method_lists setObject:

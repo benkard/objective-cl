@@ -75,7 +75,8 @@
   ;; By the way, is using the return value of SETF considered bad style?
   (let* ((constructor (case class
                         ((exception) #'make-condition)
-                        (otherwise #'make-instance)))(*in-make-pointer-wrapper-p* t)
+                        (otherwise #'make-instance)))
+         (*in-make-pointer-wrapper-p* t)
          (new-wrapper (apply constructor
                              ;; We do not create direct instances of ID
                              ;; anymore.  Instead, we look for the

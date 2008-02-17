@@ -763,13 +763,15 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
                  (loop for element in list
                        for i from 0
                        do (setf (mem-aref array type i) element))))
-          (loop for (array . list) in (list (cons %protocol-names protocol-names)
-                                            (cons %ivar-names ivar-names)
-                                            (cons %ivar-typestrings ivar-typestrings))
-                do (fill-foreign-array-from-list array
-                                                 (mapcar #'allocate-temporary-string
-                                                         list)
-                                                 :pointer)))
+          (loop for (array . list)
+                  in (list (cons %protocol-names protocol-names)
+                           (cons %ivar-names ivar-names)
+                           (cons %ivar-typestrings ivar-typestrings))
+                do (fill-foreign-array-from-list
+                        array
+                        (mapcar #'allocate-temporary-string
+                                list)
+                        :pointer)))
         (%objcl-create-class class-name
                              (pointer-to superclass)
                              (length protocol-names)
