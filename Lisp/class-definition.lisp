@@ -193,13 +193,11 @@
 
 (defmethod c2mop:slot-makunbound-using-class ((class objective-c-class)
                                               instance
-                                              effective-slot-definition)
+                                              (effective-slot-definition
+                                               foreign-effective-slot-definition))
   (declare (ignore instance))
-  (etypecase effective-slot-definition
-    (c2mop:standard-effective-slot-definition (call-next-method))
-    (foreign-effective-slot-definition
-     (cerror "Continue without doing anything"
-             "Tried to SLOT-MAKUNBOUND a foreign slot"))))
+  (cerror "Continue without doing anything"
+          "Tried to SLOT-MAKUNBOUND a foreign slot"))
 
 
 (defmethod c2mop:compute-slots ((class objective-c-class))
@@ -258,8 +256,9 @@
     (unless (eq (intern (symbol-name name) '#:objective-c-classes) name)
       (setf (find-class name) class)
       (setf (find-class (intern (symbol-name (class-name metaclass))))
-            metaclass)
-      class)))
+            metaclass))
+    (%objcl-class-set-backed-by-lisp-class new-class-pointer 1)
+    class))
 
 
 (defmethod make-instance ((class objective-c-meta-class)
