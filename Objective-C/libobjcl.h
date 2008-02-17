@@ -90,7 +90,7 @@ objcl_class_name (Class class);
 Class
 objcl_class_superclass (Class class);
 
-MetaClass
+Class
 objcl_class_metaclass (Class class);
 
 const char *

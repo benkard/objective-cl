@@ -284,7 +284,7 @@ objcl_class_superclass (Class class)
 }
 
 
-MetaClass
+Class
 objcl_class_metaclass (Class class)
 {
 #ifdef __NEXT_RUNTIME__
