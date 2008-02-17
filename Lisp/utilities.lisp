@@ -275,12 +275,21 @@ invocations will return numbers.)
 
 (defmethod print-object ((exception exception) stream)
   (print-unreadable-object (exception stream)
-    (with-slots (pointer) exception
+    ;; FIXME: Inexplicably, WITH-SLOTS doesn't work for exceptions.  Is
+    ;; direct slot access disallowed for instances of type CONDITION?
+    (with-accessors ((pointer pointer-to)) exception
       (format stream "~S ~A {~X}"
               (type-of exception)
               (primitive-invoke (primitive-invoke exception "name" 'id)
                                 "UTF8String" :string)
               (cffi:pointer-address pointer)))))
+
+
+(defmethod describe-object :after ((exception exception) stream)
+  (format stream "Objective-C runtime type: ~S~&~
+                  Reason: ~S"
+          (invoke-by-name (invoke-by-name exception "name") "UTF8String")
+          (invoke-by-name (invoke-by-name exception "reason") "UTF8String")))
 
 
 (defmethod print-object ((struct foreign-struct) stream)
