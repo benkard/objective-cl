@@ -55,6 +55,16 @@ NSRecursiveLock *objcl_current_exception_lock = nil;
 static NSMutableDictionary *method_lists = nil;
 static NSMutableDictionary *method_list_lengths = nil;
 
+/* A class is considered Lisp-backed if some of its methods are
+   implemented as Lisp callbacks.  This is true if and only if
+   @selector(retain) and @selector(release) are overridden by
+   Objective-CL.  In this case, the corresponding Lisp objects are
+   stored in a regular hash table instead of a weak one, as they may
+   hold data (like CLOS slots) that we can't do without as long as the
+   Objective-C instance is referenced from anywhere (where `anywhere'
+   includes both the Lisp and Objective-C worlds). */
+static NSMutableSet *lisp_backed_classes = nil;
+
 static int init_count = 0;
 
 
@@ -76,7 +86,7 @@ objcl_initialise_runtime (void)
       objcl_current_exception_lock = [[NSRecursiveLock alloc] init];
       method_lists = [[NSMutableDictionary alloc] init];
       method_list_lengths = [[NSMutableDictionary alloc] init];
-      objcl_initialise_instance_wrappers ();
+      lisp_backed_classes = [[NSMutableSet alloc] init];
       init_count = 1;
     }
   else
@@ -87,10 +97,10 @@ objcl_initialise_runtime (void)
 static void
 release_unless_null (id *object)
 {
-  if (*object)
+  if (*object != nil)
     {
       [*object release];
-      *object = NULL;
+      *object = nil;
     }
 }
 
@@ -106,7 +116,7 @@ objcl_shutdown_runtime (void)
       release_unless_null (&objcl_oom_exception);
       release_unless_null (&method_lists);
       release_unless_null (&method_list_lengths);
-      objcl_shutdown_instance_wrappers ();
+      release_unless_null (&lisp_backed_classes);
     }
   else if (init_count < 0)
     init_count = 0;
@@ -853,19 +863,22 @@ objcl_finalise_class (Class class)
 int
 objcl_class_backed_by_lisp_class_p (Class class)
 {
-  return [class __objcl_isBackedByLispClass];
+  return [lisp_backed_classes containsObject: class];
 }
 
 
 void
 objcl_class_set_backed_by_lisp_class (Class class, int backed_p)
 {
-  [class __objcl_setBackedByLispClass: backed_p];
+  if (backed_p)
+    [lisp_backed_classes addObject: class];
+  else
+    [lisp_backed_classes removeObject: class];
 }
 
 
 int
 objcl_object_backed_by_lisp_class_p (id object)
 {
-  return [[object class] __objcl_isBackedByLispClass];
+  return objcl_class_backed_by_lisp_class_p ([object class]);
 }
