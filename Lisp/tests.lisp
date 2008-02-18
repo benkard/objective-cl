@@ -376,11 +376,6 @@
     (is (eql instance
              (invoke instance 'self)))
 
-    #+(or) (setq instance (is (invoke class :string-with-u-t-f-8-string "Mulk.")))
-    #+(or) (is (objc-equal instance
-                           (invoke (find-objc-class 'ns-string)
-                                   :string-with-u-t-f-8-string "Mulk.")))
-
     ;; FIXME: What's wrong with the following line?  It makes CMUCL
     ;; throw weird errors.
     #+(or) (is (typep instance class-name))
