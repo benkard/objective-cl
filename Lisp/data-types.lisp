@@ -43,9 +43,9 @@
   (declare (ignore environment))
   ;; (TYPE-OF INSTANCE) works because MAKE-POINTER-WRAPPER accepts
   ;; subclasses of ID as well as ID itself.
-  `(make-pointer-wrapper ',(type-of instance)
-                         :pointer (make-pointer
-                                   ,(pointer-address (pointer-to instance)))))
+  `(intern-pointer-wrapper ',(type-of instance)
+                           :pointer (make-pointer
+                                     ,(pointer-address (pointer-to instance)))))
 
 
 ;; The following may be needed by some implementations (namely Allegro
@@ -123,9 +123,9 @@ The following calls are all equivalent:
 
 (defmethod make-load-form ((selector selector) &optional environment)
   (declare (ignore environment))
-  `(make-pointer-wrapper 'selector
-                         :pointer (make-pointer
-                                   ,(pointer-address (pointer-to selector)))))
+  `(intern-pointer-wrapper 'selector
+                           :pointer (make-pointer
+                                     ,(pointer-address (pointer-to selector)))))
 
 
 (defclass id (c-pointer-wrapper)
