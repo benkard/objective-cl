@@ -863,7 +863,7 @@ objcl_finalise_class (Class class)
 int
 objcl_class_backed_by_lisp_class_p (Class class)
 {
-  return [lisp_backed_classes containsObject: class];
+  return [lisp_backed_classes containsObject: [NSValue valueWithPointer: class]];
 }
 
 
@@ -871,9 +871,9 @@ void
 objcl_class_set_backed_by_lisp_class (Class class, int backed_p)
 {
   if (backed_p)
-    [lisp_backed_classes addObject: class];
+    [lisp_backed_classes addObject: [NSValue valueWithPointer: class]];
   else
-    [lisp_backed_classes removeObject: class];
+    [lisp_backed_classes removeObject: [NSValue valueWithPointer: class]];
 }
 
 
