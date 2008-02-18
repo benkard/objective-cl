@@ -392,15 +392,9 @@ easier to use with __apply__.
                       (setf (cffi:mem-aref objc-arg-ptrs :pointer i)
                             arg))
                      ((array)
-                      ;; This, too, might someday be ripped out and
-                      ;; replaced with something more flexible.  For
-                      ;; now, it's the same as for structs and unions.
-                      ;; That's the nice thing about opaque C data
-                      ;; structures: As a binding writer, we just pass
-                      ;; them around without caring about their
-                      ;; structure.
-                      (setf (cffi:mem-aref objc-arg-ptrs :pointer i)
-                            arg))
+                      (error "Method ~A of object ~A tried to accept an array ~
+                              as argument #~D.  It must be mistaken."
+                             selector receiver i))
                      ((id)
                       ;; This case is actually interesting.  We can do a
                       ;; lot of automatic conversion between different
