@@ -253,20 +253,6 @@ an __exception__, you can simply send it the `self' message.
 (defclass tagged-union (tagged-struct) ())
 
 
-;; FIXME: Either document or throw away.  (Does the C language actually
-;; support returning arrays from functions?  It certainly does not
-;; support passing them as arguments.)
-(defclass foreign-array (foreign-value)
-  ((element-type :type symbol
-                 :reader foreign-array-element-type
-                 :initarg :element-type)
-   (length :type integer
-           :reader foreign-array-length
-           :initarg :type)
-   (typespec :reader foreign-value-typespec
-             :initarg :typespec)))
-
-
 ;; FIXME: Document.
 (defgeneric foreign-value-lisp-managed-p (foreign-value))
 (defmethod foreign-value-lisp-managed-p ((foreign-value foreign-value))

@@ -460,13 +460,17 @@ easier to use with __apply__.
                                                   return-c-type)
                                     receiver
                                     selector))
-            ((struct union array)
+            ((struct union)
              ;; The caller is responsible for preventing the return
              ;; value from being garbage-collected by setting
              ;; FOREIGN-VALUE-LISP-MANAGED-P to false.
              (make-struct-wrapper objc-struct-return-value-cell
                                   return-type
                                   t))
+            ((array)
+             (error "Method ~A of object ~A tried to return an array.  ~
+                     It must be mistaken."
+                    selector receiver))
             ((:void) (values))
             (otherwise (cffi:mem-ref objc-return-value-cell
                                      return-c-type))))))))
