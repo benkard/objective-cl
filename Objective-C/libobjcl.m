@@ -288,7 +288,7 @@ Class
 objcl_class_metaclass (Class class)
 {
 #ifdef __NEXT_RUNTIME__
-  return objc_getMetaClass (objcl_class_name (class));
+  return object_getClass (class);
 #else
   return class_get_meta_class (class);
 #endif
@@ -686,8 +686,7 @@ objcl_create_class (const char *class_name,
   int i;
   Class class;
 
-  objc_allocateClassPair (superclass, class_name, 0);
-  class = objcl_find_class (class_name);
+  class = objc_allocateClassPair (superclass, class_name, 0);
 
   for (i = 0; i < ivar_number; i++)
     preclass_addIvar (class,
@@ -811,7 +810,8 @@ objcl_finalise_class (Class class)
 {
 #ifdef __NEXT_RUNTIME__
   /* FIXME: Should we do this if class is a metaclass? */
-  objc_registerClassPair (class);
+  if (!objcl_object_is_meta_class (class))
+    objc_registerClassPair (class);
 #else
   int i;
   int method_count;
