@@ -340,7 +340,7 @@
 (defmethod make-instance :before ((class objective-c-class)
                                   &key
                                   &allow-other-keys)
-  (unless (typep class 'objective-c-meta-class)
+  (unless (subtypep class 'objective-c-meta-class)
     (foreign-class-ensure-registered class)))
 
 
@@ -348,6 +348,7 @@
   (with-exclusive-access (class)
     (unless (foreign-class-registered-p class)
       (setf (foreign-class-registered-p class) t)
+      (%objcl-finalise-class (pointer-to (class-of class)))
       (%objcl-finalise-class (pointer-to class))))
   class)
 

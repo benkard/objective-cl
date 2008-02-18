@@ -755,8 +755,7 @@ objcl_create_class (const char *class_name,
   TRACE (@"ObjcUtilities_new_class end");
 
   NSString *ns_class_name = [NSString stringWithUTF8String: class_name];
-  [method_lists setObject:
-                  [NSValue valueWithPointer: ObjcUtilities_alloc_method_list]
+  [method_lists setObject: [NSValue valueWithPointer: nil]
                 forKey: ns_class_name];
   [method_list_lengths setObject: [NSNumber numberWithInt: 0]
                        forKey: ns_class_name];
@@ -782,18 +781,26 @@ objcl_add_method (Class class,
 #ifdef __NEXT_RUNTIME__
   preclass_addMethod (class, method_name, imp, signature);
 #else
-  NSString *class_name = [NSString stringWithUTF8String: objcl_class_name (class)];
-  MethodList *method_list = [[method_lists objectForKey: class_name] pointerValue];
-  int index = [[method_list_lengths objectForKey: class_name] intValue];
+  NSString *class_name;
+  struct ObjCLMethod **methods;
+  int index;
 
-  ObjcUtilities_insert_method_in_list
-    (method_list,
-     index,
-     objcl_selector_name (method_name),
-     ObjcUtilities_build_runtime_Objc_signature (signature),
-     imp);
+  class_name = [NSString stringWithUTF8String: objcl_class_name (class)];
+  index = [[method_list_lengths objectForKey: class_name] intValue];
+  methods = [[method_lists objectForKey: class_name] pointerValue];
 
-  [method_list_lengths setObject: [NSNumber numberWithInt: index]
+  methods = realloc (methods, (index + 1) * sizeof (struct ObjCLMethod *));
+  methods[index] = malloc (sizeof (struct ObjCLMethod));
+
+  methods[index]->signature = malloc (strlen (signature) + 1);
+
+  methods[index]->method_name = method_name;
+  strcpy (methods[index]->signature, signature);
+  methods[index]->imp = imp;
+
+  [method_lists setObject: [NSValue valueWithPointer: methods]
+                forKey: class_name];
+  [method_list_lengths setObject: [NSNumber numberWithInt: (index + 1)]
                        forKey: class_name];
 #endif
 }
@@ -806,11 +813,36 @@ objcl_finalise_class (Class class)
   /* FIXME: Should we do this if class is a metaclass? */
   objc_registerClassPair (class);
 #else
-  NSString *class_name = [NSString stringWithUTF8String:
-                                     objcl_class_name (class)];
-  ObjcUtilities_register_method_list
-    (class, [[method_lists objectForKey: class_name]
-              pointerValue]);
+  int i;
+  int method_count;
+  NSString *class_name;
+  MethodList *method_list;
+  struct ObjCLMethod **methods;
+
+  class_name = [NSString stringWithUTF8String: objcl_class_name (class)];
+  methods = [[method_lists objectForKey: class_name] pointerValue];
+
+  if (methods)
+    {
+      method_list = ObjcUtilities_alloc_method_list (method_count);
+      method_count = [[method_list_lengths objectForKey: class_name] intValue];
+
+      for (i = 0; i < method_count; i++)
+        {
+          ObjcUtilities_insert_method_in_list
+            (method_list,
+             i,
+             objcl_selector_name (methods[i]->method_name),
+             ObjcUtilities_build_runtime_Objc_signature (methods[i]->signature),
+             methods[i]->imp);
+
+          free (methods[i]->signature);
+          free (methods[i]);
+        }
+
+      free (methods);
+      ObjcUtilities_register_method_list (class, method_list);
+    }
 
   [method_lists removeObjectForKey: class_name];
   [method_list_lengths removeObjectForKey: class_name];

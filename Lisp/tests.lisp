@@ -25,7 +25,8 @@
                           #:bit-field #:opaque #:bycopy #:byref
                           #:primitive-invoke #:print-typespec-to-string
                           #:nominally #:find-objc-meta-class
-                          #:objcl-object-backed-by-lisp-class-p))
+                          #:objcl-object-backed-by-lisp-class-p
+                          #:foreign-class-registered-p))
 (in-package #:mulk.objective-cl.tests)
 (in-root-suite)
 
@@ -368,9 +369,16 @@
                                                    :foreign-type (:int ())))
                                   :metaclass (find-objc-meta-class "NSObject"))))
 
+    ;; Class initialisation.
+    (is (not (foreign-class-registered-p class)))
+
     ;; Sanity checks.
     (is (typep class 'objective-c-class))
     (setq instance (is (invoke (invoke class 'alloc) 'init)))
+
+    ;; Class finalisation.  (Should be automatic upon instance
+    ;; creation.)
+    (is (foreign-class-registered-p class))
 
     ;; Object identity preservation.
     (is (eql instance

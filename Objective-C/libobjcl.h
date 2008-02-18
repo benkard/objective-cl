@@ -46,6 +46,14 @@ typedef struct objc_ivar *IVAR_T;
 #endif
 
 
+struct ObjCLMethod
+{
+  SEL method_name;
+  char *signature;
+  IMP imp;
+};
+
+
 extern NSException *objcl_oom_exception;
 extern id objcl_current_exception;
 extern NSRecursiveLock *objcl_current_exception_lock;
