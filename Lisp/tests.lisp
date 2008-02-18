@@ -352,15 +352,6 @@
 
 
 (deftest class-definition ()
-  ;; FIXME: This test is broken.
-  ;;
-  ;; Reason:
-  ;;
-  ;;  OBJECTIVE-CL> (invoke-by-name
-  ;;                 (invoke #<EXCEPTION NSGenericException {845E8E0}> 'reason)
-  ;;                 "UTF8String")
-  ;;  "subclass MLKTestString0(instance) should override length"
-  ;;
   (let ((class-name (intern (format nil "~A~D"
                                     '#:mlk-test-string
                                     (incf *class-counter*))))
