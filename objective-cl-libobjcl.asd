@@ -115,6 +115,14 @@
   :serial t)
 
 
+(defun sanitise-dir-name (pathname)
+  ;; "/bla/stuff///" -> "/bla/stuff"
+  (loop with dir-name = (namestring pathname)
+        while (char= #\/ (elt dir-name (1- (length dir-name))))
+        do (setq dir-name (subseq dir-name 0 (1- (length dir-name))))
+        finally (return-from sanitise-dir-name dir-name)))
+
+
 (defmethod perform :before (o (c objc-source-file))
   ;; Copy the Objective-C sources to the target directory.
   (let ((output-files
@@ -162,7 +170,7 @@
                                   source-dir
                                   output-parent-dir)))
                            (zerop (run-shell-command "cp -R -P -f -p '~A' '~A/'"
-                                                     source-dir
+                                                     (sanitise-dir-name source-dir)
                                                      output-parent-dir)))))
           ;; We couldn't use cp.  Copy the files manually.
           (let ((sources
