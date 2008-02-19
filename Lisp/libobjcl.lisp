@@ -320,17 +320,27 @@ conventional case for namespace identifiers in Objective-C."
 (declaim (ftype (function (string) (or null objective-c-class))
                 find-objc-class-by-name))
 (defun find-objc-class-by-name (class-name-string)
-  (let ((class-ptr (%objcl-find-class class-name-string)))
-    (if (objc-pointer-null class-ptr)
-        nil
-        (let ((class-name (objc-class-name->symbol class-name-string))
-              (superclass (let ((potential-superclass
-                                 (objcl-class-superclass/pointer class-ptr)))
-                            (if potential-superclass
-                                (foreign-class-ensure-registered
-                                 potential-superclass)
-                                (find-class 'id)))))
-          (or (find-class class-name nil)
+  ;; Note that this function is able to find classes that are not yet
+  ;; registered with the Objective-C runtime simply by looking for an
+  ;; extant CLOS class definition.
+  ;;
+  ;; This is important, as FIND-OBJC-CLASS-BY-NAME is called more often
+  ;; than you might think.  For instance, doing a (PRIMITIVE-INVOKE
+  ;; class ...) will cause (OBJECT-GET-CLASS class) to be called at some
+  ;; point, which would otherwise fail.  Of course, doing a method
+  ;; invocation on the class will cause the class to be registered along
+  ;; the way as well.
+  (let ((class-name (objc-class-name->symbol class-name-string))
+        (class-ptr (%objcl-find-class class-name-string)))
+    (or (find-class class-name nil)
+        (if (objc-pointer-null class-ptr)
+            nil
+            (let ((superclass (let ((potential-superclass
+                                     (objcl-class-superclass/pointer class-ptr)))
+                                (if potential-superclass
+                                    (foreign-class-ensure-registered
+                                     potential-superclass)
+                                    (find-class 'id)))))
               (c2mop:ensure-class class-name
                                   :metaclass (class-name
                                               (find-objc-meta-class
