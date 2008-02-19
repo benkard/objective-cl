@@ -146,6 +146,7 @@
                      ;; But first, do some sanity checks about the
                      ;; environment.
                      (ignore-errors
+                       (ensure-directories-exist output-parent-dir)
                        (or (and (zerop (run-shell-command "ls -d -i '~A'"
                                                           source-dir))
                                 (zerop (run-shell-command "ls -d -i '~A'"
