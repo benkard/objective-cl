@@ -36,23 +36,26 @@
               (null (output-files o c)))
     (zerop
      ;; Run `make' at the top level of the directory tree.
-     (run-shell-command "make -C '~A'"
-                        (namestring
-                         (make-pathname
-                          :directory
-                          (pathname-directory
-                           (merge-pathnames
-                            (make-pathname :directory '(:relative ".." ".."))
-                            (first
-                             (output-files
-                              o
-                              (find "libobjcl"
-                                    (module-components
-                                     (first
+     (let (#+allegro (asdf::*verbose-out* (if (find-package '#:swank)
+                                              nil
+                                              asdf::*verbose-out*)))
+       (run-shell-command "make -C '~A'"
+                          (namestring
+                           (make-pathname
+                            :directory
+                            (pathname-directory
+                             (merge-pathnames
+                              (make-pathname :directory '(:relative ".." ".."))
+                              (first
+                               (output-files
+                                o
+                                (find "libobjcl"
                                       (module-components
-                                       (find-system "objective-cl-libobjcl"))))
-                                    :key #'component-name
-                                    :test #'string=)))))))))))
+                                       (first
+                                        (module-components
+                                         (find-system "objective-cl-libobjcl"))))
+                                      :key #'component-name
+                                      :test #'string=))))))))))))
 
 (defmethod output-files :around ((o compile-op) (c objc-source-file))
   ;; If this doesn't get called at all, we're kind of screwed.
@@ -129,7 +132,10 @@
              (output-dir
               (merge-pathnames #p"../../"
                                (directory-namestring (first output-files))))
-             (output-parent-dir (merge-pathnames #p"../" output-dir)))
+             (output-parent-dir (merge-pathnames #p"../" output-dir))
+             #+allegro (asdf::*verbose-out* (if (find-package '#:swank)
+                                                nil
+                                                asdf::*verbose-out*)))
         ;; First try using cp to copy the files over to the compilation
         ;; directory.  If that fails, do it manually, file by file.
         (unless (and (not (position #\' (namestring source-dir))) ; a safety measure
@@ -139,23 +145,24 @@
                      ;;
                      ;; But first, do some sanity checks about the
                      ;; environment.
-                     (or (and (zerop (run-shell-command "ls -d -i '~A'"
-                                                    source-dir))
-                              (zerop (run-shell-command "ls -d -i '~A'"
-                                                        output-parent-dir))
-                              (zerop (run-shell-command "echo"))
-                              (zerop (run-shell-command "echo | awk '{ print $1 }'"))
-                              (zerop
-                               (run-shell-command
-                                "test ~
-                                 \"x$(ls -d -i '~A' | awk '{ print $1 }')\" ~
-                                 = ~
-                                 \"x$(ls -d -i '~A' | awk '{ print $1 }')\""
-                                source-dir
-                                output-parent-dir)))
-                         (zerop (run-shell-command "cp -R -P -f -p '~A' '~A/'"
-                                                   source-dir
-                                                   output-parent-dir))))
+                     (ignore-errors
+                       (or (and (zerop (run-shell-command "ls -d -i '~A'"
+                                                          source-dir))
+                                (zerop (run-shell-command "ls -d -i '~A'"
+                                                          output-parent-dir))
+                                (zerop (run-shell-command "echo"))
+                                (zerop (run-shell-command "echo | awk '{ print $1 }'"))
+                                (zerop
+                                 (run-shell-command
+                                  "test ~
+                                     \"x$(ls -d -i '~A' | awk '{ print $1 }')\" ~
+                                     = ~
+                                     \"x$(ls -d -i '~A' | awk '{ print $1 }')\""
+                                  source-dir
+                                  output-parent-dir)))
+                           (zerop (run-shell-command "cp -R -P -f -p '~A' '~A/'"
+                                                     source-dir
+                                                     output-parent-dir)))))
           ;; We couldn't use cp.  Copy the files manually.
           (let ((sources
                  (mapcar #'(lambda (x)
