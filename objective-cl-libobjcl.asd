@@ -171,7 +171,8 @@
                                   output-parent-dir)))
                            (zerop (run-shell-command "cp -R -P -f -p '~A' '~A/'"
                                                      (sanitise-dir-name source-dir)
-                                                     output-parent-dir)))))
+                                                     output-parent-dir))))
+                     (probe-file (merge-pathnames "GNUmakefile" output-dir)))
           ;; We couldn't use cp.  Copy the files manually.
           (let ((sources
                  (mapcar #'(lambda (x)
