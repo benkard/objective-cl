@@ -153,6 +153,12 @@ objcl_set_slot_value (id obj, const char *ivar_name, void *value);
 void
 objcl_get_slot_value (id obj, const char *ivar_name, void *value_out);
 
+void *
+objcl_get_slot (Class class, const char *ivar_name);
+
+long  /* actually ptrdiff_t */
+objcl_get_slot_offset (void *slot);
+
 /* The following function returns a freshly consed array that the caller
    must deallocate. */
 IVAR_T *

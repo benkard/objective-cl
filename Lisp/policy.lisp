@@ -38,8 +38,12 @@
 (define-returns-boolean-exception "characterAtIndex:")
 
 
-(defun objc-char->lisp-value (objc-char receiver selector)
+(defun returned-char-is-bool-p (receiver selector)
   (declare (ignore receiver))
-  (if (gethash (selector-name selector) *boolean-return-exceptions* nil)
+  (gethash (selector-name selector) *boolean-return-exceptions* nil))
+
+
+(defun objc-char->lisp-value (objc-char char-is-bool-p)
+  (if char-is-bool-p
       objc-char
       (not (zerop objc-char))))

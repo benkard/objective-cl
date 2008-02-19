@@ -532,6 +532,24 @@ objcl_get_slot_value (id obj, const char *ivar_name, void *value_out)
 }
 
 
+void *
+objcl_get_slot (Class class, const char *ivar_name)
+{
+  return class_getInstanceVariable (class, ivar_name);
+}
+
+
+long
+objcl_get_slot_offset (void *slot)
+{
+#ifdef __NEXT_RUNTIME__
+  return (ivar_getOffset ((Ivar) slot));
+#else
+  return ((Ivar_t) slot)->ivar_offset;
+#endif
+}
+
+
 IVAR_T *
 objcl_class_direct_slots (Class class, unsigned int *count, unsigned int *element_size)
 {

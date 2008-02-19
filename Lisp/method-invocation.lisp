@@ -437,37 +437,43 @@ easier to use with __apply__.
           (unless (cffi:null-pointer-p error-cell)
             (error (make-condition 'exception :pointer error-cell)
                    #+(or) (intern-pointer-wrapper 'exception :pointer error-cell)))
-          (case (or (typespec-nominal-type return-type)
-                    (typespec-primary-type return-type))
-            ((id objective-c-class exception selector)
-             (let ((*skip-retaining*
-                    (or *skip-retaining*
-                        (constructor-name-p (selector-name selector)))))
-               (intern-pointer-wrapper (car return-type)
-                                       :pointer (cffi:mem-ref
-                                                 objc-return-value-cell
-                                                 return-c-type))))
-            ((:char :unsigned-char)
-             ;; FIXME?  This is non-trivial.  See policy.lisp for
-             ;; details.
-             (objc-char->lisp-value (cffi:mem-ref objc-return-value-cell
-                                                  return-c-type)
-                                    receiver
-                                    selector))
-            ((struct union)
-             ;; The caller is responsible for preventing the return
-             ;; value from being garbage-collected by setting
-             ;; FOREIGN-VALUE-LISP-MANAGED-P to false.
-             (make-struct-wrapper objc-struct-return-value-cell
-                                  return-type
-                                  t))
-            ((array)
-             (error "Method ~A of object ~A tried to return an array.  ~
-                     It must be mistaken."
-                    selector receiver))
-            ((:void) (values))
-            (otherwise (cffi:mem-ref objc-return-value-cell
-                                     return-c-type))))))))
+          (when (eq (typespec-primary-type return-type) 'array)
+            (error "Method ~A of object ~A tried to return an array.  ~
+                    It must be mistaken."
+                   selector receiver))
+          (convert-from-foreign-value (or objc-struct-return-value-cell
+                                          objc-return-value-cell)
+                                      return-type
+                                      (or *skip-retaining*
+                                          (constructor-name-p
+                                           (selector-name selector)))
+                                      (returned-char-is-bool-p receiver
+                                                               selector)))))))
+
+
+(defun convert-from-foreign-value (foreign-value-cell typespec
+                                   skip-retaining-p char-is-bool-p)
+  (let ((c-type (typespec->c-type typespec)))
+    (case (or (typespec-nominal-type typespec)
+              (typespec-primary-type typespec))
+      ((id objective-c-class exception selector)
+       (let ((*skip-retaining*
+              skip-retaining-p))
+         (intern-pointer-wrapper (car typespec)
+                                 :pointer (cffi:mem-ref foreign-value-cell
+                                                        c-type))))
+      ((:char :unsigned-char)
+       ;; FIXME?  This is non-trivial.  See policy.lisp for
+       ;; details.
+       (objc-char->lisp-value (cffi:mem-ref foreign-value-cell c-type)
+                              char-is-bool-p))
+      ((struct union)
+       ;; The caller is responsible for preventing the return
+       ;; value from being garbage-collected by setting
+       ;; FOREIGN-VALUE-LISP-MANAGED-P to false.
+       (make-struct-wrapper foreign-value-cell typespec t))
+      ((:void) (values))
+      (otherwise (cffi:mem-ref foreign-value-cell c-type)))))
 
 
 ;;; (@* "Helper functions")

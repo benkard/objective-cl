@@ -112,6 +112,13 @@
   (slot-name :string)
   (value-out :pointer))
 
+(defcfun ("objcl_get_slot" %objcl-get-slot) :pointer
+  (class :pointer) ; Class
+  (slot-name :string))
+
+(defcfun ("objcl_get_slot_offset" %objcl-get-slot-offset) :long
+  (slot :pointer))
+
 (defcfun ("objcl_class_direct_slots" %objcl-class-direct-slots) :pointer
   (class :pointer) ; Class
   (count :pointer) ; unsigned int

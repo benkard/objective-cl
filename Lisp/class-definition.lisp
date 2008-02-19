@@ -149,12 +149,14 @@
                                          (effective-slot-definition
                                           foreign-effective-slot-definition))
   (with-slots (foreign-name foreign-type) effective-slot-definition
-    ;; FIXME: Do proper value conversion here (like LOW-LEVEL-INVOKE).
-    (cffi:with-foreign-object
-        (return-value-cell (typespec->c-type foreign-type))
-      (%objcl-get-slot-value (pointer-to instance)
-                             foreign-name return-value-cell)
-      (mem-ref return-value-cell (typespec->c-type foreign-type)))))
+    (let ((slot-offset
+           (%objcl-get-slot-offset
+            (%objcl-get-slot (pointer-to class) foreign-name))))
+      (convert-from-foreign-value (inc-pointer (pointer-to instance)
+                                               slot-offset)
+                                  foreign-type
+                                  nil
+                                  t))))
 
 
 (defmethod (setf c2mop:slot-value-using-class) (value
