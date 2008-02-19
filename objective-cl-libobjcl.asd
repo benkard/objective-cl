@@ -126,34 +126,63 @@
     (unless (or *stuff-copied-p* (null output-files))
       (setq *stuff-copied-p* t)
       (let* ((source-dir (component-pathname (find-system "objective-cl-libobjcl")))
-             (sources
-              (mapcar #'(lambda (x)
-                          (enough-namestring x source-dir))
-                      (mapcan #'(lambda (x)
-                                  (directory (merge-pathnames x source-dir)))
-                              '(#p"**/*.c" #p"**/*.m" #p"**/*.h"
-                                #p"**/GNUmakefile.*"
-                                #p"**/*.make" #p"**/GNUmakefile"
-                                #p"**/*.in" #p"**/configure" #p"**/configure.ac"
-                                #p"libffi/**/*" #p"libffi/**/*.*"))))
              (output-dir
               (merge-pathnames #p"../../"
-                               (directory-namestring (first output-files)))))
-        (dolist (relative-source-file sources)
-          (let ((output-file (merge-pathnames relative-source-file output-dir))
-                (source-file (merge-pathnames relative-source-file source-dir)))
-            (ensure-directories-exist output-file)
-            (unless (and (probe-file output-file)
-                         (= (file-write-date source-file)
-                            (file-write-date output-file)))
-              (ignore-errors ;; FIXME: We need to skip directories, so
-                ;; that IGNORE-ERRORS can go away.
-                (with-open-file (in source-file
-                                    :element-type '(unsigned-byte 8))
-                  (with-open-file (out output-file
-                                       :direction :output
-                                       :if-exists :supersede
-                                       :element-type '(unsigned-byte 8))
-                    (loop for byte = (read-byte in nil nil)
-                          while byte
-                          do (write-byte byte out))))))))))))
+                               (directory-namestring (first output-files))))
+             (output-parent-dir (merge-pathnames #p"../" output-dir)))
+        ;; First try using cp to copy the files over to the compilation
+        ;; directory.  If that fails, do it manually, file by file.
+        (unless (and (not (position #\' (namestring source-dir))) ; a safety measure
+                     (not (position #\' (namestring output-parent-dir)))
+                     ;; If the directories' inode numbers are the same,
+                     ;; we obviously don't need to copy anything.
+                     ;;
+                     ;; But first, do some sanity checks about the
+                     ;; environment.
+                     (or (and (zerop (run-shell-command "ls -d -i '~A'"
+                                                    source-dir))
+                              (zerop (run-shell-command "ls -d -i '~A'"
+                                                        output-parent-dir))
+                              (zerop (run-shell-command "echo"))
+                              (zerop (run-shell-command "echo | awk '{ print $1 }'"))
+                              (zerop
+                               (run-shell-command
+                                "test ~
+                                 \"x$(ls -d -i '~A' | awk '{ print $1 }')\" ~
+                                 = ~
+                                 \"x$(ls -d -i '~A' | awk '{ print $1 }')\""
+                                source-dir
+                                output-parent-dir)))
+                         (zerop (run-shell-command "cp -R -P -f -p '~A' '~A/'"
+                                                   source-dir
+                                                   output-parent-dir))))
+          ;; We couldn't use cp.  Copy the files manually.
+          (let ((sources
+                 (mapcar #'(lambda (x)
+                             (enough-namestring x source-dir))
+                         (mapcan #'(lambda (x)
+                                     (directory (merge-pathnames x source-dir)))
+                                 '(#p"**/*.c" #p"**/*.m" #p"**/*.h"
+                                   #p"**/GNUmakefile.*"
+                                   #p"**/*.make" #p"**/GNUmakefile"
+                                   #p"**/*.in" #p"**/configure" #p"**/configure.ac"
+                                   #p"libffi/**/*" #p"libffi/**/*.*")))))
+            (dolist (relative-source-file sources)
+              (let ((output-file (merge-pathnames relative-source-file output-dir))
+                    (source-file (merge-pathnames relative-source-file source-dir)))
+                (ensure-directories-exist output-file)
+                (unless (and (probe-file output-file)
+                             (= (file-write-date source-file)
+                                (file-write-date output-file)))
+                  (ignore-errors
+                    ;; FIXME: We need to skip directories, so that
+                    ;; IGNORE-ERRORS can go away.
+                    (with-open-file (in source-file
+                                        :element-type '(unsigned-byte 8))
+                      (with-open-file (out output-file
+                                           :direction :output
+                                           :if-exists :supersede
+                                           :element-type '(unsigned-byte 8))
+                        (loop for byte = (read-byte in nil nil)
+                              while byte
+                              do (write-byte byte out))))))))))))))
