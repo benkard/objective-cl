@@ -167,7 +167,8 @@
   (argc :int)
   (return-typespec :string)
   (arg-typespecs (:array :string))
-  (signature :string))
+  (signature :string)
+  (registered-p :int))
 
 (defcfun ("objcl_finalise_class" %objcl-finalise-class) :void
   (class :pointer))

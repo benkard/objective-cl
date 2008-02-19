@@ -203,7 +203,8 @@ objcl_add_method (Class class,
                   int argc,
                   const char *return_typespec,
                   const char *arg_typespecs[],
-                  const char *signature);
+                  const char *signature,
+                  int registered_p);
 
 void
 objcl_finalise_class (Class class);

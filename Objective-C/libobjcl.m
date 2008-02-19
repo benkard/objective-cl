@@ -807,14 +807,18 @@ objcl_add_method (Class class,
                   int argc,
                   const char *return_typespec,
                   const char *arg_typespecs[],
-                  const char *signature)
+                  const char *signature,
+                  int registered_p)
 {
   IMP imp;
 
   imp = objcl_create_imp (callback, argc, return_typespec, arg_typespecs);
 
 #ifdef __NEXT_RUNTIME__
-  preclass_addMethod (class, method_name, imp, signature);
+  if (registered_p)
+    class_addMethod (class, method_name, imp, signature);
+  else
+    preclass_addMethod (class, method_name, imp, signature);
 #else
   NSString *class_name;
   struct ObjCLMethod **methods;
