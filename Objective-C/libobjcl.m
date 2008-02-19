@@ -382,7 +382,7 @@ objcl_object_is_class (id obj)
 {
   TRACE (@"is-class %p", obj);
 #ifdef __NEXT_RUNTIME__
-  return [obj class] == obj;
+  return class_isMetaClass (object_getClass (obj));
 #else
   /* return CLS_ISCLASS (obj); */
   return object_is_class (obj);
@@ -845,7 +845,6 @@ void
 objcl_finalise_class (Class class)
 {
 #ifdef __NEXT_RUNTIME__
-  /* FIXME: Should we do this if class is a metaclass? */
   if (!objcl_object_is_meta_class (class))
     objc_registerClassPair (class);
 #else

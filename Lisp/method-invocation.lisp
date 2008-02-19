@@ -322,6 +322,8 @@ easier to use with __apply__.
 (defun low-level-invoke (receiver selector superclass-pointer-for-send-super
                          return-typestring return-type
                          arg-typestrings arg-types argc args)
+  (when (object-is-class-p receiver)
+    (foreign-class-ensure-registered receiver))
   (let ((return-c-type (typespec->c-type return-type))
         (arg-c-types (mapcar #'typespec->c-type arg-types)))
     (with-foreign-string-pool (register-temporary-string
