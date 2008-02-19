@@ -32,6 +32,9 @@
    (foreign-slot :initarg :foreign-slot
                  :initform nil
                  :accessor slot-definition-foreign-slot)
+   (foreign-offset :initarg :foreign-offset
+                   :initform nil
+                   :accessor slot-definition-foreign-offset)
    #+#:unused
    (property :initarg :property
              :accessor slot-definition-property-p
@@ -117,6 +120,7 @@
      &key foreign-name
           foreign-slot
           foreign-type
+          foreign-offset
           name
           class
      &allow-other-keys)
@@ -141,22 +145,22 @@
                (slot-value slot-definition 'foreign-name) foreign-name)))
   (unless foreign-type
     (setf (slot-value slot-definition 'foreign-type)
-          foreign-slot)))
+          (parse-typespec (objcl-slot-type foreign-slot))))
+  (unless foreign-offset
+    (setf (slot-value slot-definition 'foreign-offset)
+          (%objcl-get-slot-offset foreign-slot))))
 
 
 (defmethod c2mop:slot-value-using-class ((class objective-c-class)
                                          instance
                                          (effective-slot-definition
                                           foreign-effective-slot-definition))
-  (with-slots (foreign-name foreign-type) effective-slot-definition
-    (let ((slot-offset
-           (%objcl-get-slot-offset
-            (%objcl-get-slot (pointer-to class) foreign-name))))
-      (convert-from-foreign-value (inc-pointer (pointer-to instance)
-                                               slot-offset)
-                                  foreign-type
-                                  nil
-                                  t))))
+  (with-slots (foreign-name foreign-type foreign-offset) effective-slot-definition
+     (convert-from-foreign-value (inc-pointer (pointer-to instance)
+                                              foreign-offset)
+                                 foreign-type
+                                 nil
+                                 t)))
 
 
 (defmethod (setf c2mop:slot-value-using-class) (value
@@ -169,11 +173,8 @@
   ;; case, do nothing.  There may or may not be useful information
   ;; present in the foreign slot at this time.
   (unless (eq value *objcl-foreign-default-initform*)
-    (with-slots (foreign-name foreign-type) effective-slot-definition
-      (let* ((slot-offset
-              (%objcl-get-slot-offset
-               (%objcl-get-slot (pointer-to class) foreign-name)))
-             (slot-cell (inc-pointer (pointer-to instance) slot-offset)))
+    (with-slots (foreign-name foreign-type foreign-offset) effective-slot-definition
+      (let* ((slot-cell (inc-pointer (pointer-to instance) foreign-offset)))
         (case (typespec-primary-type foreign-type)
           ((struct union array)
            (let ((value-pointer (typecase value
