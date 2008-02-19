@@ -59,6 +59,9 @@ extern id objcl_current_exception;
 extern NSRecursiveLock *objcl_current_exception_lock;
 
 
+void *
+objcl_memmove (void *dest, void *src, unsigned long length);
+
 void
 objcl_initialise_runtime (void);
 

@@ -170,38 +170,23 @@
   ;; present in the foreign slot at this time.
   (unless (eq value *objcl-foreign-default-initform*)
     (with-slots (foreign-name foreign-type) effective-slot-definition
-      ;; FIXME: What to do about memory management here?  Strings are
-      ;; possibly the most problematic case here.
-      ;;
-      ;; Note: %OBJCL-SET-SLOT-VALUE expects a pointer to the value that
-      ;; it should store as an argument, not the value itself.  For
-      ;; structs and related things that can't be reasonably passed by
-      ;; value, this is good news.  For everything else, it means just a
-      ;; bit more work.
-      (case (typespec-primary-type foreign-type)
-        ((struct union id class array)
-         (%objcl-set-slot-value (pointer-to instance)
-                                foreign-name
-                                (typecase value
+      (let* ((slot-offset
+              (%objcl-get-slot-offset
+               (%objcl-get-slot (pointer-to class) foreign-name)))
+             (slot-cell (inc-pointer (pointer-to instance) slot-offset)))
+        (case (typespec-primary-type foreign-type)
+          ((struct union array)
+           (let ((value-pointer (typecase value
                                   (c-pointer value)
-                                  (t (pointer-to value)))))
-         ((:pointer)
-          ;; FIXME: Does this make sense?  No.  Does it work?  Must
-          ;; check.
-          (with-foreign-object (slot-cell (typespec->c-type foreign-type))
-            (setf (mem-ref slot-cell (typespec->c-type foreign-type))
-                  value)
-            (%objcl-set-slot-value (pointer-to instance)
-                                   foreign-name
-                                   slot-cell)))
-         (otherwise
-          ;; BIG RED FIXME: WTF is _wrong_ with this
-          ;; object_getInstanceVariable stuff?
-          ;;
-          ;; Pure lossage!
-          (%objcl-set-slot-value (pointer-to instance)
-                                 foreign-name
-                                 (make-pointer value)))))))
+                                  (c-pointer-wrapper (pointer-to value)))))
+             (memmove slot-cell value-pointer (sizeof foreign-type))))
+          (otherwise
+           ;; FIXME: What to do about memory management here?  Strings are
+           ;; possibly the most problematic case.
+           ;;
+           ;; Also, should we do ID conversion as for method arguments
+           ;; here?
+           (setf (mem-ref slot-cell (typespec->c-type foreign-type)) value)))))))
 
 
 (defmethod c2mop:slot-boundp-using-class ((class objective-c-class)

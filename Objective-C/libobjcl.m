@@ -25,6 +25,7 @@
 #import "Foundation/Foundation.h"
 
 #include <stdarg.h>
+#include <string.h>
 #include <sys/mman.h>
 #include <objc/objc-api.h>
 
@@ -66,6 +67,13 @@ static NSMutableDictionary *method_list_lengths = nil;
 static NSMutableSet *lisp_backed_classes = nil;
 
 static int init_count = 0;
+
+
+void *
+objcl_memmove (void *dest, void *src, unsigned long length)
+{
+  return memmove (dest, src, length);
+}
 
 
 void

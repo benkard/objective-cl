@@ -33,6 +33,11 @@
 (use-foreign-library libobjcl)
 
 
+(defcfun ("objcl_memmove" memmove) :pointer
+  (destination :pointer)
+  (source :pointer)
+  (length :unsigned-long))
+
 (defcfun ("objcl_initialise_runtime" %initialise-runtime) :void)
 
 (defcfun ("objcl_shutdown_runtime" %shutdown-runtime) :void)
@@ -873,13 +878,13 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
 
 ;;;; (@* "Helper functions")
 (defun sizeof (typespec)
-  (%objcl-sizeof-type typespec))
+  (%objcl-sizeof-type (print-typespec-to-string typespec)))
 
 (defun alignof (typespec)
-  (%objcl-alignof-type typespec))
+  (%objcl-alignof-type (print-typespec-to-string typespec)))
 
 (defun return-type-sizeof (typespec)
-  (%objcl-sizeof-return-type typespec))
+  (%objcl-sizeof-return-type (print-typespec-to-string typespec)))
 
 (defun runtime-type ()
   (let ((runtime (%objcl-get-runtime-type)))
