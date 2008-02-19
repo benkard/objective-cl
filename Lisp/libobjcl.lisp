@@ -737,20 +737,24 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
     (list   (intern-selector-by-name (symbol-list->message-name
                                       selector-name)))))
 
+(defun pointer (thing)
+  (etypecase thing
+    (c-pointer thing)
+    (c-pointer-wrapper (pointer-to thing))))
 
 (defun object-is-class-p (obj)
-  (%objcl-object-is-class (pointer-to obj)))
+  (%objcl-object-is-class (pointer obj)))
 
 (defun object-is-meta-class-p (obj)
-  (%objcl-object-is-meta-class (pointer-to obj)))
+  (%objcl-object-is-meta-class (pointer obj)))
 
 (defun object-get-class (obj)
   (find-objc-class-by-name
-   (%objcl-class-name (%objcl-object-get-class (pointer-to obj)))))
+   (%objcl-class-name (%objcl-object-get-class (pointer obj)))))
 
 (defun object-get-meta-class (obj)
   (find-objc-meta-class-by-name
-   (%objcl-class-name (%objcl-object-get-class (pointer-to obj)))))
+   (%objcl-class-name (%objcl-object-get-class (pointer obj)))))
 
 (defun objcl-class-superclass/pointer (class-ptr)
   (let ((superclass-ptr (%objcl-class-superclass class-ptr)))
