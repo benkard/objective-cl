@@ -351,7 +351,6 @@ conventional case for namespace identifiers in Objective-C."
                                               (find-objc-meta-class
                                                class-name-string))
                                   :pointer class-ptr
-                                  :wrapped-foreign-class class-name-string
                                   ;; FIXME: It might be desirable to do
                                   ;; set the list of direct superclasses
                                   ;; to something like the following:

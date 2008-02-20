@@ -341,6 +341,14 @@
   class)
 
 
+(defcallback collect-class :void ((class :pointer))
+  (find-objc-class (%objcl-class-name class)))
+
+
+(defun collect-classes ()
+  (%objcl-for-each-class-do (callback collect-class)))
+
+
 ;;;; (@* "Quick tests")
 #+(or)
 (make-instance 'objective-c-class :wrapped-foreign-class "NSString")

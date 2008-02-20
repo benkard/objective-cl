@@ -51,6 +51,12 @@
                                                           "memory-management"))
                  (:file "init"               :depends-on ("defpackage"
                                                           "libobjcl"))
+                 (:file "type-conversion"    :depends-on ("defpackage"
+                                                          "memory-management"
+                                                          "data-types"
+                                                          "type-handling"
+                                                          "policy"
+                                                          "data-types"))
                  (:file "type-handling"      :depends-on ("defpackage"
                                                           "libobjcl"
                                                           "init"))
@@ -59,6 +65,7 @@
                                                           "parameters"
                                                           "conditions"))
                  (:file "method-invocation"  :depends-on ("defpackage"
+                                                          "type-conversion"
                                                           "type-handling"
                                                           "name-conversion"
                                                           "data-types"
@@ -67,8 +74,7 @@
                                                           "parameters"
                                                           "init"
                                                           "conditions"
-                                                          "memory-management"
-                                                          "policy"))
+                                                          "memory-management"))
                  (:file "reader-syntax"      :depends-on ("defpackage"
                                                           "method-invocation"))
                  (:file "utilities"          :depends-on ("init"
@@ -77,8 +83,8 @@
                                                           "data-types"))
                  (:file "class-definition"   :depends-on ("defpackage"
                                                           "libobjcl"
-                                                          "init"
-                                                          "method-invocation"
+                                                          "type-conversion"
+                                                          "type-handling"
                                                           "data-types"))
                  (:file "instance-management" :depends-on ("defpackage"
                                                            "libobjcl"
@@ -86,5 +92,9 @@
                                                            "method-invocation"))
                  (:file "compiler-macros"    :depends-on ("defpackage"
                                                           "method-invocation"
-                                                          "conditions")))))
+                                                          "conditions"))
+                 (:file "post-init"          :depends-on ("defpackage"
+                                                          "libobjcl"
+                                                          "init"
+                                                          "class-definition")))))
   :serial t)

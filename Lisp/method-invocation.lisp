@@ -453,31 +453,6 @@ easier to use with __apply__.
                                                                selector)))))))
 
 
-(defun convert-from-foreign-value (foreign-value-cell typespec
-                                   skip-retaining-p char-is-bool-p)
-  (let ((c-type (typespec->c-type typespec)))
-    (case (or (typespec-nominal-type typespec)
-              (typespec-primary-type typespec))
-      ((id objective-c-class exception selector)
-       (let ((*skip-retaining*
-              skip-retaining-p))
-         (intern-pointer-wrapper (car typespec)
-                                 :pointer (cffi:mem-ref foreign-value-cell
-                                                        c-type))))
-      ((:char :unsigned-char)
-       ;; FIXME?  This is non-trivial.  See policy.lisp for
-       ;; details.
-       (objc-char->lisp-value (cffi:mem-ref foreign-value-cell c-type)
-                              char-is-bool-p))
-      ((struct union)
-       ;; The caller is responsible for preventing the return
-       ;; value from being garbage-collected by setting
-       ;; FOREIGN-VALUE-LISP-MANAGED-P to false.
-       (make-struct-wrapper foreign-value-cell typespec t))
-      ((:void) (values))
-      (otherwise (cffi:mem-ref foreign-value-cell c-type)))))
-
-
 ;;; (@* "Helper functions")
 (defun constructor-name-p (method-name)
   (flet ((method-name-starts-with (prefix)
