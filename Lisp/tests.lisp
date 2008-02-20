@@ -218,7 +218,19 @@
   (is (equal (parse-typespec "^^{OpaqueStruct}")
              '(pointer ()
                (pointer ()
-                (struct (opaque) "OpaqueStruct"))))))
+                (struct (opaque) "OpaqueStruct")))))
+  (is (equal (parse-typespec "^{_GSKeyBinding=ii@\"GSKeyBindingAction\"@\"GSKeyBindingTable\"}")
+             '(pointer ()
+               (struct () "_GSKeyBinding"
+                (:int ())
+                (:int ())
+                (id ((:type "GSKeyBindingAction")))
+                (id ((:type "GSKeyBindingTable")))))))
+  (is (equal (parse-typespec "{?=\"next\"@\"GCObject\"\"previous\"@\"GCObject\"\"flags\"{?=}}")
+             '(struct () "?"
+               (id ((:type "GCObject") (:name "next")))
+               (id ((:type "GCObject") (:name "previous")))
+               (struct ((:name "flags")) "?")))))
 
 
 (deftest printing-typespecs ()

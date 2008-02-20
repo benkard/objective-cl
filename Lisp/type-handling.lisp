@@ -42,10 +42,10 @@ Returns: (VALUES typespec byte-position string-position)"
                                    (#\O 'bycopy)
                                    (#\V 'oneway)
                                    (#\R 'byref)
-                                   (#\" 'name))))
+                                   (#\" :name))))
                   (and qualifier
                        (incf string-position)
-                       (if (eq qualifier 'name)
+                       (if (eq qualifier :name)
                            (let ((name-end (position #\"
                                                      typestring
                                                      :start string-position)))
@@ -57,7 +57,8 @@ Returns: (VALUES typespec byte-position string-position)"
                              (setf string-position (1+ name-end))
                              qualifier)
                            (push qualifier qualifiers)))))
-    (values (case init-char
+    (let ((typespec
+            (case init-char
               ((#\{ #\()
                (let* ((=-token (position #\= typestring :start start))
                       (closing-delim (position (ecase init-char
@@ -219,16 +220,14 @@ Returns: (VALUES typespec byte-position string-position)"
                                     (push init-char children))))
                                qualifiers
                                children)
-                        (incf string-position)))))
-            #+(or)  ; too greedy (=> bit-fields can't see their length!)
-            (multiple-value-bind (byte-position new-string-pos)
-                (parse-integer typestring
-                               :start string-position
-                               :junk-allowed t)
-              (setq string-position new-string-pos)
-              byte-position)
-            #-(or) nil
-            string-position)))
+                        (incf string-position)))))))
+      (when (and (> (length typestring) string-position)
+                 (char= (char typestring string-position) #\"))
+        (let ((type-end (position #\" typestring :start (1+ string-position))))
+          (push (list :type (subseq typestring (1+ string-position) type-end))
+                (cadr typespec))
+          (setf string-position (1+ type-end))))
+      (values typespec nil string-position))))
 
 
 (defun print-typespec-to-string (typespec)
