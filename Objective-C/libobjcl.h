@@ -88,11 +88,12 @@ objcl_find_selector (const char *selector_name);
 SEL
 objcl_intern_selector (const char *selector_name);
 
-/* Return a null-terminated list of type information strings.
-   The first entry describes the type of the method's return value. */
+/* Return a freshly consed null-terminated list of type information
+   strings.  The first entry describes the type of the method's return
+   value. */
 char **
 objcl_query_arglist_info (void *receiver,
-                          const char *method_name);
+                          SEL method_name);
 
 
 const char *
@@ -217,3 +218,6 @@ objcl_class_set_backed_by_lisp_class (Class class, int backed_p);
 
 int
 objcl_object_backed_by_lisp_class_p (id object);
+
+int
+objcl_for_each_class_do (void (*function) (Class));

@@ -189,6 +189,10 @@
     :int
   (instance :pointer))
 
+(defcfun ("objcl_for_each_class_do" %objcl-for-each-class-do)
+    :int
+  (function :pointer))
+
 (defcvar *objcl-current-exception-lock* :pointer)
 (defcvar *objcl-current-exception* :pointer)
 

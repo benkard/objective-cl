@@ -24,6 +24,11 @@
 
 #import "Foundation/Foundation.h"
 
+#ifdef GNUSTEP
+#import "GNUstepBase/GSLock.h"
+/* #import "GNUstepBase/GSObjCRuntime.h" */
+#endif
+
 #include <stdarg.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -91,7 +96,11 @@ objcl_initialise_runtime (void)
       PyObjC_SetupRuntimeCompat ();
 #endif
 
+#ifdef GNUSTEP
+      objcl_current_exception_lock = [[GSLazyRecursiveLock alloc] init];
+#else
       objcl_current_exception_lock = [[NSRecursiveLock alloc] init];
+#endif
       method_lists = [[NSMutableDictionary alloc] init];
       method_list_lengths = [[NSMutableDictionary alloc] init];
       lisp_backed_classes = [[NSMutableSet alloc] init];
@@ -910,4 +919,37 @@ int
 objcl_object_backed_by_lisp_class_p (id object)
 {
   return objcl_class_backed_by_lisp_class_p ([object class]);
+}
+
+
+int
+objcl_for_each_class_do (void (*function) (Class))
+{
+#ifdef __NEXT_RUNTIME__
+  int class_num;
+
+  class_num = objc_getClassList (NULL, 0);
+  if (class_num)
+    {
+      int i;
+      Class class_list[class_num];
+
+      objc_getClassList (&class_list, class_num);
+      for (i = 0; i < class_num; i++)
+        {
+          function (class_list[i]);
+        }
+    }
+#else
+  /* In order to build a list of classes, we can use GSClassList(). */
+  void *iter = 0;
+  Class class;
+
+  while ((class = objc_next_class (&iter)))
+    {
+      function (class);
+    };
+#endif
+
+  return 0;
 }
