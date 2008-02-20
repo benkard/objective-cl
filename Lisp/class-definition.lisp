@@ -103,7 +103,7 @@
             :writers (or writers nil)
             :initargs (or initargs nil)
             :initform (or initform *objcl-foreign-default-initform*)
-            :location nil
+            ;;? :location nil
             :allocation (or allocation :instance)
             :initfunction (or initfunction
                               #'(lambda ()

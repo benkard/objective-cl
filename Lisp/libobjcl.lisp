@@ -419,8 +419,7 @@ conventional case for namespace identifiers in Objective-C."
                ;; our own, which will always get us the root metaclass.
                (metaclass
                 (if non-meta-superclass
-                    (if (typep (class-of superclass)
-                               'objective-c-meta-class)
+                    (if (metaclass-fake-p (class-of superclass))
                         superclass
                         (class-of superclass))
                     (let ((fake-metaclass-name
@@ -429,7 +428,8 @@ conventional case for namespace identifiers in Objective-C."
                           (c2mop:ensure-class fake-metaclass-name
                                               :metaclass 'objective-c-meta-class
                                               :pointer class-ptr
-                                              :direct-superclasses (list superclass)))))))
+                                              :direct-superclasses (list superclass)
+                                              :fake-p t))))))
           (or (find-class class-name nil)
               (c2mop:ensure-class class-name
                                   :metaclass metaclass

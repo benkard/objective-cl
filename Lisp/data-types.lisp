@@ -170,7 +170,12 @@ a suitable class method instead as you would in Objective-C.
                  "Whether the class has been registered with the Objective-C runtime.")))
 
 
-(defclass objective-c-meta-class (objective-c-class) ())
+(defclass objective-c-meta-class (objective-c-class)
+     ((fake-p :type boolean
+              :initform nil
+              :initarg :fake-p
+              :accessor metaclass-fake-p
+              :documentation "Whether the class is a fake metaclass.")))
 
 
 (define-condition exception (error)
