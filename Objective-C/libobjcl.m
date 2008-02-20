@@ -73,6 +73,8 @@ static NSMutableSet *lisp_backed_classes = nil;
 
 static int init_count = 0;
 
+static NSProcessInfo *process = nil;
+
 
 void *
 objcl_memmove (void *dest, void *src, unsigned long length)
@@ -84,8 +86,23 @@ objcl_memmove (void *dest, void *src, unsigned long length)
 void
 objcl_initialise_runtime (void)
 {
+#ifndef __NEXT_RUNTIME__
+  if (!process)
+    {
+      static char *argv[] = { "" };
+      static char *env[] = { (char *) 0 };
+      [NSProcessInfo initializeWithArguments: argv
+                     count: 0
+                     environment: env];
+      process = [NSProcessInfo processInfo];
+    }
+#endif
+
+  TRACE (@"Check whether initialisation is pending.");
   if (init_count <= 0)
     {
+      TRACE (@"Initialise runtime.");
+      TRACE (@"Allocate exceptions.");
       objcl_autorelease_pool = [[NSAutoreleasePool alloc] init];
       objcl_oom_exception = [NSException exceptionWithName: @"MLKOutOfMemoryException"
                                          reason: @"Out of memory"
@@ -96,15 +113,21 @@ objcl_initialise_runtime (void)
       PyObjC_SetupRuntimeCompat ();
 #endif
 
+      TRACE (@"Allocate locks.");
 #ifdef GNUSTEP
       objcl_current_exception_lock = [[GSLazyRecursiveLock alloc] init];
 #else
       objcl_current_exception_lock = [[NSRecursiveLock alloc] init];
 #endif
+
+      TRACE (@"Allocate list dicts.");
       method_lists = [[NSMutableDictionary alloc] init];
       method_list_lengths = [[NSMutableDictionary alloc] init];
+
+      TRACE (@"Allocate flag sets.");
       lisp_backed_classes = [[NSMutableSet alloc] init];
       init_count = 1;
+      TRACE (@"Runtime initialised.");
     }
   else
     init_count++;
@@ -282,14 +305,13 @@ const char *
 objcl_class_name (Class class)
 {
   const char *ns_name;
-  char *name;
 
   TRACE (@"class-name");
+  TRACE (@"  %p", class);
   ns_name = [(NSStringFromClass (class)) UTF8String];
-  name = malloc (strlen (ns_name) + 1);
-  strcpy (name, ns_name);
+  TRACE (@"  => %s", ns_name);
 
-  return name;
+  return ns_name;
 }
 
 
@@ -297,15 +319,21 @@ Class
 objcl_class_superclass (Class class)
 {
   TRACE (@"super-class");
+  TRACE (@"  %@ (%p)", NSStringFromClass (class), class);
 
   /* Not strictly needed on the GNU runtime, but not going to hurt
      anyone either. */
   if (class == [NSObject class])
-    return nil;
+    {
+      TRACE (@"  => Nil");
+      return Nil;
+    }
 
 #ifdef __NEXT_RUNTIME__
+  TRACE (@"  => %@", NSStringFromClass (class_getSuperclass (class)));
   return class_getSuperclass (class);
 #else
+  TRACE (@"  => %@", NSStringFromClass (class_get_super_class (class)));
   return class_get_super_class (class);
 #endif
 }
@@ -326,13 +354,10 @@ const char *
 objcl_selector_name (SEL selector)
 {
   const char *ns_name;
-  char *name;
 
   ns_name = [(NSStringFromSelector (selector)) UTF8String];
-  name = malloc (strlen (ns_name) + 1);
-  strcpy (name, ns_name);
 
-  return name;
+  return ns_name;
 }
 
 
@@ -572,11 +597,12 @@ objcl_class_direct_slots (Class class, unsigned int *count, unsigned int *elemen
 {
   IVAR_T *ivars;
 
-#ifdef __NEXT_RUNTIME__
-  TRACE (@"slots");
-#else
+#ifndef __NEXT_RUNTIME__
   int i;
 #endif
+
+  TRACE (@"slots");
+  TRACE (@"  %@ (%p)", NSStringFromClass (class), class);
 
   *element_size = sizeof (IVAR_T);
 
@@ -594,6 +620,8 @@ objcl_class_direct_slots (Class class, unsigned int *count, unsigned int *elemen
     }
 #endif
 
+  TRACE (@"  => %d slots", *count);
+
   return ivars;
 }
 
@@ -601,10 +629,12 @@ objcl_class_direct_slots (Class class, unsigned int *count, unsigned int *elemen
 const char *
 objcl_slot_name (IVAR_T ivar)
 {
-  TRACE (@"slot-name");
+  TRACE (@"slot-name %p", ivar);
 #ifdef __NEXT_RUNTIME__
+  TRACE (@"  => %s", ivar_getName (ivar));
   return ivar_getName (ivar);
 #else
+  TRACE (@"  => %s", ivar->ivar_name);
   return ivar->ivar_name;
 #endif
 }
@@ -613,9 +643,12 @@ objcl_slot_name (IVAR_T ivar)
 const char *
 objcl_slot_type (IVAR_T ivar)
 {
+  TRACE (@"slot-type %p", ivar);
 #ifdef __NEXT_RUNTIME__
+  TRACE (@"  => %s", ivar_getTypeEncoding (ivar));
   return ivar_getTypeEncoding (ivar);
 #else
+  TRACE (@"  => %s", ivar->ivar_type);
   return ivar->ivar_type;
 #endif
 }

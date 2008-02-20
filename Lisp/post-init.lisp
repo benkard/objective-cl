@@ -17,7 +17,6 @@
 
 (in-package #:mulk.objective-cl)
 
-(eval-when (:load-toplevel)
-  (format t "~&Collecting Objective-C classes.")
-  (collect-classes)
-  (format t "~&All Objective-C classes collected."))
+(format t "~&Collecting Objective-C classes.")
+(collect-classes)
+(format t "~&All Objective-C classes collected.")
