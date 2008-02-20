@@ -17,6 +17,8 @@
 
 (in-package #:mulk.objective-cl)
 
-(format t "~&Collecting Objective-C classes.")
-(collect-classes)
-(format t "~&All Objective-C classes collected.")
+#+(or)
+(progn
+  (format t "~&Collecting Objective-C classes.")
+  (collect-classes)
+  (format t "~&All Objective-C classes collected."))
