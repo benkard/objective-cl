@@ -347,31 +347,3 @@
 
 (defun collect-classes ()
   (%objcl-for-each-class-do (callback collect-class)))
-
-
-;;;; (@* "Quick tests")
-#+(or)
-(make-instance 'objective-c-class :wrapped-foreign-class "NSString")
-#+(or)
-(c2mop:ensure-class 'ns-string
-                    :metaclass 'objective-c-class
-                    :wrapped-foreign-class "NSString")
-#+(or)
-(defclass ns-string ()
-  ((bla :foreign-type 'string
-        :foreign-name "_bla"
-        :accessor ns-string-bla)
-   (nothing :accessor ns-string-nothing
-            :initarg :ns-string
-            :initform 100))
-  (:metaclass objective-c-classes::+ns-string)
-  (:wrapped-foreign-class "NSString"))
-#+(or)
-(defclass mlk-string (ns-string)
-     ((foos :type list
-            :initform nil
-            :initarg :foos
-            :accessor mlk-string-foos)
-      (foo-count :foreign-type (:int ())))
-  (:metaclass #+(or) objective-c-class
-              ns:+ns-object))
