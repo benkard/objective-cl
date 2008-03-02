@@ -26,6 +26,7 @@
 
 #ifdef GNUSTEP
 #import "GNUstepBase/GSLock.h"
+#import "GNUstepBase/GSConfig.h"
 /* #import "GNUstepBase/GSObjCRuntime.h" */
 #endif
 
@@ -86,24 +87,31 @@ objcl_memmove (void *dest, void *src, unsigned long length)
 void
 objcl_initialise_runtime (void)
 {
-#ifndef __NEXT_RUNTIME__
-  if (!process)
-    {
-      static char *argv[] = { "" };
-      static char *env[] = { (char *) 0 };
-      [NSProcessInfo initializeWithArguments: argv
-                     count: 0
-                     environment: env];
-      process = [NSProcessInfo processInfo];
-    }
-#endif
-
   TRACE (@"Check whether initialisation is pending.");
   if (init_count <= 0)
     {
       TRACE (@"Initialise runtime.");
-      TRACE (@"Allocate exceptions.");
       objcl_autorelease_pool = [[NSAutoreleasePool alloc] init];
+
+#ifndef __NEXT_RUNTIME__
+#if defined(GS_FAKE_MAIN) || defined(GS_PASS_ARGUMENTS) \
+                          || defined(LIB_FOUNDATION_LIBRARY)
+
+      TRACE (@"Initialise environment.");
+      if (!process)
+        {
+          static char *argv[] = { "objective-cl", 0 };
+          /* static char *environ[] = { (char *) 0 }; */
+          extern char **environ;
+          [NSProcessInfo initializeWithArguments: argv
+                         count: 1
+                         environment: environ];
+          process = [NSProcessInfo processInfo];
+        }
+#endif
+#endif
+
+      TRACE (@"Allocate exceptions.");
       objcl_oom_exception = [NSException exceptionWithName: @"MLKOutOfMemoryException"
                                          reason: @"Out of memory"
                                          userInfo: nil];
@@ -372,6 +380,10 @@ objcl_get_method_implementation (id object,
   TRACE (@"method-impl %p %p", object, selector);
 #ifdef __NEXT_RUNTIME__
   Class target_class;
+  /* struct objc_super super_struct;
+     super_struct.receiver = object;
+     super_struct.super_class = superclass_for_send_super;
+  */
 
   if (objcl_object_is_class (object))
     {
@@ -967,7 +979,7 @@ objcl_for_each_class_do (void (*function) (Class))
       int i;
       Class class_list[class_num];
 
-      objc_getClassList (&class_list, class_num);
+      objc_getClassList (class_list, class_num);
       for (i = 0; i < class_num; i++)
         {
           function (class_list[i]);

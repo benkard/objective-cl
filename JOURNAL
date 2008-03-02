@@ -1,5 +1,106 @@
 -*- mode: muse -*-
 
+* 2008-02-24, 22:39:03 CET
+
+** PCL Problems
+
+Collecting all Objective-C classes and creating CLOS classes out of
+them, which is what the only recently introduced function
+COLLECT-CLASSES does, works reliably both on Allegro CL and on GNU
+CLISP.  There are some serious problems on CMUCL and SBCL, though.
+
+First, some stats (this is on Wirselkraut, my Dell Inspiron 6400).
+
+
+*** CLISP 2.44
+
+OBJCL[3]> (time (collect-classes))
+Real time: 14.182854 sec.
+Run time: 14.180886 sec.
+Space: 189717640 Bytes
+GC: 123, GC time: 2.412143 sec.
+0
+
+
+*** Allegro CL 8.1
+
+OBJCL(3): (time (collect-classes))
+; cpu time (non-gc) 2,660 msec user, 10 msec system
+; cpu time (gc)     620 msec user, 0 msec system
+; cpu time (total)  3,280 msec user, 10 msec system
+; real time  3,291 msec
+; space allocation:
+;  1,816,989 cons cells, 44,365,376 other bytes, 72,082 static bytes
+0
+
+Note that Allegro CL defers class finalisation until the first instance
+of a class is created.  Then again, half the classes created are
+metaclasses which are immediately instantiated, so the speed is
+impressive, either way.
+
+
+*** SBCL 1.0.14.debian
+
+\* (time (collect-classes))
+STYLE-WARNING:
+   slot names with the same SYMBOL-NAME but different SYMBOL-PACKAGE (possible
+   package problem) for class
+   #<OBJECTIVE-C-META-CLASS NS:++NS-OBJECT {B75E4440}>:
+       (SB-PCL::NAME NS:NAME)
+STYLE-WARNING:
+   slot names with the same SYMBOL-NAME but different SYMBOL-PACKAGE (possible
+   package problem) for class #<NS:++NS-OBJECT NS:+NS-OBJECT {B75E4440}>:
+       (SB-PCL::NAME NS:NAME)
+STYLE-WARNING:
+   slot names with the same SYMBOL-NAME but different SYMBOL-PACKAGE (possible
+   package problem) for class
+   #<NS:+NS-OBJECT NS:+GSXMLP-LIST-PARSER {B75ED3E0}>:
+       (SB-PCL::NAME NS:NAME)
+
+That's how it starts off.  The STYLE-WARNINGs go on and on.  At first,
+they rush by fast, but each new class seems to take more time than the
+previous one to create.  I'm not going to wait for it to complete in
+order to tell you the TIME stats because it could well take decades...
+
+
+*** CMUCL CVS 19d 19d-release (19D)
+
+\* (time (collect-classes))
+; Compiling LAMBDA NIL:
+; Compiling Top-Level Form:
+
+Type-error in KERNEL::INVALID-ARRAY-INDEX-ERROR-HANDLER:
+   4 is not of type (INTEGER 0 (0))
+   [Condition of type TYPE-ERROR]
+
+Restarts:
+  0: [ABORT  ] Return to Top-Level.
+  1: [DESTROY] Destroy the process
+
+Debug  (type H for help)
+
+(MAPHASH #<Closure Over Function "DEFUN MAKE-ACCESSOR-TABLE" {5974DC09}>
+         #<HASH-TABLE :TEST EQ :WEAK-P NIL :COUNT 65 {2824FEBD}>)
+Source:
+; File: target:code/hash-new.lisp
+(AREF KV-VECTOR (* 2 I))
+0]
+
+I don't have the slightest idea what that could mean.  A bug in CMUCL's
+hash table code?
+
+
+*** LispWorks Personal 5.0.1
+
+Not timed yet.  Will do that someday.
+
+
+*** So, What Is To Be Done?
+
+I'll have to ask some CMUCL and SBCL gurus what's going on in their
+respective variations of PCL.
+
+
 * 2008-02-03, 10:45:58 CET
 
 ** To be compatible or not to be compatible?
@@ -14,7 +115,7 @@ Then again, if someone wants to compare Objective-CL with Clozure CL's
 bridge side-by-side, it's their responsibility to rename packages as
 needed.  Reader macros aren't essential for using Objective-CL, so they
 may be left disabled in such a case, anyway.  I'm going to try hard to
-use Objective-CL-specific package names within my code
+use Objective-CL-specific package names within my own code
 (i.e. OBJECTIVE-C-CLASSES rather than NS), so renaming packages won't
 break things.
 
