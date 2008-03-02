@@ -361,6 +361,41 @@
                                         'self)))))
 
 
+(deftest compiler-macros ()
+  (flet ((compiler-macroexpand-1 (form &optional environment)
+           (funcall (or (compiler-macro-function (car form))
+                        #'(lambda (x y) (declare (ignore y)) x))
+                    form
+                    environment)))
+    (is (equal (compiler-macroexpand-1 '(invoke x :is-equal y) nil)
+               `(invoke-by-name x (selector '(:is-equal)) y)))
+    (is (equal (compiler-macroexpand-1 '(invoke x 'self))
+               `(invoke-by-name x (selector '(self)))))
+    (is (equal (compiler-macroexpand-1 `(invoke x
+                                                :string-with-c-string "Mulk."
+                                                :encoding 4))
+               `(invoke-by-name x
+                                (selector '(:string-with-c-string :encoding))
+                                "Mulk."
+                                4)))
+    (is (equal (compiler-macroexpand-1 `(invoke-by-name (+ 1 2) 'self))
+               `(invoke-by-name (+ 1 2) (selector 'self))))
+    (is (equal (compiler-macroexpand-1 `(invoke-by-name (+ 1 2) '(:foo :bar)
+                                                        x y))
+               `(invoke-by-name (+ 1 2) (selector '(:foo :bar)) x y)))
+    (is (equal (compiler-macroexpand-1 `(primitive-invoke (+ 1 2) '(:foo :bar)
+                                                          x y))
+               `(primitive-invoke (+ 1 2) (selector '(:foo :bar)) x y)))
+    (is (equal (car (compiler-macroexpand-1 `(selector '(:foo :bar))))
+               'load-time-value))
+    (is (not (equal (car (compiler-macroexpand-1 `(selector (:foo :bar))))
+                    'load-time-value)))
+    (is (not (equal (car (compiler-macroexpand-1 `(selector (car '(:foo :bar)))))
+                    'load-time-value)))
+    (is (not (equal (car (compiler-macroexpand-1 `(selector `(,x ,y))))
+                    'load-time-value)))))
+
+
 (defvar *class-counter* 0)
 
 
