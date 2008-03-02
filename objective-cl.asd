@@ -93,6 +93,10 @@
                  (:file "compiler-macros"    :depends-on ("defpackage"
                                                           "method-invocation"
                                                           "conditions"))
+                 (:file "lisp-value-wrapping" :depends-on ("defpackage"
+                                                           "libobjcl"
+                                                           "init"
+                                                           "class-definition"))
                  (:file "post-init"          :depends-on ("defpackage"
                                                           "libobjcl"
                                                           "init"
