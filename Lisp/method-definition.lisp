@@ -80,7 +80,7 @@
 (defun intern-callback-name (method)
   (or (gethash method *callback-names* nil)
       (setf (gethash method *callback-names* nil)
-            (intern (format nil "~A (~A)"
+            (intern (format nil "~A ~A"
                             (generic-function-name
                              (method-generic-function method))
                             (sort (copy-list (method-qualifiers method))

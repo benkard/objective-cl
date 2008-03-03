@@ -39,7 +39,7 @@
 #include <objc/objc-class.h>
 #endif
 
-#if 0
+#if 1
 #define TRACE NSLog
 #else
 #define TRACE objcl_null_log
@@ -706,6 +706,8 @@ objcl_create_imp (IMP callback,
   static ffi_type *id_type = NULL;
   static ffi_type *sel_type = NULL;
 
+  TRACE (@"create-imp");
+
   if (!id_type)
     id_type = objcl_pyobjc_arg_signature_to_ffi_type ("@");
 
@@ -720,6 +722,7 @@ objcl_create_imp (IMP callback,
   for (i = 0; i < argc; i++)
     arg_types[i + 2] = objcl_pyobjc_arg_signature_to_ffi_type (arg_typespecs[i]);
 
+  TRACE (@"create-imp: prep-cif");
   status = ffi_prep_cif (&cif, FFI_DEFAULT_ABI, argc + 2, return_type, arg_types);
   if (status != FFI_OK)
     {
@@ -728,6 +731,7 @@ objcl_create_imp (IMP callback,
                     userInfo: nil] raise];
     }
 
+  TRACE (@"create-imp: prep-closure");
   status = ffi_prep_closure (closure, &cif, imp_closure, (void *)callback);
   if (status != FFI_OK)
     {
@@ -736,13 +740,17 @@ objcl_create_imp (IMP callback,
                     userInfo: nil] raise];
     }
 
+  TRACE (@"create-imp: mprotect");
   if (mprotect (closure, sizeof (closure), PROT_READ | PROT_EXEC) == -1)
     {
+#if 0
       [[NSException exceptionWithName: @"MLKClosureCreationFailure"
                     reason: @"Creating an IMP closure failed (this is probably a bug)."
                     userInfo: nil] raise];
+#endif
     }
 
+  TRACE (@"create-imp: Closure created.");
   return (IMP) closure;
 }
 
@@ -866,7 +874,9 @@ objcl_add_method (Class class,
 {
   IMP imp;
 
+  TRACE (@"add-method");
   imp = objcl_create_imp (callback, argc, return_typespec, arg_typespecs);
+  TRACE (@"add-method: IMP created.");
 
 #ifdef __NEXT_RUNTIME__
   if (registered_p)
@@ -879,23 +889,30 @@ objcl_add_method (Class class,
   int index;
 
   class_name = [NSString stringWithUTF8String: objcl_class_name (class)];
+
+  TRACE (@"add-method: Find class.");
   index = [[method_list_lengths objectForKey: class_name] intValue];
   methods = [[method_lists objectForKey: class_name] pointerValue];
 
+  TRACE (@"add-method: malloc");
   methods = realloc (methods, (index + 1) * sizeof (struct ObjCLMethod *));
   methods[index] = malloc (sizeof (struct ObjCLMethod));
 
+  TRACE (@"add-method: Initialising method.");
   methods[index]->signature = malloc (strlen (signature) + 1);
 
   methods[index]->method_name = method_name;
   strcpy (methods[index]->signature, signature);
   methods[index]->imp = imp;
 
+  TRACE (@"add-method: Adding method to dictionary.");
   [method_lists setObject: [NSValue valueWithPointer: methods]
                 forKey: class_name];
   [method_list_lengths setObject: [NSNumber numberWithInt: (index + 1)]
                        forKey: class_name];
 #endif
+
+  TRACE (@"Method added.");
 }
 
 
@@ -912,9 +929,11 @@ objcl_finalise_class (Class class)
   MethodList *method_list;
   struct ObjCLMethod **methods;
 
+  TRACE (@"finalise-class");
   class_name = [NSString stringWithUTF8String: objcl_class_name (class)];
   methods = [[method_lists objectForKey: class_name] pointerValue];
 
+  TRACE (@"finalise-class: Adding methods.");
   if (methods)
     {
       method_list = ObjcUtilities_alloc_method_list (method_count);
@@ -922,6 +941,7 @@ objcl_finalise_class (Class class)
 
       for (i = 0; i < method_count; i++)
         {
+          TRACE (@"finalise-class: Inserting a method.");
           ObjcUtilities_insert_method_in_list
             (method_list,
              i,
@@ -939,6 +959,8 @@ objcl_finalise_class (Class class)
 
   [method_lists removeObjectForKey: class_name];
   [method_list_lengths removeObjectForKey: class_name];
+
+  TRACE (@"Class finalised.");
 #endif
 }
 
