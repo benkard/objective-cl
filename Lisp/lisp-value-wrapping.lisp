@@ -39,6 +39,20 @@
   (:metaclass ns::+ns-object))
 
 
+(defun intern-lisp-value (value)
+  ;; We need this function in order to preserve object identity on the
+  ;; Objective-C side.  As we want [(intern-lisp-value 10) self] to
+  ;; return the FIXNUM 10, that is, a Lisp value rather than an
+  ;; Objective-C instance, we cannot guarantee that
+  ;;
+  ;;  (let ((x (intern-lisp-value y)))
+  ;;    (objc-eql x (invoke x 'self)))
+  ;;
+  ;; will evaluate to true unless we generally intern Lisp value
+  ;; wrappers.
+  (error "FIXME"))
+
+
 (defun make-lisp-value (value)
   ;; FIXME: The following won't work.  Make MAKE-INSTANCE more useful...
   ;(make-instance 'ns::mlk-lisp-value :value value)
