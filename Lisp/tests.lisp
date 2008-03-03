@@ -26,7 +26,9 @@
                           #:primitive-invoke #:print-typespec-to-string
                           #:nominally #:find-objc-meta-class
                           #:objcl-object-backed-by-lisp-class-p
-                          #:foreign-class-registered-p))
+                          #:foreign-class-registered-p
+                          #:define-objective-c-method #:defobjcmethod
+                          #:objective-c-generic-function #:objective-c-method))
 (in-package #:mulk.objective-cl.tests)
 (in-root-suite)
 
@@ -419,6 +421,20 @@
     ;; Class initialisation.
     (is (not (foreign-class-registered-p class)))
 
+    ;; Method definition.
+    (is (eval `(defgeneric |foo:bar:stuff:do:| (a b c d e &rest f)
+                 (:generic-function-class objective-c-generic-function)
+                 (:method-class objective-c-method))))
+    (is (eval `(define-objective-c-method |foo:bar:stuff:do:| :int
+                   ((x ,class-name)
+                    (y :int)
+                    z
+                    (a (eql t))
+                    (b number)
+                    &rest rest)
+                 (declare (ignore z rest))
+                 (+ y 150))))
+
     ;; Sanity checks.
     (is (typep class 'objective-c-class))
     (setq instance (is (invoke (invoke class 'alloc) 'init)))
@@ -426,6 +442,9 @@
     ;; Class finalisation.  (Should be automatic upon instance
     ;; creation.)
     (is (foreign-class-registered-p class))
+
+    ;; Method calls.
+    (is (= 170 (invoke instance :foo 150 :bar nil :stuff t :do 100)))
 
     ;; Object identity preservation.
     (is (eql instance

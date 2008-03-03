@@ -35,6 +35,10 @@
           :initial-value ""))
 
 
+(defun generic-function-name->selector (gf-name)
+  (selector (symbol-name gf-name)))
+
+
 ;;; (@* "Class names")
 (defun symbol->objc-class-name (symbol)
   (let* ((name (symbol-name symbol))

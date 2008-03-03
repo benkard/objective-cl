@@ -38,6 +38,10 @@
            qualifiers))
 
 
+(defmacro defobjcmethod (name &rest args)
+  `(define-objective-c-method ,name ,@args))
+
+
 (defmacro define-objective-c-method (name &rest args)
   (let ((qualifiers (list)))
     (loop until (listp (first args))
@@ -73,6 +77,55 @@
 
 (defmethod add-method :after ((gf objective-c-generic-function)
                               (method objective-c-method))
+  ;; FIXME: Support &REST arguments.
+  (let* ((class (first (method-specializers method)))
+         (method-name (generic-function-name->selector
+                       (generic-function-name gf)))
+         (registered-p (foreign-class-registered-p class))
+         (return-type (method-return-type method))
+         (method-argument-types (method-argument-types method))
+         (argument-types (list* (first method-argument-types)
+                                :selector
+                                (rest method-argument-types)))
+         (return-typestring (print-typespec-to-string return-type))
+         (arg-typestrings (mapcar #'print-typespec-to-string
+                                  argument-types))
+         (callback-name (gensym (selector-name method-name)))
+         (arg-symbols (mapcar #'(lambda (x)
+                                       (declare (ignore x))
+                                       (gensym "ARG"))
+                                   argument-types)))
+    (eval (loop for type in argument-types
+                for symbol in arg-symbols
+                collect (list symbol (typespec->c-type type)) into cffi-lambda-list
+                if (member type '(:id :class :selector))
+                  collect `(intern-pointer-wrapper ',type :pointer ,symbol)
+                    into arguments
+                else
+                  collect symbol into arguments
+                finally (return
+                          `(defcallback ,callback-name
+                               ,(typespec->c-type return-type)
+                               ,cffi-lambda-list
+                             (,(generic-function-name gf) ,@arguments)))))
+    (let ((callback (get-callback callback-name)))
+      (with-foreign-object (arg-typestring-buffer :string (length arg-typestrings))
+        (with-foreign-string-pool (register-temp allocate-temp)
+          (loop for i from 0
+                for typestring in arg-typestrings
+                do (setf (mem-aref arg-typestring-buffer :string i)
+                         (allocate-temp typestring)))
+          (%objcl-add-method (pointer-to class)
+                             (pointer-to method-name)
+                             callback
+                             (- (length arg-typestrings) 2)
+                             return-typestring
+                             arg-typestring-buffer
+                             (apply #'concatenate
+                                    'string
+                                    return-typestring
+                                    arg-typestrings)
+                             (if registered-p 1 0))))))
   #+(or) (format t "~&ADD-METHOD:~&  ~A, ~A" gf method))
 
 

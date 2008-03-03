@@ -313,7 +313,7 @@ easier to use with __apply__.
 (defun typespec->c-type (typespec)
   (case (typespec-primary-type typespec)
     ((:pointer pointer struct union id objective-c-class exception array
-      selector)
+      selector :id :class :exception :selector)
      :pointer)
     ((:string) :string)
     (otherwise (typespec-primary-type typespec))))
