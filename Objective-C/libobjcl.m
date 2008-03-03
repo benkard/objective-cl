@@ -700,6 +700,7 @@ objcl_create_imp (IMP callback,
   ffi_status status;
   ffi_cif cif;
   ffi_closure *closure;
+  void *code;
 
   int i;
 
@@ -722,6 +723,9 @@ objcl_create_imp (IMP callback,
   for (i = 0; i < argc; i++)
     arg_types[i + 2] = objcl_pyobjc_arg_signature_to_ffi_type (arg_typespecs[i]);
 
+  TRACE (@"create-imp: closure-alloc");
+  closure = ffi_closure_alloc (sizeof (ffi_closure), &code);
+
   TRACE (@"create-imp: prep-cif");
   status = ffi_prep_cif (&cif, FFI_DEFAULT_ABI, argc + 2, return_type, arg_types);
   if (status != FFI_OK)
@@ -731,23 +735,14 @@ objcl_create_imp (IMP callback,
                     userInfo: nil] raise];
     }
 
-  TRACE (@"create-imp: prep-closure");
-  status = ffi_prep_closure (closure, &cif, imp_closure, (void *)callback);
+  TRACE (@"create-imp: prep-closure-loc");
+  status = ffi_prep_closure_loc (closure, &cif, imp_closure,
+                                 (void *)callback, code);
   if (status != FFI_OK)
     {
       [[NSException exceptionWithName: @"MLKClosureCreationFailure"
                     reason: @"Creating an IMP closure failed (this is probably a bug)."
                     userInfo: nil] raise];
-    }
-
-  TRACE (@"create-imp: mprotect");
-  if (mprotect (closure, sizeof (closure), PROT_READ | PROT_EXEC) == -1)
-    {
-#if 0
-      [[NSException exceptionWithName: @"MLKClosureCreationFailure"
-                    reason: @"Creating an IMP closure failed (this is probably a bug)."
-                    userInfo: nil] raise];
-#endif
     }
 
   TRACE (@"create-imp: Closure created.");
