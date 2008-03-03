@@ -230,6 +230,12 @@ Returns: (VALUES typespec byte-position string-position)"
       (values typespec nil string-position))))
 
 
+(defun typespec (typespec-designator)
+  (etypecase typespec-designator
+    (symbol (list typespec-designator ()))
+    (list typespec-designator)))
+
+
 (defun print-typespec-to-string (typespec)
   (with-output-to-string (out)
     (print-typespec typespec out)))
@@ -238,7 +244,7 @@ Returns: (VALUES typespec byte-position string-position)"
 (defun print-typespec (typespec &optional (stream *standard-output*))
   "Convert a TYPESPEC into a typestring and write the result to a STREAM."
   (destructuring-bind (type-name modifiers &rest rest)
-      typespec
+      (typespec typespec)
     (dolist (modifier modifiers)
       (format stream "~A" (case modifier
                             (const #\r)
@@ -299,4 +305,4 @@ Returns: (VALUES typespec byte-position string-position)"
 
 
 (defun typespec-primary-type (typespec)
-  (car typespec))
+  (car (typespec typespec)))
