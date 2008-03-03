@@ -75,6 +75,20 @@
                            ,@body)))))))
 
 
+(defvar *callback-names* (make-hash-table :test #'eql))
+
+(defun intern-callback-name (method)
+  (or (gethash method *callback-names* nil)
+      (setf (gethash method *callback-names* nil)
+            (intern (format nil "~A (~A)"
+                            (generic-function-name
+                             (method-generic-function method))
+                            (sort (copy-list (method-qualifiers method))
+                                  #'string<
+                                  :key #'string))
+                    '#:objective-cl))))
+
+
 (defmethod add-method :after ((gf objective-c-generic-function)
                               (method objective-c-method))
   ;; FIXME: Support &REST arguments.
@@ -90,7 +104,7 @@
          (return-typestring (print-typespec-to-string return-type))
          (arg-typestrings (mapcar #'print-typespec-to-string
                                   argument-types))
-         (callback-name (gensym (selector-name method-name)))
+         (callback-name (intern-callback-name method))
          (arg-symbols (mapcar #'(lambda (x)
                                        (declare (ignore x))
                                        (gensym "ARG"))
