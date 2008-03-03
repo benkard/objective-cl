@@ -30,6 +30,15 @@
 (defctype char-pointer :pointer)
 
 
+;;;; (@* "Type specifiers")
+(deftype objective-c-type-keyword ()
+  `(member :id :class :selector :string
+           :char :short :int :long :long-long
+           :unsigned-char :unsigned-short :unsigned-int
+           :unsigned-long :unsigned-long-long :pointer
+           :float :double))
+
+
 ;;;; (@* "Objective-C object wrapper classes")
 (with-compilation-unit ()  ; needed for class finalization
   (defclass c-pointer-wrapper ()
