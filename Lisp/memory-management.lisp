@@ -31,7 +31,7 @@
       ;; be called at load-time (see the MAKE-LOAD-FORM methods in
       ;; data-types.lisp).
       (make-instance 'id :pointer (objcl-get-nil))))
-  (when (not (eq 'selector class))
+  (when (not (member class '(selector :selector)))
     (cond ((%objcl-object-is-meta-class pointer)
            (return-from intern-pointer-wrapper
              (find-objc-meta-class-by-name (%objcl-class-name pointer))))
@@ -42,9 +42,9 @@
            (return-from intern-pointer-wrapper
              (apply #'intern-lisp-managed-foreign-instance initargs)))))
   (let* ((hash-table (ecase class
-                       ((id) *id-objects*)
-                       ((exception) *exception-objects*)
-                       ((selector) *selector-objects*)))
+                       ((id :id) *id-objects*)
+                       ((exception :exception) *exception-objects*)
+                       ((selector :selector) *selector-objects*)))
          (address (cffi:pointer-address pointer))
          (object (weak-gethash address hash-table nil)))
     (if object
@@ -74,7 +74,7 @@
   ;;
   ;; By the way, is using the return value of SETF considered bad style?
   (let* ((constructor (case class
-                        ((exception) #'make-condition)
+                        ((exception :exception) #'make-condition)
                         (otherwise #'make-instance)))
          (*in-make-pointer-wrapper-p* t)
          (new-wrapper (apply constructor
@@ -87,7 +87,7 @@
                              ;; case of POINTER pointing to a class,
                              ;; because it is handled right at the
                              ;; beginning of the function.
-                             (if (eq class 'id)
+                             (if (member class '(id :id))
                                  (primitive-invoke pointer
                                                    "class"
                                                    'id)
@@ -100,7 +100,7 @@
     ;; management for them would not be healthy.  Considering these
     ;; facts, doing memory management only for id instances seems the
     ;; right thing to do.
-    (when (eq class 'id)
+    (when (member class '(id :id))
       ;; We call the `retain' method on every object that we receive
       ;; from a method call or otherwise except non-convenience
       ;; constructor methods (i.e. those whose name starts with `alloc'
