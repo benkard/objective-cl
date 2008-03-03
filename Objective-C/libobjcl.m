@@ -39,7 +39,7 @@
 #include <objc/objc-class.h>
 #endif
 
-#if 1
+#if 0
 #define TRACE NSLog
 #else
 #define TRACE objcl_null_log
