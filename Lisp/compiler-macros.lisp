@@ -18,18 +18,19 @@
 (in-package #:mulk.objective-cl)
 
 
-(defun selector-load-time-form (method-name)
-  `(load-time-value (handler-case
-                        (find-selector ',method-name)
-                      (serious-condition ()
-                        (warn
-                         (make-condition 'simple-style-warning
-                                         :format-control
-                                         "~S designates an unknown ~
-                                               method selector."
-                                         :format-arguments
-                                         (list ',method-name)))
-                        ',method-name))))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun selector-load-time-form (method-name)
+    `(load-time-value (handler-case
+                          (find-selector ',method-name)
+                        (serious-condition ()
+                          (warn
+                           (make-condition 'simple-style-warning
+                                           :format-control
+                                           "~S designates an unknown ~
+                                            method selector."
+                                           :format-arguments
+                                           (list ',method-name)))
+                          ',method-name)))))
 
 
 ;; Optimise constant method names away by converting them to selectors
