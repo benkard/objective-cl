@@ -199,6 +199,7 @@ objcl_create_class (const char *class_name,
 
 void
 objcl_add_method (Class class,
+                  const char *class_name,
                   SEL method_name,
                   IMP callback,
                   int argc,

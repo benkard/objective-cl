@@ -130,6 +130,7 @@
                 do (setf (mem-aref arg-typestring-buffer :string i)
                          (allocate-temp typestring)))
           (%objcl-add-method (pointer-to class)
+                             (symbol->objc-class-name (class-name class))
                              (pointer-to method-name)
                              callback
                              (- (length arg-typestrings) 2)

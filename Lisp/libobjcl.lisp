@@ -162,6 +162,7 @@
 
 (defcfun ("objcl_add_method" %objcl-add-method) :void
   (class :pointer)
+  (class-name :string)
   (method-name :pointer)
   (callback :pointer)
   (argc :int)

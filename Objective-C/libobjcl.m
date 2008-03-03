@@ -864,6 +864,7 @@ objcl_create_class (const char *class_name,
 
 void
 objcl_add_method (Class class,
+                  const char *class_name,
                   SEL method_name,
                   IMP callback,
                   int argc,
@@ -884,15 +885,14 @@ objcl_add_method (Class class,
   else
     preclass_addMethod (class, method_name, imp, signature);
 #else
-  NSString *class_name;
   struct ObjCLMethod **methods;
   int index;
 
-  class_name = [NSString stringWithUTF8String: objcl_class_name (class)];
+  NSString *class_name_id = [NSString stringWithUTF8String: class_name];
 
-  TRACE (@"add-method: Find class.");
-  index = [[method_list_lengths objectForKey: class_name] intValue];
-  methods = [[method_lists objectForKey: class_name] pointerValue];
+  TRACE (@"add-method: Finding class.");
+  index = [[method_list_lengths objectForKey: class_name_id] intValue];
+  methods = [[method_lists objectForKey: class_name_id] pointerValue];
 
   TRACE (@"add-method: malloc");
   methods = realloc (methods, (index + 1) * sizeof (struct ObjCLMethod *));
@@ -907,9 +907,9 @@ objcl_add_method (Class class,
 
   TRACE (@"add-method: Adding method to dictionary.");
   [method_lists setObject: [NSValue valueWithPointer: methods]
-                forKey: class_name];
+                forKey: class_name_id];
   [method_list_lengths setObject: [NSNumber numberWithInt: (index + 1)]
-                       forKey: class_name];
+                       forKey: class_name_id];
 #endif
 
   TRACE (@"Method added.");
