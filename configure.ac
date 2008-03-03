@@ -24,7 +24,9 @@ AC_PROG_OBJC
 #AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
-AC_SEARCH_LIBS([ffi_call], [ffi], [HAVE_LIBFFI=1; break], [HAVE_LIBFFI=0])
+# Note that ffi_prep_closure_loc is not available in libffi versions
+# prior to 3.0.0.  This includes Leopard's preinstalled libffi.
+AC_SEARCH_LIBS([ffi_prep_closure_loc], [ffi], [HAVE_LIBFFI=1; break], [HAVE_LIBFFI=0])
 
 HAVE_ANY_FFI_H=0
 if test x$HAVE_LIBFFI = x1; then
