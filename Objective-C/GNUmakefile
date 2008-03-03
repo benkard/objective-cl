@@ -45,9 +45,9 @@ ifdef USE_LIBFFI
 # hard in general (that's one of the reasons libtool exists, after all).
 ADDITIONAL_OBJCFLAGS += -DUSE_LIBFFI
 ifneq ($(HAVE_ANY_FFI_H),1)
-ADDITIONAL_LDFLAGS += ../libffi/.libs/libffi.a
-ADDITIONAL_OBJCFLAGS += -I../libffi/include
-FFI_DEPS += ../libffi/.libs/libffi.a
+ADDITIONAL_LDFLAGS += ../libffi-3.0.4/.libs/libffi.a
+ADDITIONAL_OBJCFLAGS += -I../libffi-3.0.4/include
+FFI_DEPS += ../libffi-3.0.4/.libs/libffi.a
 FFI_CLEAN += libffi_clean
 endif
 libobjcl_OBJC_FILES += PyObjC/libffi_support.m
@@ -84,9 +84,9 @@ obj/%.o: %.m
 	gcc -o $@ -c $< -MMD -MP -DNeXT_Foundation_LIBRARY=1 -DNeXT_GUI_LIBRARY=1 -DNeXT_RUNTIME=1 -dynamic -fno-common -fno-omit-frame-pointer -Wno-import -fno-strict-aliasing -fnext-runtime -I. $(ADDITIONAL_OBJCFLAGS)
 endif
 
-../libffi/.libs/libffi.a:
-	(cd ../libffi && chmod +x ltconfig && sh ./configure && make)
+../libffi-3.0.4/.libs/libffi.a:
+	(cd ../libffi-3.0.4 && chmod +x ltconfig && sh ./configure && make)
 
 libffi_clean:
-	-make -C ../libffi distclean
+	-make -C ../libffi-3.0.4 distclean
 endif # CONFIG_MAKE_INCLUDED_P

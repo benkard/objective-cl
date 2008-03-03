@@ -185,7 +185,7 @@
                                    #p"**/GNUmakefile.*"
                                    #p"**/*.make" #p"**/GNUmakefile"
                                    #p"**/*.in" #p"**/configure" #p"**/configure.ac"
-                                   #p"libffi/**/*" #p"libffi/**/*.*")))))
+                                   #p"libffi-3.0.4/**/*" #p"libffi-3.0.4/**/*.*")))))
             (dolist (relative-source-file sources)
               (let ((output-file (merge-pathnames relative-source-file output-dir))
                     (source-file (merge-pathnames relative-source-file source-dir)))
