@@ -19,19 +19,69 @@
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (find-objc-class "NSObject" t))
+  (find-objc-class "NSObject" t)
+  (find-objc-class "NSString" t)
+  (find-objc-class "NSArray" t)
+  (find-objc-class "NSDictionary" t))
 
 
-(defclass ns::mlk-lisp-value (ns::ns-object)
+(defclass lisp-value-wrapper-mixin ()
      ((lisp-value :initarg :value
                   :initform nil
-                  :accessor lisp-value))
+                  :accessor lisp-value)))
+
+
+;; May usefully override, among others:
+;;  - description
+(defclass ns::mlk-lisp-value (ns::ns-object lisp-value-wrapper-mixin)
+     ()
+  #+(or) (:default-constructor new)
   (:metaclass ns::+ns-object))
 
 
 (defun make-lisp-value (value)
   ;; FIXME: The following won't work.  Make MAKE-INSTANCE more useful...
   ;(make-instance 'ns::mlk-lisp-value :value value)
-  (let ((instance (invoke (find-class 'ns::mlk-lisp-value) 'new)))
+  (let ((instance (invoke (typecase value
+                            (string (find-class 'ns::mlk-lisp-string))
+                            (vector (find-class 'ns::mlk-lisp-array))
+                            (list (find-class 'ns::mlk-lisp-list))
+                            (t (find-class 'ns::mlk-lisp-value)))
+                          'new)))
     (setf (lisp-value instance) value)
     instance))
+
+
+;; Must override:
+;;  - characterAtIndex:
+;;  - length
+;;
+;; May usefully override, among others:
+;;  - substringWithRange: (maybe)
+;;  - getCharacters:range: (for performance reasons)
+;;  - description
+(defclass ns::mlk-lisp-string (ns::ns-string lisp-value-wrapper-mixin)
+     ()
+  (:metaclass ns::+ns-object))
+
+
+;; Must override:
+;;  - objectAtIndex:
+;;  - count
+;;
+;; May usefully override, among others:
+;;  - description
+(defclass ns::mlk-lisp-array (ns::ns-array lisp-value-wrapper-mixin)
+     ()
+  (:metaclass ns::+ns-object))
+
+
+;; Must override:
+;;  - objectAtIndex:
+;;  - count
+;;
+;; May usefully override, among others:
+;;  - description
+(defclass ns::mlk-lisp-list (ns::ns-array lisp-value-wrapper-mixin)
+     ()
+  (:metaclass ns::+ns-object))

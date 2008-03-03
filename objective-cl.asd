@@ -96,7 +96,8 @@
                  (:file "lisp-value-wrapping" :depends-on ("defpackage"
                                                            "libobjcl"
                                                            "init"
-                                                           "class-definition"))
+                                                           "class-definition"
+                                                           "method-invocation"))
                  (:file "post-init"          :depends-on ("defpackage"
                                                           "libobjcl"
                                                           "init"
