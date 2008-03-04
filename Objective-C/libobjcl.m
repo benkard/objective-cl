@@ -746,7 +746,7 @@ objcl_create_imp (IMP callback,
     }
 
   TRACE (@"create-imp: Closure created.");
-  return (IMP) closure;
+  return (IMP) code;
 }
 
 
