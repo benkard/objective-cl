@@ -215,7 +215,7 @@ objcl_invoke_with_types (int argc,
          either. */
       method = objcl_get_method_implementation (receiver, method_selector,
                                                 superclass_for_send_super);
-      TRACE (@"method == NULL");
+      TRACE (@"method ?= NULL");
       if (method == NULL)
         [[NSException exceptionWithName: @"MLKNoApplicableMethod"
                       reason: @"Tried to call a non-existent method."
@@ -678,6 +678,8 @@ imp_closure (ffi_cif *cif, void *result, void **args, void *user_data)
 {
   id exception;
 
+  TRACE (@"imp-closure");
+
   ffi_call (cif, user_data, result, args);
 
   exception = objcl_current_exception;
@@ -686,6 +688,8 @@ imp_closure (ffi_cif *cif, void *result, void **args, void *user_data)
 
   if (exception != nil)
     [exception raise];
+
+  TRACE (@"imp-closure => %");
 }
 
 
