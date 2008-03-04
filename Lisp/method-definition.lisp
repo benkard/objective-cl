@@ -88,7 +88,8 @@
      ,@(unless (position :method-class
                          options
                          :key #'car)
-         `((:method-class objcl:objective-c-method)))))
+         `((:method-class objcl:objective-c-method)))
+     ,@options))
 
 
 (defvar *callback-names* (make-hash-table :test #'eql))

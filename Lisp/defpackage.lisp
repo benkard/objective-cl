@@ -23,6 +23,7 @@
            ;; Functions
   (:export #:initialise-runtime
            #:shutdown-runtime
+           #:install-reader-syntax
            #:enable-method-syntax
            #:enable-objective-c-syntax
            #:disable-method-syntax
