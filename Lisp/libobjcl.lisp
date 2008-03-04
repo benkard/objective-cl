@@ -194,6 +194,8 @@
     :int
   (function :pointer))
 
+(defcfun ("objcl_test_foo" objcl-test-foo) :void)
+
 (defcvar *objcl-current-exception-lock* :pointer)
 (defcvar *objcl-current-exception* :pointer)
 

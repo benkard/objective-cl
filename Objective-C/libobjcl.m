@@ -39,7 +39,9 @@
 #include <objc/objc-class.h>
 #endif
 
-#if 0
+#define DEBUG 0
+
+#if DEBUG
 #define TRACE NSLog
 #else
 #define TRACE objcl_null_log
@@ -1043,4 +1045,44 @@ objcl_for_each_class_do (void (*function) (Class))
 #endif
 
   return 0;
+}
+
+
+/* The function objcl_test_foo is a general-purpose debugging tool that
+   can be adapted as needed. */
+@interface MLKTestStringHelper
+-(int) foo:(int)n bar:(id)x stuff:(id)y do:(id)z;
+@end
+
+void
+objcl_test_foo (void)
+{
+#if DEBUG
+  Class c;
+  id i;
+
+  TRACE (@"###################### test-foo ######################");
+
+  NS_DURING
+    {
+
+      c = objcl_find_class ("MLKTestString1");
+      TRACE (@"%@", c);
+
+      i = [c new];
+      TRACE (@"%@", i);
+
+      TRACE (@"%d", (int) [i foo: 100
+                             bar: i
+                             stuff: nil
+                             do: [NSNumber numberWithInt: 30]]);
+
+      TRACE (@"test-foo => %");
+    }
+  NS_HANDLER
+    {
+      TRACE (@"test-foo: Caught exception: %@", localException);
+    }
+  NS_ENDHANDLER
+#endif
 }
