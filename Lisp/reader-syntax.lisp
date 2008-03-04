@@ -18,13 +18,83 @@
 (in-package #:mulk.objective-cl)
 
 
+(defun enable-method-syntax ()
+  "Install a **reader macro** that makes method calls look nicer.
+
+## Description:
+
+The **reader macro** installed by __enable-method-syntax__ makes it
+easier to write method invocations as well as making them more readable
+alongside Lisp code by placing the method name in front.  At the same
+time, it is a more conservative syntax enhancement than that provided by
+__enable-objective-c-syntax__.
+
+The reader macro transforms any sequence of alphanumeric characters and
+characters that are __eql__ to one of #\:, #\- and #\_ into a symbol
+with that sequence as the **symbol name** and _objective-c-methods__ as
+the **symbol package**.  It also takes care to make a __selector__
+available as the __fdefinition__ of that symbol unless the symbol is
+already **fbound**.
+
+
+## Examples:
+
+    #.(enable-method-syntax)
+
+    (#/stringWithCString:encoding: \"Hi there!\" 0)
+      => 
+
+    (defvar *lock* (#/new (find-objc-class 'ns-lock)))
+      => *LOCK*
+
+    (#/lock lock)
+    (#/tryLock lock)
+    (#/unlock lock)
+
+    #.(disable-method-syntax)
+
+
+## Note:
+
+Absent manual changes by the user, the __fdefinition__ of any symbol
+read by this reader macro may point to either a __selector__ or an
+__objective-c-generic-function__, depending on whether a corresponding
+__defgeneric__ form has been executed.
+
+
+## See also:
+
+  __enable-objective-c-syntax__"
+
+  (set-dispatch-macro-character #\# #\/ #'(lambda (stream char arg)
+                                            (declare (ignore char arg))
+                                            (read-objective-c-method stream))))
+
+
+(defun read-objective-c-method (stream)
+  (loop for char = (read-char stream nil nil t)
+        while (or (alphanumericp char)
+                  (member char '(#\: #\- #\_)))
+        collect char into constituents
+        finally (progn
+                  (when char (unread-char char stream))
+                  (let ((symbol (intern (format nil "~{~A~}" constituents)
+                                        '#:objective-c-methods)))
+                    (return symbol)))))
+
+
 (defun install-reader-syntax ()
+  "This function is deprecated.  Use __enable-objective-c-syntax__ instead."
+  (enable-reader-syntax))
+
+
+(defun enable-objective-c-syntax ()
   "Install an Objective-C-like **reader macro** for Objective-C method
  calls.
 
 ## Description:
 
-The **reader macro** installed by __install-reader-syntax__ closely
+The **reader macro** installed by __enable-objective-c-syntax__ closely
 resembles the conventional method call syntax of Objective-C.  In fact,
 any differences between standard Objective-C method call syntax and this
 **reader macro** that are not documented here are probably bugs and
@@ -126,7 +196,8 @@ conciseness.
 
 ## See also:
 
-  __invoke__, __invoke-by-name__"
+  __invoke__, __invoke-by-name__, __disable-objective-c-syntax__,
+__enable-method-syntax__"
 
   (set-macro-character #\] (get-macro-character #\)))
 

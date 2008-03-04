@@ -23,7 +23,8 @@
            ;; Functions
   (:export #:initialise-runtime
            #:shutdown-runtime
-           #:install-reader-syntax
+           #:enable-method-syntax
+           #:enable-objective-c-syntax
            #:invoke-by-name
            #:invoke
            #:find-objc-class
@@ -33,14 +34,17 @@
            #:selector
            #:define-returns-boolean-exception
            #:undefine-returns-boolean-exception
+           #:collect-classes
 
            ;; Generic functions
            #:objc-eql
            #:objc-equal
+           #:foreign-value-lisp-managed-p
 
            ;; Macros
            #+(or) #:define-objc-struct
            #+(or) #:define-objc-union
+           #:define-objective-c-method
 
            ;; Special variables
            #:*trace-method-calls*
@@ -57,6 +61,8 @@
            #:foreign-value
            #:foreign-struct
            #:foreign-union
+           #:objective-c-generic-function
+           #:objective-c-method
 
            ;; Conditions
            #:message-not-understood
@@ -76,6 +82,11 @@
 
 (defpackage #:ns
   (:nicknames #:objcl-ns #:objective-c-classes #:objc-classes)
+  (:use))
+
+
+(defpackage #:objective-c-methods
+  (:nicknames #:objc-methods #:objcm)
   (:use))
 
 
