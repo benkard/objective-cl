@@ -301,7 +301,7 @@ Returns: (VALUES typespec byte-position string-position)"
   ;; type found.
   (cadr (find-if #'(lambda (x) (and (consp x)
                                     (eq (car x) 'nominally)))
-                 (cadr typespec))))
+                 (cadr (typespec typespec)))))
 
 
 (defun typespec-primary-type (typespec)

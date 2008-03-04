@@ -416,7 +416,7 @@
                                                    :type list
                                                    :initargs (:foos))
                                                   (:name foo-count
-                                                   :foreign-type (:int ())))
+                                                   :foreign-type :int))
                                   :metaclass (find-objc-meta-class "NSObject"))))
 
     ;; Class initialisation.
