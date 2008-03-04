@@ -682,10 +682,7 @@ imp_closure (ffi_cif *cif, void *result, void **args, void *user_data)
   id exception;
 
   TRACE (@"imp-closure");
-
-  TRACE (@"  %p", args[0]);
-  //TRACE (@"  = %p", *((id*)args[0]));
-  //TRACE (@"  = (%@)", *((id*)args[0]));
+  TRACE (@"  %p", user_data);
 
   ffi_call (cif, user_data, result, args);
 
@@ -718,7 +715,7 @@ objcl_create_imp (IMP callback,
   static ffi_type *id_type = NULL;
   static ffi_type *sel_type = NULL;
 
-  TRACE (@"create-imp");
+  TRACE (@"create-imp %p", callback);
 
   if (!id_type)
     id_type = objcl_pyobjc_arg_signature_to_ffi_type ("@");
@@ -737,6 +734,7 @@ objcl_create_imp (IMP callback,
     arg_types[i + 2] = objcl_pyobjc_arg_signature_to_ffi_type (arg_typespecs[i]);
 
 #if DEBUG
+  TRACE (@"Return: %s", return_typespec);
   for (i = 0; i < argc; i++)
     {
       TRACE (@"%d. %s", i, arg_typespecs[i]);
@@ -768,6 +766,7 @@ objcl_create_imp (IMP callback,
                     userInfo: nil] raise];
     }
 
+  TRACE (@"create-imp: Closure jump address %p, data %p", code, closure);
   TRACE (@"create-imp: Closure created.");
   return (IMP) code;
 }
@@ -1073,6 +1072,7 @@ objcl_test_foo (void)
 
       i = [c new];
       TRACE (@"%@", i);
+      TRACE (@"%@", [i self]);
 
       TRACE (@"%d", (int) [i foo: 100
                              bar: i
