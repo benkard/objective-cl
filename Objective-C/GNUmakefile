@@ -73,7 +73,7 @@ clean: $(FFI_CLEAN)
 distclean: clean
 
 obj/libobjcl.dylib: $(FFI_DEPS) obj/libobjcl.dylib.$(VERSION)
-	ln -s libobjcl.dylib.$(VERSION) $@
+	ln -s -f libobjcl.dylib.$(VERSION) $@
 
 obj/libobjcl.dylib.$(VERSION): $(libobjcl_OBJ_FILES)
 	make -p obj
