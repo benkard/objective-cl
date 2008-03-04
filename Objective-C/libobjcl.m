@@ -935,8 +935,8 @@ objcl_finalise_class (Class class)
   TRACE (@"finalise-class: Adding methods.");
   if (methods)
     {
-      method_list = ObjcUtilities_alloc_method_list (method_count);
       method_count = [[method_list_lengths objectForKey: class_name] intValue];
+      method_list = ObjcUtilities_alloc_method_list (method_count);
 
       for (i = 0; i < method_count; i++)
         {
