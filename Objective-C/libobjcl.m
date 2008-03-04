@@ -707,7 +707,7 @@ objcl_create_imp (IMP callback,
                   const char *arg_typespecs[])
 {
   ffi_type *return_type;
-  ffi_type *arg_types[argc + 2];
+  ffi_type **arg_types;
   ffi_status status;
   ffi_cif *cif;
   ffi_closure *closure;
@@ -727,6 +727,8 @@ objcl_create_imp (IMP callback,
     sel_type = objcl_pyobjc_arg_signature_to_ffi_type (":");
 
   return_type = objcl_pyobjc_signature_to_ffi_return_type (return_typespec);
+
+  arg_types = malloc ((argc+2) * sizeof (ffi_type *));  /* never freed */
 
   arg_types[0] = id_type;
   arg_types[1] = sel_type;
