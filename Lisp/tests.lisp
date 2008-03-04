@@ -431,7 +431,7 @@
                    ((x ,class-name)
                     (y :int)
                     z
-                    (a (eql +nil+))
+                    (a t #+(or) (eql +nil+))
                     (b ns::ns-number)
                     &rest rest)
                  (declare (ignore z rest))

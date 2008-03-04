@@ -106,9 +106,9 @@
                                   argument-types))
          (callback-name (intern-callback-name method))
          (arg-symbols (mapcar #'(lambda (x)
-                                       (declare (ignore x))
-                                       (gensym "ARG"))
-                                   argument-types)))
+                                  (declare (ignore x))
+                                  (gensym "ARG"))
+                              argument-types)))
     (eval (loop for type in argument-types
                 for symbol in arg-symbols
                 collect (list symbol (typespec->c-type type)) into cffi-lambda-list
@@ -122,7 +122,7 @@
                                ,(typespec->c-type return-type)
                                ,cffi-lambda-list
                              (declare (ignorable ,(cadr arg-symbols)))
-                             #+(or) (progn  ;for debugging
+                             #+(or) (progn ;for debugging
                                       (print '(,(generic-function-name gf)
                                                ,@arguments))
                                       (format t "~&~A" (list ,@arg-symbols)))
