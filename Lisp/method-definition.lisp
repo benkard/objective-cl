@@ -131,6 +131,17 @@
                                    ;; Leave the second argument (the
                                    ;; selector) out.
                                    ,@(list* (car arguments) (cddr arguments)))
+                               ;; FIXME: We may want to wrap signalled
+                               ;; SERIOUS-CONDITIONS in some kind of
+                               ;; Objective-C exception object and put
+                               ;; it into *OBJCL-CURRENT-EXCEPTION*.  Or
+                               ;; maybe we don't, assuming the Lisp
+                               ;; system can handle a few layers of C
+                               ;; functions between a condition's
+                               ;; signalling and handling, in which case
+                               ;; we'd only destroy the restart
+                               ;; mechanism by pseudo-handling
+                               ;; conditions in this way.
                                (%objcl-acquire-lock *objcl-current-exception-lock*))))))
     (let ((callback (get-callback callback-name)))
       (with-foreign-object (arg-typestring-buffer :string
