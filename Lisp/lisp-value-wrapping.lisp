@@ -39,6 +39,20 @@
   (:metaclass ns::+ns-object))
 
 
+(defcoercion id ((x list))
+  (intern-lisp-value x))
+
+(defcoercion id ((x string))
+  ;; FIXME: Implement INTERN-LISP-VALUE.
+  (primitive-invoke (find-objc-class 'ns-string)
+                    "stringWithUTF8String:"
+                    'id
+                    x))
+
+(defcoercion id ((x t))
+  (intern-lisp-value x))
+
+
 (defun intern-lisp-value (value)
   ;; We need this function in order to preserve object identity on the
   ;; Objective-C side.  As we want [(intern-lisp-value 10) self] to

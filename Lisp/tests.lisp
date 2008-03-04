@@ -429,7 +429,7 @@
                    ((x ,class-name)
                     (y :int)
                     z
-                    (a (eql t))
+                    (a (eql nil))
                     (b number)
                     &rest rest)
                  (declare (ignore z rest))
@@ -444,7 +444,7 @@
     (is (foreign-class-registered-p class))
 
     ;; Method calls.
-    (is (= 170 (invoke instance :foo 150 :bar nil :stuff t :do 100)))
+    (is (= 170 (invoke instance :foo 150 :bar nil :stuff nil :do 100)))
 
     ;; Object identity preservation.
     (is (eql instance

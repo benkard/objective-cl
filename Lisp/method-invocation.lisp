@@ -492,24 +492,10 @@ easier to use with __apply__.
                     'id
                     x))
 
-(defcoercion id ((x string))
-  (primitive-invoke (find-objc-class 'ns-string)
-                    "stringWithUTF8String:"
-                    'id
-                    x))
+(defcoercion id ((x null))
+  +nil+)
 
-(defcoercion id ((x list))
-  ;; Circular lists may cause this to hang.  So may lists that contain
-  ;; themselves, as well as lists that contain other data structures
-  ;; that contain themselves or this list, and so on.
-  (apply #'primitive-invoke
-         (find-objc-class 'ns-array)
-         "arrayWithObjects:"
-         'id
-         (append (mapcar #'(lambda (element)
-                             (coerce-object element 'id))
-                         x)
-                 (list +nil+))))
+;; (defcoercion id ((x {list, string, t})) ...): See lisp-value-wrapping.lisp.
 
 
 (defcoercion class ((x id))

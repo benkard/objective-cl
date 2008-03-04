@@ -24,8 +24,7 @@
     (case (or (typespec-nominal-type typespec)
               (typespec-primary-type typespec))
       ((id objective-c-class exception selector)
-       (let ((*skip-retaining*
-              skip-retaining-p))
+       (let ((*skip-retaining* skip-retaining-p))
          (intern-pointer-wrapper (car typespec)
                                  :pointer (cffi:mem-ref foreign-value-cell
                                                         c-type))))
