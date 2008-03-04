@@ -192,7 +192,7 @@ a suitable class method instead as you would in Objective-C.
               :reader   pointer-to
               :initarg  :pointer))
   (:report (lambda (condition stream)
-             (describe-object condition stream)))
+             (print-object condition stream)))
   (:documentation "The condition type for Objective-C exceptions.
 
 ## Description:
@@ -230,14 +230,6 @@ an __exception__, you can simply send it the `self' message.
 ## See also:
 
   __id__"))
-
-
-(defmethod describe-object ((condition exception) stream)
-  (format stream "The Objective-C runtime has issued an exception of ~
-                  type `~A'.~&~
-                  Reason: ~A."
-          (invoke-by-name (invoke-by-name condition "name") "UTF8String")
-          (invoke-by-name (invoke-by-name condition "reason") "UTF8String")))
 
 
 (defclass foreign-value (c-pointer-wrapper)
