@@ -121,6 +121,7 @@
                           `(defcallback ,callback-name
                                ,(typespec->c-type return-type)
                                ,cffi-lambda-list
+                             (declare (ignorable ,(cadr arg-symbols)))
                              #+(or) (progn  ;for debugging
                                       (print '(,(generic-function-name gf)
                                                ,@arguments))
