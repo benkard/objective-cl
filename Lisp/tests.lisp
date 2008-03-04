@@ -435,7 +435,7 @@
                     (b ns::ns-number)
                     &rest rest)
                  (declare (ignore z rest))
-                 (+ y 150))))
+                 (+ y 20))))
 
     ;; Sanity checks.
     (is (typep class 'objective-c-class))

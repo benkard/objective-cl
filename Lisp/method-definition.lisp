@@ -126,10 +126,12 @@
                                       (print '(,(generic-function-name gf)
                                                ,@arguments))
                                       (format t "~&~A" (list ,@arg-symbols)))
-                             (,(generic-function-name gf)
-                               ;; Leave the second argument (the
-                               ;; selector) out.
-                               ,@(list* (car arguments) (cddr arguments)))))))
+                             (unwind-protect
+                                 (,(generic-function-name gf)
+                                   ;; Leave the second argument (the
+                                   ;; selector) out.
+                                   ,@(list* (car arguments) (cddr arguments)))
+                               (%objcl-acquire-lock *objcl-current-exception-lock*))))))
     (let ((callback (get-callback callback-name)))
       (with-foreign-object (arg-typestring-buffer :string
                                                   (- (length arg-typestrings) 2))

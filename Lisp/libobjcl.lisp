@@ -145,10 +145,10 @@
   (return-typespec :string)
   (arg-typespecs (:array :string)))
 
-(defcfun ("objcl_acquire_lock" %objcl-release-lock) :pointer
+(defcfun ("objcl_acquire_lock" %objcl-acquire-lock) :pointer
   (lock :pointer))
 
-(defcfun ("objcl_release_lock" %objcl-acquire-lock) :pointer
+(defcfun ("objcl_release_lock" %objcl-release-lock) :pointer
   (lock :pointer))
 
 (defcfun ("objcl_create_class" %objcl-create-class) :pointer

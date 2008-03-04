@@ -775,6 +775,8 @@ objcl_create_imp (IMP callback,
 void
 objcl_acquire_lock (id lock)
 {
+  TRACE (@"acquire-lock");
+  TRACE (@"  %@", lock);
   [lock lock];
   TRACE (@"Lock %@ acquired.", lock);
 }
@@ -783,6 +785,8 @@ objcl_acquire_lock (id lock)
 void
 objcl_release_lock (id lock)
 {
+  TRACE (@"release-lock");
+  TRACE (@"  %@", lock);
   [lock unlock];
   TRACE (@"Lock %@ released.", lock);
 }
