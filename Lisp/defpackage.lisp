@@ -25,6 +25,8 @@
            #:shutdown-runtime
            #:enable-method-syntax
            #:enable-objective-c-syntax
+           #:disable-method-syntax
+           #:disable-objective-c-syntax
            #:invoke-by-name
            #:invoke
            #:find-objc-class

@@ -18,6 +18,10 @@
 (in-package #:mulk.objective-cl)
 
 
+(defvar *method-syntax-macro-chars* (list))
+(defvar *bracket-syntax-macro-chars* (list))
+
+
 (defun enable-method-syntax ()
   "Install a **reader macro** that makes method calls look nicer.
 
@@ -66,9 +70,17 @@ __defgeneric__ form has been executed.
 
   __enable-objective-c-syntax__"
 
+  (push (get-dispatch-macro-character #\# #\/) *method-syntax-macro-chars*)
   (set-dispatch-macro-character #\# #\/ #'(lambda (stream char arg)
                                             (declare (ignore char arg))
                                             (read-objective-c-method stream))))
+
+
+(defun disable-method-syntax ()
+  "FIXME"
+  (when *method-syntax-macro-chars*
+    (let ((macro-char (pop *method-syntax-macro-chars*)))
+      (set-dispatch-macro-character #\# #\/ macro-char))))
 
 
 (defun read-objective-c-method (stream)
@@ -85,7 +97,7 @@ __defgeneric__ form has been executed.
 
 (defun install-reader-syntax ()
   "This function is deprecated.  Use __enable-objective-c-syntax__ instead."
-  (enable-reader-syntax))
+  (enable-objective-c-syntax))
 
 
 (defun enable-objective-c-syntax ()
@@ -199,11 +211,22 @@ conciseness.
   __invoke__, __invoke-by-name__, __disable-objective-c-syntax__,
 __enable-method-syntax__"
 
+  (push (cons (get-macro-character #\[)
+              (get-macro-character #\]))
+        *bracket-syntax-macro-chars*)
   (set-macro-character #\] (get-macro-character #\)))
-
   (set-macro-character #\[ #'(lambda (stream char)
                                (declare (ignore char))
                                (parse-objc-call stream))))
+
+
+(defun disable-objective-c-syntax ()
+  "FIXME"
+  (when *bracket-syntax-macro-chars*
+    (destructuring-bind (open . close)
+        (pop *bracket-syntax-macro-chars*)
+      (set-macro-character #\[ open)
+      (set-macro-character #\[ close))))
 
 
 (defun parse-objc-call (stream)
