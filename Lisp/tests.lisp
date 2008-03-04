@@ -392,7 +392,7 @@
                'load-time-value))
     (is (not (equal (car (compiler-macroexpand-1 `(selector (:foo :bar))))
                     'load-time-value)))
-    (is (not (equal (car (compiler-macroexpand-1 `(selector (car '(:foo :bar)))))
+    (is (not (equal (car (compiler-macroexpand-1 `(selector (car (:foo :bar)))))
                     'load-time-value)))
     (is (not (equal (car (compiler-macroexpand-1 `(selector `(,x ,y))))
                     'load-time-value)))))
