@@ -121,6 +121,10 @@
                           `(defcallback ,callback-name
                                ,(typespec->c-type return-type)
                                ,cffi-lambda-list
+                             #+(or) (progn  ;for debugging
+                                      (print '(,(generic-function-name gf)
+                                               ,@arguments))
+                                      (format t "~&~A" (list ,@arg-symbols)))
                              (,(generic-function-name gf)
                                ;; Leave the second argument (the
                                ;; selector) out.
