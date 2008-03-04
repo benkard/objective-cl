@@ -121,7 +121,10 @@
                           `(defcallback ,callback-name
                                ,(typespec->c-type return-type)
                                ,cffi-lambda-list
-                             (,(generic-function-name gf) ,@arguments)))))
+                             (,(generic-function-name gf)
+                               ;; Leave the second argument (the
+                               ;; selector) out.
+                               ,@(list* (car arguments) (cddr arguments)))))))
     (let ((callback (get-callback callback-name)))
       (with-foreign-object (arg-typestring-buffer :string
                                                   (- (length arg-typestrings) 2))
