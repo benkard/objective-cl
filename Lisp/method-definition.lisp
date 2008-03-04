@@ -75,6 +75,10 @@
                            ,@body)))))))
 
 
+(defmacro defobjcgeneric (name lambda-list &body options)
+  `(define-objective-c-generic-function ,name ,lambda-list ,@options))
+
+
 (defmacro define-objective-c-generic-function (name lambda-list &body options)
   `(defgeneric ,name ,lambda-list
      ,@(unless (position :generic-function-class
