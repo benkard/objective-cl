@@ -123,10 +123,11 @@
                                ,cffi-lambda-list
                              (,(generic-function-name gf) ,@arguments)))))
     (let ((callback (get-callback callback-name)))
-      (with-foreign-object (arg-typestring-buffer :string (length arg-typestrings))
+      (with-foreign-object (arg-typestring-buffer :string
+                                                  (- (length arg-typestrings) 2))
         (with-foreign-string-pool (register-temp allocate-temp)
           (loop for i from 0
-                for typestring in arg-typestrings
+                for typestring in (cddr arg-typestrings)
                 do (setf (mem-aref arg-typestring-buffer :string i)
                          (allocate-temp typestring)))
           (%objcl-add-method (pointer-to class)

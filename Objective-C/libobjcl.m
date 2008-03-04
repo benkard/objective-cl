@@ -200,7 +200,7 @@ objcl_invoke_with_types (int argc,
 
   NS_DURING
     {
-      TRACE (@"get-method");
+      TRACE (@"invoke-with-types");
       /* FIXME: The NeXT runtime wants to use special functions for
          structure and floating-point returns.
 
@@ -213,9 +213,10 @@ objcl_invoke_with_types (int argc,
          Which means that if we don't allow nil to be messaged, we
          probably don't need to bother with objc_msgSend_fpret,
          either. */
+      TRACE (@"get-method %s", objcl_selector_name (method_selector));
       method = objcl_get_method_implementation (receiver, method_selector,
                                                 superclass_for_send_super);
-      TRACE (@"method ?= NULL");
+      TRACE (@"get-method => %p", method);
       if (method == NULL)
         [[NSException exceptionWithName: @"MLKNoApplicableMethod"
                       reason: @"Tried to call a non-existent method."
@@ -680,6 +681,10 @@ imp_closure (ffi_cif *cif, void *result, void **args, void *user_data)
 
   TRACE (@"imp-closure");
 
+  TRACE (@"  %p", args[0]);
+  //TRACE (@"  = %p", *((id*)args[0]));
+  //TRACE (@"  = (%@)", *((id*)args[0]));
+
   ffi_call (cif, user_data, result, args);
 
   exception = objcl_current_exception;
@@ -702,7 +707,7 @@ objcl_create_imp (IMP callback,
   ffi_type *return_type;
   ffi_type *arg_types[argc + 2];
   ffi_status status;
-  ffi_cif cif;
+  ffi_cif *cif;
   ffi_closure *closure;
   void *code;
 
@@ -727,11 +732,21 @@ objcl_create_imp (IMP callback,
   for (i = 0; i < argc; i++)
     arg_types[i + 2] = objcl_pyobjc_arg_signature_to_ffi_type (arg_typespecs[i]);
 
+#if DEBUG
+  for (i = 0; i < argc; i++)
+    {
+      TRACE (@"%d. %s", i, arg_typespecs[i]);
+    }
+#endif
+
+  TRACE (@"create-imp: malloc");
+  cif = malloc (sizeof (ffi_cif));  /* never freed */
+
   TRACE (@"create-imp: closure-alloc");
-  closure = ffi_closure_alloc (sizeof (ffi_closure), &code);
+  closure = ffi_closure_alloc (sizeof (ffi_closure), &code);  /* never freed */
 
   TRACE (@"create-imp: prep-cif");
-  status = ffi_prep_cif (&cif, FFI_DEFAULT_ABI, argc + 2, return_type, arg_types);
+  status = ffi_prep_cif (cif, FFI_DEFAULT_ABI, argc + 2, return_type, arg_types);
   if (status != FFI_OK)
     {
       [[NSException exceptionWithName: @"MLKInvalidFFITypeException"
@@ -740,7 +755,7 @@ objcl_create_imp (IMP callback,
     }
 
   TRACE (@"create-imp: prep-closure-loc");
-  status = ffi_prep_closure_loc (closure, &cif, imp_closure,
+  status = ffi_prep_closure_loc (closure, cif, imp_closure,
                                  (void *)callback, code);
   if (status != FFI_OK)
     {
@@ -875,6 +890,8 @@ objcl_add_method (Class class,
   IMP imp;
 
   TRACE (@"add-method");
+  TRACE (@"  %s", objcl_selector_name (method_name));
+  TRACE (@"  %s (registered_p = %d)", class_name, registered_p);
   imp = objcl_create_imp (callback, argc, return_typespec, arg_typespecs);
   TRACE (@"add-method: IMP created.");
 
@@ -918,6 +935,8 @@ objcl_add_method (Class class,
 void
 objcl_finalise_class (Class class)
 {
+  TRACE (@"finalise-class");
+
 #ifdef __NEXT_RUNTIME__
   if (!objcl_object_is_meta_class (class))
     objc_registerClassPair (class);
@@ -928,7 +947,6 @@ objcl_finalise_class (Class class)
   MethodList *method_list;
   struct ObjCLMethod **methods;
 
-  TRACE (@"finalise-class");
   class_name = [NSString stringWithUTF8String: objcl_class_name (class)];
   methods = [[method_lists objectForKey: class_name] pointerValue];
 
@@ -941,6 +959,13 @@ objcl_finalise_class (Class class)
       for (i = 0; i < method_count; i++)
         {
           TRACE (@"finalise-class: Inserting a method.");
+          TRACE (@"finalise-class: %s",
+                 ObjcUtilities_build_runtime_Objc_signature
+                 (methods[i]->signature));
+          TRACE (@"finalise-class: IMP %p, SEL %s",
+                 methods[i]->imp,
+                 objcl_selector_name (methods[i]->method_name));
+
           ObjcUtilities_insert_method_in_list
             (method_list,
              i,
@@ -958,9 +983,9 @@ objcl_finalise_class (Class class)
 
   [method_lists removeObjectForKey: class_name];
   [method_list_lengths removeObjectForKey: class_name];
+#endif
 
   TRACE (@"Class finalised.");
-#endif
 }
 
 
