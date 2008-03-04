@@ -28,7 +28,8 @@
                           #:objcl-object-backed-by-lisp-class-p
                           #:foreign-class-registered-p
                           #:define-objective-c-method #:defobjcmethod
-                          #:objective-c-generic-function #:objective-c-method))
+                          #:objective-c-generic-function #:objective-c-method
+                          #:+nil+ #:+yes+ #:+no+))
 (in-package #:mulk.objective-cl.tests)
 (in-root-suite)
 
@@ -425,12 +426,13 @@
     (is (eval `(defgeneric |foo:bar:stuff:do:| (a b c d e &rest f)
                  (:generic-function-class objective-c-generic-function)
                  (:method-class objective-c-method))))
+    (is (find-objc-class "NSNumber"))
     (is (eval `(define-objective-c-method |foo:bar:stuff:do:| :int
                    ((x ,class-name)
                     (y :int)
                     z
-                    (a (eql nil))
-                    (b number)
+                    (a (eql +nil+))
+                    (b ns::ns-number)
                     &rest rest)
                  (declare (ignore z rest))
                  (+ y 150))))
