@@ -20,6 +20,19 @@
 
 (defvar *method-syntax-macro-chars* (list))
 (defvar *bracket-syntax-macro-chars* (list))
+(defvar *readtable-stack* (list))
+
+
+(defun restore-readtable ()
+  (when *readtable-stack*
+    (setq *readtable* (pop *readtable-stack*)))
+  (values))
+
+
+(defun save-readtable ()
+  (push *readtable* *readtable-stack*)
+  (setq *readtable* (copy-readtable *readtable*))
+  (values))
 
 
 (defun enable-method-syntax ()
@@ -70,17 +83,22 @@ __defgeneric__ form has been executed.
 
   __enable-objective-c-syntax__"
 
+  (save-readtable)
   (push (get-dispatch-macro-character #\# #\/) *method-syntax-macro-chars*)
   (set-dispatch-macro-character #\# #\/ #'(lambda (stream char arg)
                                             (declare (ignore char arg))
-                                            (read-objective-c-method stream))))
+                                            (read-objective-c-method stream)))
+  (values))
 
 
 (defun disable-method-syntax ()
   "FIXME"
-  (when *method-syntax-macro-chars*
-    (let ((macro-char (pop *method-syntax-macro-chars*)))
-      (set-dispatch-macro-character #\# #\/ macro-char))))
+  (restore-readtable)
+  #+(or) (when *method-syntax-macro-chars*
+           (let ((macro-char (pop *method-syntax-macro-chars*)))
+             (when macro-char
+               (set-dispatch-macro-character #\# #\/ macro-char))))
+  (values))
 
 
 (defun read-objective-c-method (stream)
@@ -214,19 +232,25 @@ __enable-method-syntax__"
   (push (cons (get-macro-character #\[)
               (get-macro-character #\]))
         *bracket-syntax-macro-chars*)
+  (save-readtable)
   (set-macro-character #\] (get-macro-character #\)))
   (set-macro-character #\[ #'(lambda (stream char)
                                (declare (ignore char))
-                               (parse-objc-call stream))))
+                               (parse-objc-call stream)))
+  (values))
 
 
 (defun disable-objective-c-syntax ()
   "FIXME"
-  (when *bracket-syntax-macro-chars*
-    (destructuring-bind (open . close)
-        (pop *bracket-syntax-macro-chars*)
-      (set-macro-character #\[ open)
-      (set-macro-character #\[ close))))
+  (restore-readtable)
+  #+(or) (when *bracket-syntax-macro-chars*
+           (destructuring-bind (open . close)
+               (pop *bracket-syntax-macro-chars*)
+             (when open
+               (set-macro-character #\[ open))
+             (when close
+               (set-macro-character #\] close))))
+  (values))
 
 
 (defun parse-objc-call (stream)

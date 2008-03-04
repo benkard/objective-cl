@@ -34,10 +34,6 @@
 (in-root-suite)
 
 
-(eval-when (:compile-toplevel)
-  (objcl:install-reader-syntax))
-
-
 (defun run-all-tests ()
   (objective-cl))
 
@@ -116,6 +112,7 @@
                         (find-objc-class 'ns-object))))
 
 
+#.(enable-objective-c-syntax)
 (deftest method-invocation ()
   (signals error [NSObject 300])
   (signals error [300 self])
@@ -135,6 +132,7 @@
   #+(or)
   (is [NSString performSelector: (selector "stringWithUTF8String:")
                 withObject: [NSObject class]]))
+#.(disable-objective-c-syntax)
 
 
 (deftest parsing-typespecs ()
@@ -316,6 +314,7 @@
              "^^{OpaqueStruct}")))
 
 
+#.(enable-objective-c-syntax)
 (deftest data-coercion ()
   (is (objc-equal [NSString stringWithUTF8String: "Mulk."]
                   [NSString stringWithCString: "Mulk." encoding: 4]))
@@ -325,15 +324,19 @@
                   [NSString respondsToSelector: "new"]))
   (is (typep [NSString isEqual: [NSString self]] 'boolean))
   (is (typep [NSString isEqual: [NSObject self]] 'boolean)))
+#.(disable-objective-c-syntax)
 
 
+#.(enable-objective-c-syntax)
 (deftest numbers ()
   (is (objc-equal [[NSDecimalNumber decimalNumberWithString:
                                       [NSString stringWithUTF8String: "-12345"]]
                    doubleValue]
                   -12345d0)))
+#.(disable-objective-c-syntax)
 
 
+#.(enable-objective-c-syntax)
 (deftest exception-handling ()
   (is (typep (handler-case [NSString selph]
                (error (e) e))
@@ -341,8 +344,10 @@
   (is (typep (handler-case [NSObject string]
                (error (e) e))
              'message-not-understood)))
+#.(disable-objective-c-syntax)
 
 
+#.(enable-objective-c-syntax)
 (deftest reader-syntax ()
   (is (objc-equal [NSObject self]
                   (find-objc-class 'ns-object)))
@@ -362,6 +367,7 @@
                           :with-object (invoke
                                         (find-objc-class 'ns-object)
                                         'self)))))
+#.(disable-objective-c-syntax)
 
 
 (deftest compiler-macros ()
