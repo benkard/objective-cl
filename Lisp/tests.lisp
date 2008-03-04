@@ -423,11 +423,13 @@
     (is (not (foreign-class-registered-p class)))
 
     ;; Method definition.
-    (is (eval `(defgeneric |foo:bar:stuff:do:| (a b c d e &rest f)
+    #.(enable-method-syntax)
+    (is (eval `(define-objective-c-generic-function #/foo:bar:stuff:do:
+                   (a b c d e &rest f)
                  (:generic-function-class objective-c-generic-function)
                  (:method-class objective-c-method))))
     (is (find-objc-class "NSNumber"))
-    (is (eval `(define-objective-c-method |foo:bar:stuff:do:| :int
+    (is (eval `(define-objective-c-method #/foo:bar:stuff:do: :int
                    ((x ,class-name)
                     (y :int)
                     z
@@ -436,6 +438,7 @@
                     &rest rest)
                  (declare (ignore z rest))
                  (+ y 20))))
+    #.(disable-method-syntax)
 
     ;; Sanity checks.
     (is (typep class 'objective-c-class))

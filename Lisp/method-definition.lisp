@@ -75,6 +75,18 @@
                            ,@body)))))))
 
 
+(defmacro define-objective-c-generic-function (name lambda-list &body options)
+  `(defgeneric ,name ,lambda-list
+     ,@(unless (position :generic-function-class
+                         options
+                         :key #'car)
+         `((:generic-function-class objcl:objective-c-generic-function)))
+     ,@(unless (position :method-class
+                         options
+                         :key #'car)
+         `((:method-class objcl:objective-c-method)))))
+
+
 (defvar *callback-names* (make-hash-table :test #'eql))
 
 (defun intern-callback-name (method)

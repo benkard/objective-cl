@@ -46,6 +46,7 @@
            ;; Macros
            #+(or) #:define-objc-struct
            #+(or) #:define-objc-union
+           #:define-objective-c-generic-function
            #:define-objective-c-method
 
            ;; Special variables
