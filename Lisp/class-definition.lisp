@@ -507,4 +507,39 @@ __define-objective-c-method__"
 
 
 (defun collect-classes ()
+  "Intern all __objective-c-class__es known to the runtime.
+
+## Description:
+
+__collect-classes__ makes all Objective-C classes known to the
+Objective-C runtime available as __class__ metaobjects in the
+_objective-c-classes_ **package** (that is, the _ns_ namespace).
+
+Calling _collect-classes_ is optional.  It allows you to use
+__find-class__ instead of __find-objc-class__, but this is purely an
+aesthetic improvement.  _collect-classes_ is not necessary to use
+Objective-CL productively.
+
+
+## Note:
+
+_collect-classes_ may take a very long time to complete depending on the
+Lisp implementation.  Some implementations are not optimised to create
+such a large number of classes along with their metaclasses on the fly.
+If you care about portability, you may therefore want to do without the
+extra convenience that _collect-classes_ offers.
+
+
+## Note 2:
+
+Even though when subclassing a foreign __class__, it needs to be
+available as a __class__ metaobject in the _objective-c-classes_
+package, you need not call _collect-classes_ before subclassing a
+foreign __class__, because __define-objective-c-class__ takes care to
+intern any missing superclass objects.
+
+
+## See also:
+
+  __collect-methods__"
   (%objcl-for-each-class-do (callback collect-class)))

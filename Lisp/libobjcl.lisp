@@ -943,6 +943,31 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
     (collect-methods (%objcl-class-metaclass class))))
 
 (defun collect-methods ()
+  "Intern all method __selector__s known to the runtime.
+
+## Description:
+
+For the syntax enhancement provided by __enable-method-syntax__ to work,
+all method __selector__s must be available as the __fdefinition__ of the
+**symbol** whose __symbol-name__ is the __selector__'s name and which
+are **accessible** in the package _objective-cl-selectors_.
+__collect-methods__ ensures that all __selector__s that are known to the
+Objective-C runtime as the names of methods of any classes are
+registered in this way.
+
+Normally, __collect-methods__ need not be called by user code, as it is
+called once at system load-time as well as whenever a framework is
+loaded by Objective-CL, but if the user dynamically loads any libraries
+or frameworks by calling FFI routines (like, for instance,
+_cffi:load-foreign-library_) directly, __collect-methods__ must be
+called if the newly introduced __selector__s are to be available to Lisp
+code written using the syntax enhancement provided by
+__enable-method-syntax__.
+
+
+## See also:
+
+  __collect-classes__"
   (%objcl-for-each-class-do (callback collect-class-methods)))
 
 
