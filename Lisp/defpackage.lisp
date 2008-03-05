@@ -51,8 +51,9 @@
            #+(or) #:define-objc-union
            #:define-objective-c-generic-function
            #:define-objective-c-method
-           #:defobjcgeneric
-           #:defobjcmethod
+           #:define-objective-c-class
+           #+(or) #:defobjcgeneric
+           #+(or) #:defobjcmethod
 
            ;; Special variables
            #:*trace-method-calls*
@@ -69,6 +70,7 @@
            #:foreign-value
            #:foreign-struct
            #:foreign-union
+           #:objective-c-class
            #:objective-c-generic-function
            #:objective-c-method
 

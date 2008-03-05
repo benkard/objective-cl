@@ -21,6 +21,159 @@
 (defvar *objcl-foreign-default-initform* (gensym))
 
 
+(defmacro define-objective-c-class (name
+                                    (&rest superclasses)
+                                    (&rest slots)
+                                    &body options)
+  "Define a new Objective-C class.
+
+## Arguments and Values:
+
+*name* --- a **symbol**.
+
+*superclasses* --- a **list** of **symbol**s (not evaluated).
+
+*slots* --- a **list** (not evaluated).
+
+*options* --- a **list** (not evaluated).
+
+Returns: *class* --- the **class** just defined.
+
+
+## Description:
+
+_define-objective-c-class_ is like __defclass__ except in the following
+aspects:
+
+1. *name* is immediately replaced by a *symbol* **intern**ed in package
+   _objective-c-classes_ (that is, the _ns_ namespace).
+
+2. If *superclasses* is the **empty list**, a default value of
+   _ns::ns-object_ will be used.
+
+3. If the class does not exist yet, the default value for the
+   _:metaclass_ option is _ns::+ns-object_.  Otherwise, the default
+   value is the name of the current **metaclass** of the class.
+   (Note that supplying a value different from _ns::+ns-object_ as the
+   **metaclass** is usually not desirable.  See the note below for
+   details.)
+
+4. If any of the given *superclasses* in the _ns_ namespace is unknown
+   at **load-time**, it will be assumed to name an __objective-c-class__
+   and registered prior to execution of the __define-objective-c-class__
+   form.
+
+5. Slot specifications can specify foreign slots.  See below for
+   details.
+
+If *superclasses* contains more than one **symbol** that names an
+__objective-c-class__ (or that is assumed to as per (4) above), an
+__error__ will be **signal**led.
+
+If *superclasses* is not the **empty list** but does not contain a
+**symbol** that names an __objective-c-class__ (or that is assumed to as
+per (4) above), the behaviour is undefined.
+
+
+## Foreign Slot Specifier Syntax:
+
+slot ::= (*slot-name* [[*slot-option* | *foreign-slot-option*]]\\*)
+
+foreign-slot-option ::= {:foreign-type *typespec*} | {:foreign-name *foreign-name*}
+
+*typespec* --- a **list** or a **symbol**.
+
+*foreign-name* --- a **string**.
+
+
+## Foreign Slot Specifier Description:
+
+Foreign slot specifiers are like the standard slot specifiers that
+__defclass__ recognises except that they also recognise the additional
+options _:foreign-type_ and _:foreign-name_.
+
+*typespec* is used to determine the C type the foreign slot will have.
+
+If *typespec* is a **symbol**, it must be a CFFI type specifier, except
+that the values _:id_ and _:class_ are also recognised.  If it is a
+**list**, it has to be a valid *Objective-CL type specifier*, whose
+syntax is not yet documented nor even finalised.
+
+*foreign-name* is the name the slot will have on the Objective-C side.
+It must be a valid Objective-C ivar identifier.
+
+If *foreign-name* is omitted, it is derived from *slot-name* by
+transforming it to Lower Camel Case as follows:
+
+1. If the name is not in *canonical case*, it is left alone.
+
+2. Otherwise, the name is split into parts separated by hyphens.
+
+3. Each part except the first is capitalised and the results are
+   concatenated onto the first part in order.
+
+
+## Examples:
+
+    (define-objective-c-class mlk-my-class ()
+        ((foos :initargs :foos)
+         (foo-count :foreign-type :int)))  ;foreign name will be \"fooCount\"
+      => #<NS:+MLK-MY-CLASS NS:MLK-MY-CLASS {82c05c0}>
+
+    (defvar *x* (invoke (find-objc-class 'mlk-my-class) 'new))
+      => *X*
+
+    (slot-boundp *x* 'foo-count)            => T
+    (setf (slot-value *x* 'foo-count) 100)  => 100
+    (slot-value *x* 'foo-count)             => 100
+
+    (slot-boundp *x* 'foos)                        => NIL
+    (setf (slot-value *x* 'foos) (list 'a 'b 'c))  => (A B C)
+    (slot-value *x* 'foos)                         => (A B C)
+
+
+## Note:
+
+Regardless of the _:metaclass_ option given, the way _ns::+ns-object_ is
+implemented will ensure that every __objective-c-class__ gets its very
+own **metaclass** as in Objective-C.  The user is therefore strongly
+discouraged from messing with the _:metaclass_ option.
+
+
+## Note 2:
+
+It is not an error to define **class**es of **type**
+__objective-c-class__ in **package**s other than _objective-c-classes_,
+but doing so will make some code behave in unexpected ways, so it is not
+recommended.
+
+
+## See also:
+
+  __defclass__, __define-objective-c-generic-function,
+__define-objective-c-method__"
+  (let* ((objc-superclasses (remove-if-not
+                             #'(lambda (c)
+                                 (or (and (find-class c nil)
+                                          (subtypep (find-class c) 'id))
+                                     (and (not (find-class c nil))
+                                          (eq (find-symbol (symbol-name name)
+                                                           '#:objective-c-classes)
+                                              name)
+                                          name)))
+                             superclasses))
+         (objc-superclass (or (car objc-superclasses) 'ns::ns-object)))
+    (assert (null (cdr objc-superclasses)))
+    `(progn
+       (find-objc-class ',objc-superclass)
+       (defclass ,name ,(or superclasses '(ns::ns-object)) ,slots
+         ,@(unless (member :metaclass options :key #'car)
+             (if (find-class name nil)
+                 `((:metaclass ,(class-name (class-of (find-class name)))))
+                 `((:metaclass ns::+ns-object))))
+         ,@options))))
+
+
 (defclass foreign-slot-definition-mixin ()
   ((foreign-name :initarg :foreign-name
                  :initform nil
