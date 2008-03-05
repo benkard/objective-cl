@@ -75,7 +75,9 @@ static NSMutableSet *lisp_backed_classes = nil;
 
 static int init_count = 0;
 
+#ifndef __NEXT_RUNTIME__
 static NSProcessInfo *process = nil;
+#endif
 
 
 void *

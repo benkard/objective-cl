@@ -53,7 +53,7 @@ endif
 libobjcl_OBJC_FILES += PyObjC/libffi_support.m
 endif
 
-ifneq ($(COMMON_MAKE_LOADED),)
+ifneq ($(COMMON_MAKE_LOADED),)  # GNUstep
 -include $(GNUSTEP_MAKEFILES)/library.make
 
 before-all:: $(FFI_DEPS)
