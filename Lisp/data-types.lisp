@@ -130,6 +130,17 @@ The following calls are all equivalent:
        (apply #'invoke-by-name receiver selector args))))
 
 
+(defmethod initialize-instance :after ((selector selector)
+                                       &rest initargs
+                                       &key
+                                       &allow-other-keys)
+  (declare (ignore initargs))
+  ;; Register the selector.
+  (let ((symbol (intern (selector-name selector) '#:objective-c-selectors)))
+    (setf (fdefinition symbol) selector)
+    (export symbol '#:objective-c-selectors)))
+
+
 (defmethod make-load-form ((selector selector) &optional environment)
   (declare (ignore environment))
   `(intern-pointer-wrapper 'selector

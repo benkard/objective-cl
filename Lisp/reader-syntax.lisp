@@ -46,12 +46,10 @@ alongside Lisp code by placing the method name in front.  At the same
 time, it is a more conservative syntax enhancement than that provided by
 __enable-objective-c-syntax__.
 
-The reader macro transforms any sequence of alphanumeric characters and
-characters that are __eql__ to one of #\:, #\- and #\_ into a symbol
-with that sequence as the **symbol name** and _objective-c-methods__ as
-the **symbol package**.  It also takes care to make a __selector__
-available as the __fdefinition__ of that symbol unless the symbol is
-already **fbound**.
+The **reader macro** transforms any **string** of alphanumeric
+characters and **character**s that are __eql__ to one of #\:, #\- and
+#\_ into a **symbol** with that **string** as the **symbol name** and
+_objective-c-selectors__ as the **symbol package**.
 
 
 ## Examples:
@@ -73,10 +71,14 @@ already **fbound**.
 
 ## Note:
 
-Absent manual changes by the user, the __fdefinition__ of any symbol
-read by this reader macro may point to either a __selector__ or an
-__objective-c-generic-function__, depending on whether a corresponding
-__defgeneric__ form has been executed.
+Absent manual changes by the user, the __fdefinition__ of any **fbound**
+**symbol** read by this **reader macro** will be a __selector__.
+
+Method __selector__s have to be interned prior to use.  As this reader
+macro is not capable of interning new __selector__s, you have to ensure
+that __intern-selector__ is called before the respective __selector__ is
+used.  This is not a problem for __selector__s known at load-time nor for
+__selector__s registered by way of __collect-selectors__.
 
 
 ## See also:
@@ -109,7 +111,7 @@ __defgeneric__ form has been executed.
         finally (progn
                   (when char (unread-char char stream))
                   (let ((symbol (intern (format nil "~{~A~}" constituents)
-                                        '#:objective-c-methods)))
+                                        '#:objective-c-selectors)))
                     (return symbol)))))
 
 

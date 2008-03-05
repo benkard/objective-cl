@@ -32,6 +32,7 @@
            #:invoke
            #:find-objc-class
            #:find-selector
+           #:intern-selector
            #:objc-class-name
            #:selector-name
            #:selector
@@ -95,5 +96,9 @@
   (:nicknames #:objc-methods #:objcm)
   (:use))
 
+
+(defpackage #:objective-c-selectors
+  (:nicknames #:objc-selectors #:objc-sels #:objcs)
+  (:use))
 
 #-(or cmu sbcl) (declaim (declaration values))
