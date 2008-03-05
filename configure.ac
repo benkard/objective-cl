@@ -15,7 +15,7 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 AC_PREREQ(2.61)
-AC_INIT(Objective-CL, 0.1.1, objcl-bugs@mail.matthias.benkard.de)
+AC_INIT(Objective-CL, 0.2.0, objcl-bugs@mail.matthias.benkard.de)
 AC_CONFIG_SRCDIR([Objective-C/libobjcl.h])
 
 AC_PROG_CC

@@ -5,8 +5,8 @@
 @c %**end of header
 
 @c The time stamp is automatically maintained by Emacs.
-@c Time-stamp: <2008-02-11 20:04:30 mulk>
-@set VERSION 0.1.1
+@c Time-stamp: <2008-03-05 17:58:08 mulk>
+@set VERSION 0.2.0
 @set UPDATED 12. September 2007
 
 @c Wichtige Emacsbefehle:
