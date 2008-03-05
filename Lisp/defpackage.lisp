@@ -45,6 +45,7 @@
            #:objc-eql
            #:objc-equal
            #:foreign-value-lisp-managed-p
+           #:foreign-value-pointer
 
            ;; Macros
            #+(or) #:define-objc-struct
