@@ -46,6 +46,7 @@ ifdef USE_LIBFFI
 ADDITIONAL_OBJCFLAGS += -DUSE_LIBFFI
 ifneq ($(HAVE_ANY_FFI_H),1)
 ADDITIONAL_LDFLAGS += ../libffi-3.0.4/.libs/libffi.a
+LIBRARIES_DEPEND_UPON += ../libffi-3.0.4/.libs/libffi.a
 ADDITIONAL_OBJCFLAGS += -I../libffi-3.0.4/include
 FFI_DEPS += ../libffi-3.0.4/.libs/libffi.a
 FFI_CLEAN += libffi_clean
