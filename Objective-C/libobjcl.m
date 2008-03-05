@@ -18,7 +18,6 @@
  */
 
 #import "libobjcl.h"
-#import "NSObject-ObjectiveCLWrapperLink.h"
 #import "PyObjC/libffi_support.h"
 #import "JIGS/ObjcRuntimeUtilities.h"
 
