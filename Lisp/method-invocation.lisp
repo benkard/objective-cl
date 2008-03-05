@@ -44,20 +44,29 @@ All uneven-numbered *message components*, which must be **symbol**s, are
 first split into parts separated by hyphens and each part converted into
 a **string** according to the following rules:
 
-1. 1. If the keywords' **symbol name**s do contain **lowercase**
-      **character**s, their case is left intact.
+<ol>
+ <li>
+ <ol>
+  <li>If the keywords' **symbol name**s do contain
+  **lowercase** **character**s, their case is left intact.</li>
 
-   2. If the keywords' **symbol name**s do not contain any **lowercase**
-      **character**s, the following steps are taken in order to adjust
-      their case.
+  <li>If the keywords' **symbol name**s do not contain any **lowercase**
+  **character**s, the following steps are taken in order to adjust their
+  case.
 
-      1. The first part is fully converted to **lowercase**.
+  <ol>
+   <li>The first part is fully converted to **lowercase**.</li>
 
-      2. Any additional parts are also fully converted to **lowercase**
-         except for their first letters, which are left intact.
+   <li>Any additional parts are also fully converted to **lowercase**
+   except for their first letters, which are left intact.</li>
+  </ol>
+  </li>
+ </ol>
+ </li>
 
-2. If the symbol is a **keyword**, the resulting **string** is suffixed
-   by a **colon** (`:').
+ <li>If the symbol is a **keyword**, the resulting **string** is suffixed
+ by a **colon** (`:').</li>
+</ol>
 
 After that, all parts are concatenated in order to form a
 single *message name component*.  The *message name components* are in
