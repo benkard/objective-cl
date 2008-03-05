@@ -123,12 +123,18 @@ The following calls are all equivalent:
                                      &rest initargs
                                      &key
                                      &allow-other-keys)
+  ;; FIXME: CMUCL 19d does not allow the second argument to
+  ;; PCL:SET-FUNCALLABLE-INSTANCE-FUNCTION to be a closure.  As we need
+  ;; to close over SELECTOR, this piece of code throws weird errors on
+  ;; CMUCL and will not work.
+  ;;
+  ;; In particular, one possible symptom is that SELECTOR may not be a
+  ;; selector but something different when INVOKE-BY-NAME is called.
   (declare (ignore slot-names initargs))
   (c2mop:set-funcallable-instance-function
    selector
    #'(lambda (receiver &rest args)
-       (apply #'invoke-by-name receiver selector args)))
-  selector)
+       (apply #'invoke-by-name receiver selector args))))
 
 
 (defmethod initialize-instance :after ((selector selector)
