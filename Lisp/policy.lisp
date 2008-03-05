@@ -18,8 +18,45 @@
 (in-package #:mulk.objective-cl)
 
 
-;; FIXME: Document.
 (defun define-returns-boolean-exception (selector-designator)
+  "Define an exception to the rule that `char` means `BOOL` as a method return type.
+
+## Arguments and Values:
+
+*selector-designator* --- a *selector designator*.
+
+
+## Description:
+
+Normally, Objective-C treats method return values that are nominally of
+type `char` as booleans and converts them to either __t__ or __nil__
+depending on whether they are __zerop__.
+__define-returns-boolean-exception__ directs Objective-CL to treat
+`char` values returned by methods named by *selector-designator* as
+numbers instead.
+
+__undefine-returns-boolean-exception__ restores the default behaviour.
+
+
+## Examples:
+
+    (define-returns-boolean-exception \"charValue\")
+    (define-returns-boolean-exception \"characterAtIndex:\")
+
+
+## Rationale:
+
+The Objective-C runtime offers no way of distinguishing booleans from
+chars, even though Foundation defines a `BOOL` type.  In the vast
+majority of cases, `char` therefore actually means `BOOL`, but the
+`NSString` class, for one, wouldn't always agree with that sentiment, so
+the only sane way of handling both booleans and actual `char` values is
+to determine the intentional type by method selector.
+
+
+## See also:
+
+  __undefine-returns-boolean-exception__"
   (let ((key (typecase selector-designator
                (string selector-designator)
                (t (selector-name (selector selector-designator))))))
@@ -27,7 +64,45 @@
 
 
 ;; FIXME: Document.
-(defun undefine-returns-boolean-exceptions (selector-designator)
+(defun undefine-returns-boolean-exception (selector-designator)
+  "Revert the effect of __define-returns-boolean-exception__ for a given selector.
+
+## Arguments and Values:
+
+*selector-designator* --- a *selector designator*.
+
+
+## Description:
+
+Normally, Objective-C treats method return values that are nominally of
+type `char` as booleans and converts them to either __t__ or __nil__
+depending on whether they are __zerop__.
+__define-returns-boolean-exception__ directs Objective-CL to treat
+`char` values returned by methods named by *selector-designator* as
+numbers instead.
+
+__undefine-returns-boolean-exception__ restores the default behaviour.
+
+
+## Examples:
+
+    (undefine-returns-boolean-exception \"boolValue\")
+    (undefine-returns-boolean-exception \"isEqual:\")
+
+
+## Rationale:
+
+The Objective-C runtime offers no way of distinguishing booleans from
+chars, even though Foundation defines a `BOOL` type.  In the vast
+majority of cases, `char` therefore actually means `BOOL`, but the
+`NSString` class, for one, wouldn't always agree with that sentiment, so
+the only sane way of handling both booleans and actual `char` values is
+to determine the intentional type by method selector.
+
+
+## See also:
+
+  __define-returns-boolean-exception__"
   (let ((key (typecase selector-designator
                (string selector-designator)
                (t (selector-name (selector selector-designator))))))
