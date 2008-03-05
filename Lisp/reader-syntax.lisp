@@ -56,15 +56,17 @@ _objective-c-selectors__ as the **symbol package**.
 
     #.(enable-method-syntax)
 
-    (#/stringWithCString:encoding: \"Hi there!\" 0)
-      => 
+    (#/stringWithCString:encoding: (find-objc-class 'ns-string) \"Hi there!\" 4)
+      => #<NS:GSC-BUFFER-STRING `Hi there!' {821ff58}>
 
-    (defvar *lock* (#/new (find-objc-class 'ns-lock)))
-      => *LOCK*
+    (defvar \\*lock\\* (#/new (find-objc-class 'ns-lock)))
+      => \\*LOCK\\*
 
-    (#/lock lock)
-    (#/tryLock lock)
-    (#/unlock lock)
+    (#/lock \\*lock\\*)     => no value
+    (#/tryLock \\*lock\\*)  => NIL
+    (#/unlock \\*lock\\*)   => no value
+    (#/tryLock \\*lock\\*)  => T
+    (#/unlock \\*lock\\*)   => no value
 
     #.(disable-method-syntax)
 
