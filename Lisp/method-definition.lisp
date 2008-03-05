@@ -103,6 +103,8 @@ __defgeneric__, including _:generic-function-class_ and _:method-class_.
            Have a nice day.
       => 120
 
+    #.(disable-method-syntax)
+
 
 ## Note 1:
 

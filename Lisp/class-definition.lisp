@@ -148,6 +148,14 @@ but doing so will make some code behave in unexpected ways, so it is not
 recommended.
 
 
+## Note 3:
+
+Foreign slots are always __slot-boundp__, as it is impossible to
+determine whether they have been set on the Objective-C side or not.
+Because of this, one has to be very careful when using _:string_ as the
+*foreign-type*.
+
+
 ## See also:
 
   __defclass__, __define-objective-c-generic-function,
