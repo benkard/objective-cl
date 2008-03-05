@@ -231,10 +231,30 @@ and development for portable programs as well).
 
 
 (defclass objective-c-class (standard-class c-pointer-wrapper)
-  ((registered-p :type boolean
-                 :accessor foreign-class-registered-p
-                 :documentation
-                 "Whether the class has been registered with the Objective-C runtime.")))
+     ((registered-p :type boolean
+                    :accessor foreign-class-registered-p
+                    :documentation
+                    "Whether the class has been registered with the Objective-C runtime."))
+  (:documentation "The type of all Objective-C classes.
+
+## Description:
+
+__objective-c-class__ is the supertype of all Objective-C metaclasses
+and thus the type of any Objective-C class.  The only public API that it
+provides is the generic function __objective-c-class-registered-p__ that
+determines whether the class has already been registered with the
+Objective-C runtime.
+
+
+## Examples:
+
+    (invoke (find-objc-class 'ns-mutable-array) 'self)
+      => #<+NS-MUTABLE-ARRAY NS:NS-MUTABLE-ARRAY>
+
+
+## See also:
+
+  __id__, __objective-c-class-registered-p__"))
 
 
 (defclass objective-c-meta-class (objective-c-class)
