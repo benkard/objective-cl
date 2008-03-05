@@ -79,7 +79,7 @@ per (4) above), the behaviour is undefined.
 
 slot ::= (*slot-name* [[*slot-option* | *foreign-slot-option*]]\\*)
 
-foreign-slot-option ::= {:foreign-type *typespec*} | {:foreign-name *foreign-name*}
+foreign-slot-option ::= \\{:foreign-type *typespec*\\} | \\{:foreign-name *foreign-name*\\}
 
 *typespec* --- a **list** or a **symbol**.
 
@@ -120,16 +120,16 @@ transforming it to Lower Camel Case as follows:
          (foo-count :foreign-type :int)))  ;foreign name will be \"fooCount\"
       => #<NS:+MLK-MY-CLASS NS:MLK-MY-CLASS {82c05c0}>
 
-    (defvar *x* (invoke (find-objc-class 'mlk-my-class) 'new))
-      => *X*
+    (defvar \\*x\\* (invoke (find-objc-class 'mlk-my-class) 'new))
+      => \\*X\\*
 
-    (slot-boundp *x* 'foo-count)            => T
-    (setf (slot-value *x* 'foo-count) 100)  => 100
-    (slot-value *x* 'foo-count)             => 100
+    (slot-boundp \\*x\\* 'foo-count)            => T
+    (setf (slot-value \\*x\\* 'foo-count) 100)  => 100
+    (slot-value \\*x\\* 'foo-count)             => 100
 
-    (slot-boundp *x* 'foos)                        => NIL
-    (setf (slot-value *x* 'foos) (list 'a 'b 'c))  => (A B C)
-    (slot-value *x* 'foos)                         => (A B C)
+    (slot-boundp \\*x\\* 'foos)                        => NIL
+    (setf (slot-value \\*x\\* 'foos) (list 'a 'b 'c))  => (A B C)
+    (slot-value \\*x\\* 'foos)                         => (A B C)
 
 
 ## Note:
@@ -158,7 +158,7 @@ Because of this, one has to be very careful when using _:string_ as the
 
 ## See also:
 
-  __defclass__, __define-objective-c-generic-function,
+  __defclass__, __define-objective-c-generic-function__,
 __define-objective-c-method__"
   (let* ((objc-superclasses (remove-if-not
                              #'(lambda (c)

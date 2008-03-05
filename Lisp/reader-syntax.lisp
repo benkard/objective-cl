@@ -47,8 +47,8 @@ time, it is a more conservative syntax enhancement than that provided by
 __enable-objective-c-syntax__.
 
 The **reader macro** transforms any **string** of alphanumeric
-characters and **character**s that are __eql__ to one of #\:, #\- and
-#\_ into a **symbol** with that **string** as the **symbol name** and
+characters and **character**s that are __eql__ to one of #\\:, #\\- and
+#\\_ into a **symbol** with that **string** as the **symbol name** and
 _objective-c-selectors__ as the **symbol package**.
 
 
