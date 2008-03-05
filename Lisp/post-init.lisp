@@ -18,7 +18,12 @@
 (in-package #:mulk.objective-cl)
 
 #+(or)
-(progn
+(eval-when (:load-toplevel :execute)
   (format t "~&Collecting Objective-C classes.")
   (collect-classes)
   (format t "~&All Objective-C classes collected."))
+
+(eval-when (:load-toplevel :execute)
+  (format t "~&Collecting Objective-C methods.")
+  (collect-methods)
+  (format t "~&All Objective-C methods collected."))
