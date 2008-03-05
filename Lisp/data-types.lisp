@@ -256,6 +256,8 @@ an __exception__, you can simply send it the `self' message.
             :accessor foreign-struct-name
             :initarg :name)))
 
+(defclass foreign-union (foreign-struct) ())
+
 
 ;; The following are for private use only.
 (defclass opaque-struct (foreign-struct) ())
@@ -264,9 +266,9 @@ an __exception__, you can simply send it the `self' message.
      ((typespec :reader foreign-value-typespec
                 :initarg :typespec)))
 
-(defclass opaque-union (opaque-struct) ())
+(defclass opaque-union (foreign-union opaque-struct) ())
 
-(defclass tagged-union (tagged-struct) ())
+(defclass tagged-union (foreign-union tagged-struct) ())
 
 
 (defgeneric foreign-value-pointer (foreign-value)
@@ -292,7 +294,7 @@ behaviour if you need to.
 
 ## See also:
 
-  __foreign-value-lisp-managed-p__, __foreign-value__, __foreign-struct__"))
+  __foreign-value-lisp-managed-p__, __foreign-value__"))
 
 
 (defmethod foreign-value-pointer ((foreign-value foreign-value))
@@ -346,7 +348,7 @@ seems like an acceptable trade-off.
 
 ## See also:
 
-  __foreign-value__, __foreign-struct__"))
+  __foreign-value__"))
 
 
 (defmethod foreign-value-lisp-managed-p ((foreign-value foreign-value))
