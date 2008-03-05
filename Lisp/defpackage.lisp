@@ -46,6 +46,7 @@
            #:objc-equal
            #:foreign-value-lisp-managed-p
            #:foreign-value-pointer
+           #:objective-c-class-registered-p
 
            ;; Macros
            #+(or) #:define-objc-struct

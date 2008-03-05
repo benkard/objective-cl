@@ -183,6 +183,53 @@ a suitable class method instead as you would in Objective-C.
   __invoke__, __invoke-by-name__, __exception__"))
 
 
+(defgeneric objective-c-class-registered-p (class)
+  (:documentation "Determine whether a class has been registered with the Objective-C runtime.
+
+## Arguments and Values:
+
+*class* --- an **object** of **type** __objective-c-class__.
+
+Returns: a **boolean**.
+
+
+## Description:
+
+_objective-c-class-registered-p_ determines whether **class** has been
+registered with the Objective-C runtime.  It is the only public API
+provided by the class __objective-c-class__.
+
+A class is registered automatically when an instance is first seen by
+Objective-CL or when an attempt is made to send a message to it or its
+metaclass.
+
+The effect of attempting to add methods to registered classes is
+undefined.  Portable programs should therefore avoid it, even though it
+may work reliably on some systems (where it can be useful for debugging
+and development for portable programs as well).
+
+
+## Examples:
+
+    (define-objective-c-class mlk-my-class ()
+        ((foos :initargs :foos)
+         (foo-count :foreign-type :int)))  ;\"fooCount\" on the foreign side
+      => #<NS:+MLK-MY-CLASS NS:MLK-MY-CLASS {8080BF8}>
+
+    (objective-c-class-registered-p (find-objc-class 'mlk-my-class))
+      => NIL
+
+    (invoke (find-objc-class 'mlk-my-class) 'new)
+      => #<NS:MLK-MY-CLASS `<MLKMyClass: 0x81de1f8>' {81DE1F8}>
+
+    (objective-c-class-registered-p (find-objc-class 'mlk-my-class))
+      => T"))
+
+
+(defmethod objective-c-class-registered-p ((class objective-c-class))
+  (foreign-class-registered-p class))
+
+
 (defclass objective-c-class (standard-class c-pointer-wrapper)
   ((registered-p :type boolean
                  :accessor foreign-class-registered-p
