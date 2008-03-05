@@ -160,7 +160,8 @@ Because of this, one has to be very careful when using _:string_ as the
 
   __defclass__, __define-objective-c-generic-function__,
 __define-objective-c-method__"
-  (let* ((objc-superclasses (remove-if-not
+  (let* ((name (intern (symbol-name name) '#:objective-c-classes))
+         (objc-superclasses (remove-if-not
                              #'(lambda (c)
                                  (or (and (find-class c nil)
                                           (subtypep (find-class c) 'id))
