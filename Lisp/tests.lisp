@@ -29,7 +29,7 @@
                           #:foreign-class-registered-p
                           #:define-objective-c-method #:defobjcmethod
                           #:objective-c-generic-function #:objective-c-method
-                          #:+nil+ #:+yes+ #:+no+))
+                          #:+nil+ #:+yes+ #:+no+ #:selector))
 (in-package #:mulk.objective-cl.tests)
 (in-root-suite)
 
@@ -368,6 +368,24 @@
                                         (find-objc-class 'ns-object)
                                         'self)))))
 #.(disable-objective-c-syntax)
+
+
+#.(enable-method-syntax)
+(deftest method-syntax ()
+  (is (eq '#/stringWithCString:encoding:
+          'objective-c-selectors:|stringWithCString:encoding:|))
+  (is (fboundp '#/stringWithCString:encoding:))
+  (is (typep (fdefinition '#/stringWithCString:encoding:) 'selector))
+  (is (objc-equal (#/stringWithCString:encoding: (find-objc-class 'ns-string)
+                                                 "Mulk."
+                                                 4)
+                  (invoke (find-objc-class 'ns-string)
+                          :string-with-c-string "Mulk." :encoding 4)))
+  (is (objc-equal (#/self (find-objc-class 'ns-array))
+                  (find-objc-class 'ns-array)))
+  (is (subtypep (#/class (#/new (find-objc-class 'ns-mutable-array)))
+                (find-objc-class 'ns-mutable-array))))
+#.(disable-method-syntax)
 
 
 (deftest compiler-macros ()
