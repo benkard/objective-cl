@@ -938,7 +938,8 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
                                              :pointer
                                              (%objcl-method-selector
                                               (mem-aref method-array :pointer i))))
-                 (foreign-free method-array))))))
+                 (unless (zerop (mem-ref count-buf :unsigned-int))
+                   (foreign-free method-array)))))))
     (collect-methods class)
     (collect-methods (%objcl-class-metaclass class))))
 

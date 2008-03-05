@@ -127,7 +127,8 @@ The following calls are all equivalent:
   (c2mop:set-funcallable-instance-function
    selector
    #'(lambda (receiver &rest args)
-       (apply #'invoke-by-name receiver selector args))))
+       (apply #'invoke-by-name receiver selector args)))
+  selector)
 
 
 (defmethod initialize-instance :after ((selector selector)
