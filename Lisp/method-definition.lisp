@@ -20,7 +20,21 @@
 
 (defclass objective-c-generic-function (standard-generic-function)
      ()
-  (:metaclass funcallable-standard-class))
+  (:metaclass funcallable-standard-class)
+  (:documentation "An Objective-C dispatch function for a given selector.
+
+## Description:
+
+Every Lisp-defined __objective-c-method__ belongs to a corresponding
+__objective-c-generic-function__ that handles **method combination** and
+registration of newly added **method**s with the Objective-C runtime.
+
+It is recommended to create all __objective-c-generic-functions__ by
+means of the macro __define-objective-c-generic-function__.
+
+If you subclass this **class**, be aware that there is no protocol that
+describes its behaviour, so the consequences of overriding any
+**generic function**s **applicable** to the **class** are undefined."))
 
 
 (defclass objective-c-method (standard-method)
@@ -28,7 +42,22 @@
                    :accessor method-return-type)
       (argument-types :initarg :argument-types
                       :accessor method-argument-types))
-  (:metaclass standard-class))
+  (:metaclass standard-class)
+  (:documentation "An Objective-C method implemented in Lisp.
+
+## Description:
+
+Instances of __objective-c-method__ are similar to instances of
+__standard-method__ except that they know about their foreign argument
+and return types and recognise different **qualifier**s that they
+communicate to the __objective-c-generic-function__ that they belong to.
+
+It is recommended to create all __objective-c-methods__ by means of the
+macro __define-objective-c-method__.
+
+There is no protocol that defines the behaviour of this **class**, so
+the consequences of subclassing it and overriding its **method**s is
+undefined."))
 
 
 (defun qualifiers-return-type (qualifiers)
