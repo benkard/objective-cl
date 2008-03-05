@@ -38,9 +38,9 @@
 #include <objc/objc-class.h>
 #endif
 
-#define DEBUG 0
+#define DEBUG_P 0
 
-#if DEBUG
+#if DEBUG_P
 #define TRACE NSLog
 #else
 #define TRACE objcl_null_log
@@ -732,7 +732,7 @@ objcl_create_imp (IMP callback,
   for (i = 0; i < argc; i++)
     arg_types[i + 2] = objcl_pyobjc_arg_signature_to_ffi_type (arg_typespecs[i]);
 
-#if DEBUG
+#if DEBUG_P
   TRACE (@"Return: %s", return_typespec);
   for (i = 0; i < argc; i++)
     {
@@ -1109,7 +1109,7 @@ objcl_method_selector (void *method)
 void
 objcl_test_foo (void)
 {
-#if DEBUG
+#if DEBUG_P
   Class c;
   id i;
 
