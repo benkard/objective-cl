@@ -226,10 +226,6 @@ and development for portable programs as well).
       => T"))
 
 
-(defmethod objective-c-class-registered-p ((class objective-c-class))
-  (foreign-class-registered-p class))
-
-
 (defclass objective-c-class (standard-class c-pointer-wrapper)
      ((registered-p :type boolean
                     :accessor foreign-class-registered-p
@@ -255,6 +251,10 @@ Objective-C runtime.
 ## See also:
 
   __id__, __objective-c-class-registered-p__"))
+
+
+(defmethod objective-c-class-registered-p ((class objective-c-class))
+  (foreign-class-registered-p class))
 
 
 (defclass objective-c-meta-class (objective-c-class)
@@ -514,7 +514,9 @@ seems like an acceptable trade-off.
 
 
 (defgeneric objcl-eql (obj1 obj2))
-(defmethod objcl-eql ((obj1 c-pointer-wrapper) (obj2 c-pointer-wrapper))
-  (pointer-eq (pointer-to obj1) (pointer-to obj2)))
-(defmethod objcl-eql (obj1 obj2)
-  (eql obj1 obj2))
+
+(with-compilation-unit ()
+  (defmethod objcl-eql ((obj1 c-pointer-wrapper) (obj2 c-pointer-wrapper))
+    (pointer-eq (pointer-to obj1) (pointer-to obj2)))
+  (defmethod objcl-eql (obj1 obj2)
+    (eql obj1 obj2)))
