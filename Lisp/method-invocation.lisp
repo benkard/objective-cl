@@ -114,13 +114,15 @@ Instead of using __invoke__, which is neither macro-friendly nor very
 useful for method selection at run-time, you may **funcall** selectors
 directly.  Naturally, __apply__ works as well.
 
-The following calls are all equivalent:
+The following calls are all equivalent (though the last one needs the
+syntax enhancement provided by __enable-method-syntax__ enabled and the
+selector registered by way of __collect-methods__):
 
-    (invoke-by-name instance \"stringWithCString:encoding:\" \"Mulk.\" 4)
-    (invoke instance :string-with-c-string \"Mulk.\" :encoding 4)
-    (funcall (selector \"stringWithCString:encoding:\") instance \"Mulk.\" 4)
-    (apply (selector \"stringWithCString:encoding:\") (list instance \"Mulk.\" 4))
-
+    (invoke-by-name class \"stringWithCString:encoding:\" \"Mulk.\" 4)
+    (invoke class :string-with-c-string \"Mulk.\" :encoding 4)
+    (funcall (selector \"stringWithCString:encoding:\") class \"Mulk.\" 4)
+    (apply (selector \"stringWithCString:encoding:\") (list class \"Mulk.\" 4))
+    (#/stringWithCString:encoding: class \"Mulk.\" 4)
 
 ## See also:
 

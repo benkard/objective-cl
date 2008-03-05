@@ -73,8 +73,9 @@ _objective-c-selectors__ as the **symbol package**.
 
 ## Note:
 
-Absent manual changes by the user, the __fdefinition__ of any **fbound**
-**symbol** read by this **reader macro** will be a __selector__.
+Absent manual interventions by the user, the __fdefinition__ of any
+**fbound** **symbol** read by this **reader macro** will be a
+__selector__.
 
 Method __selector__s have to be interned prior to use.  As this reader
 macro is not capable of interning new __selector__s, you have to ensure
