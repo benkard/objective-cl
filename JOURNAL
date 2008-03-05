@@ -1,5 +1,21 @@
 -*- mode: muse -*-
 
+* 2008-03-05, 18:48:48 CET
+
+** CMUCL and the MOP
+
+I have just discovered a discouraging bug in CMUCL's version of PCL that
+is confirmed by what Closer-to-MOP's feature list says:
+PCL:SET-FUNCALLABLE-INSTANCE-FUNCTION does not accept a closure as its
+second argument, it only accepts pure functions that don't close over
+things.
+
+Really.  That is a horrible bug.  It means that Objective-CL is broken
+on CMUCL in a fundamental way (see the definition of SHARED-INITIALIZE
+:AFTER (SELECTOR ...) in data-types.lisp) and I don't have the slightest
+idea how to work around it.
+
+
 * 2008-02-24, 22:39:03 CET
 
 ** PCL Problems
