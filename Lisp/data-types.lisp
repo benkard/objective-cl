@@ -269,8 +269,86 @@ an __exception__, you can simply send it the `self' message.
 (defclass tagged-union (tagged-struct) ())
 
 
-;; FIXME: Document.
-(defgeneric foreign-value-lisp-managed-p (foreign-value))
+(defgeneric foreign-value-pointer (foreign-value)
+  (:documentation "Access the pointer to the foreign data wrapped by a __foreign-value__.
+
+## Arguments and Values:
+
+*foreign-value* --- an **object** of **type** __foreign-value__.
+
+Returns: a pointer.
+
+
+## Description:
+
+__foreign-value-pointer__ retrieves a system area pointer that points
+directly to the foreign data wrapped by *foreign-value*.
+
+Note that, by default, finalisation of a __foreign-value__ will cause
+the data pointed to to be deallocated.  See
+__foreign-value-lisp-managed-p__ for details and how to control this
+behaviour if you need to.
+
+
+## See also:
+
+  __foreign-value-lisp-managed-p__, __foreign-value__, __foreign-struct__"))
+
+
+(defmethod foreign-value-pointer ((foreign-value foreign-value))
+  (pointer-to foreign-value))
+
+
+(defgeneric foreign-value-lisp-managed-p (foreign-value)
+  (:documentation "Determine or change whether a foreign value will be garbage-collected.
+
+_(setf foreign-value-lisp-managed-p)_ *managed-p* *foreign-value*
+
+## Arguments and Values:
+
+*foreign-value* --- an **object**.
+
+*managed-p* --- a **generalized boolean**.
+
+_foreign-value-lisp-managed-p_ returns: a **boolean**.
+
+
+## Description:
+
+When a value of a `struct` or `union` type is returned by a method call
+or given as an argument to a method implemented in Lisp, it is
+encapsulated in a __foreign-struct__ that by default deallocates the
+value upon its finalisation by the garbage collector.
+
+_foreign-value-lisp-managed-p_ determines whether this automatic
+deallocation is enabled.  Setting _foreign-value-lisp-managed-p_ to
+**false** inhibits automatic deallocation of *foreign-value*.
+
+
+## Rationale:
+
+Having to manually deallocate all structs returned by values or passed
+as arguments to methods implemented in Lisp would require knowledge of
+whether a pointer or an actual struct was returned or passed,
+respectively.  It would also prevent the user from simply discarding
+struct return values as any Lisp or Objective-C programmer could
+normally do without harm.
+
+On the other hand, automatic deallocation means that anytime the user
+wanted to save the struct in a foreign slot as a pointer, they would
+need to copy the struct first, which may be expensive and is certainly
+inconvenient.
+
+Doing the right thing therefore inevitably implies some kind of user
+action some of the time.  Requiring the user to mark non-GCable objects
+seems like an acceptable trade-off.
+
+
+## See also:
+
+  __foreign-value__, __foreign-struct__"))
+
+
 (defmethod foreign-value-lisp-managed-p ((foreign-value foreign-value))
   (with-slots (lisp-managed-cell) foreign-value
     (aref lisp-managed-cell)))
