@@ -247,16 +247,68 @@ an __exception__, you can simply send it the `self' message.
      ((lisp-managed-cell :type (array boolean ())
                          :accessor foreign-value-lisp-managed-cell-p
                          :initarg :lisp-managed-cell
-                         :documentation "Whether we need to handle deallocation.")))
+                         :documentation "Whether we need to handle deallocation."))
+  (:documentation "A wrapper type for complex foreign values.
+
+## Description:
+
+Whenever a value of a `struct` or `union` type is returned by a method
+call or given as an argument to a method implemented in Lisp, it is
+encapsulated in a __foreign-value__ that by default deallocates the
+value upon its finalisation by the garbage collector.
+
+You can extract a system area pointer that points directly to the
+wrapped foreign data by calling __foreign-value-pointer__.
+
+You can control finalisation behaviour by using the
+__foreign-value-lisp-managed-p__ accessor.
 
 
-;; FIXME: Document.
+## See also:
+
+  __foreign-value-pointer__, __foreign-value-lisp-managed-p__,
+__foreign-struct__, __foreign-union__"))
+
+
 (defclass foreign-struct (foreign-value)
      ((name :type (or null string)
             :accessor foreign-struct-name
-            :initarg :name)))
+            :initarg :name))
+  (:documentation "A wrapper type for foreign struct values.
 
-(defclass foreign-union (foreign-struct) ())
+## Description:
+
+Foreign values of type `struct` are encapsulated in **object**s of
+**type** __foreign-struct__ when returned by a method call or otherwise
+acquired by Lisp code through the Objective-C bridge.
+
+For details on how to access the wrapped data and control finalisation
+behaviour, see the entry about the type __foreign-value__.
+
+
+## See also:
+
+  __foreign-value-pointer__, __foreign-value-lisp-managed-p__,
+__foreign-value__, __foreign-union__"))
+
+
+(defclass foreign-union (foreign-struct) ()
+  (:documentation "A wrapper type for foreign union values.
+
+## Description:
+
+Foreign values of type `union` are encapsulated in **object**s of
+**type** __foreign-union__ when returned by a method call or otherwise
+acquired by Lisp code through the Objective-C bridge.
+
+For details on how to access the wrapped data and control finalisation
+behaviour, see the entry about the type __foreign-value__.
+
+
+## See also:
+
+  __foreign-value-pointer__, __foreign-value-lisp-managed-p__,
+__foreign-value__, __foreign-struct__"))
 
 
 ;; The following are for private use only.
@@ -319,7 +371,7 @@ _foreign-value-lisp-managed-p_ returns: a **boolean**.
 
 When a value of a `struct` or `union` type is returned by a method call
 or given as an argument to a method implemented in Lisp, it is
-encapsulated in a __foreign-struct__ that by default deallocates the
+encapsulated in a __foreign-value__ that by default deallocates the
 value upon its finalisation by the garbage collector.
 
 _foreign-value-lisp-managed-p_ determines whether this automatic
