@@ -96,7 +96,17 @@ __selector__s registered by way of __collect-methods__.
 
 
 (defun disable-method-syntax ()
-  "FIXME"
+  "Disable the **reader macro** installed by __enable-method-syntax__.
+
+## Description:
+
+__enable-method-syntax__ and friends save the **readtable** before
+altering it.  __disable-method-syntax__ restores the saved state.
+
+
+## See also:
+
+  __enable-method-c-syntax__, __disable-objective-c-syntax__"
   (restore-readtable)
   #+(or) (when *method-syntax-macro-chars*
            (let ((macro-char (pop *method-syntax-macro-chars*)))
@@ -245,7 +255,17 @@ __enable-method-syntax__"
 
 
 (defun disable-objective-c-syntax ()
-  "FIXME"
+  "Disable the **reader macro** installed by __enable-objective-c-syntax__.
+
+## Description:
+
+__enable-objective-c-syntax__ and friends save the **readtable** before
+altering it.  __disable-objective-c-syntax__ restores the saved state.
+
+
+## See also:
+
+  __enable-objective-c-syntax__, __disable-method-syntax__"
   (restore-readtable)
   #+(or) (when *bracket-syntax-macro-chars*
            (destructuring-bind (open . close)
