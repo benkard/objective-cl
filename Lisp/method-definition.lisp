@@ -43,6 +43,93 @@
 
 
 (defmacro define-objective-c-method (name &rest args)
+  "Define a new Objective-C method.
+
+## Arguments and Values:
+
+*name* --- a *symbol*.
+
+*lambda-list* --- a **generic function lambda list**.
+
+*options* --- a *list* (not evaluated).
+
+
+## Description:
+
+_define-objective-c-generic-function_ is like __defgeneric__ except in the
+following aspects:
+
+1. *name* is immediately replaced by a *symbol* **intern**ed in package
+   _objective-c-methods_.
+
+2. The default value for the _:generic-function-class_ option is
+   _objective-cl:objective-c-generic-function_.
+
+3. The default value for the _:method-class_ option is
+   _objective-cl:objective-c-method_.
+
+_define-objective-c-generic-function_ recognises the same *options* as
+__defgeneric__, including _:generic-function-class_ and _:method-class_.
+
+
+## Example:
+
+    #.(enable-method-syntax)
+
+    (define-objective-c-class ns::mlk-my-class (ns::ns-object)
+         ((foos :initargs :foos)
+          (foo-count :foreign-type :int)))
+      => NS::MLK-MY-CLASS
+
+    (define-objective-c-generic-function #/foo:bar:stuff:do: (self y z a b))
+      => #<OBJECTIVE-C-GENERIC-FUNCTION OBJECTIVE-C-METHODS::|foo:bar:stuff:do:| (0)>
+
+    (define-objective-c-method #/foo:bar:stuff:do: :int
+        ((self ns::mlk-my-class) (y :int) z a (b ns::ns-number))
+      (format t \"Hello!  Z and A are ~A and~
+                  ~&~A, respectively.~
+                  ~&Have a nice day.\" z a)
+      (+ y 20))
+      => #<OBJECTIVE-C-METHOD OBJECTIVE-C-METHODS::|foo:bar:stuff:do:| (NS:MLK-MY-CLASS T T T NS:NS-NUMBER) {ADA4101}>
+
+    (#/foo:bar:stuff:do: (#/new (find-objc-class 'ns::mlk-my-class))
+                         100
+                         30
+                         \"FOO!\"
+                         5)
+      => Output:
+           Hello!  Z and A are #<NS:NS-INT-NUMBER `30' {82F1DC0}> and
+           #<NS:GSC-BUFFER-STRING `FOO!' {82F2190}>, respectively.
+           Have a nice day.
+      => 120
+
+
+## Note 1:
+
+It is not generally possible to define methods after a class has already
+been registered with the Objective-C runtime.  The latter inevitably
+happens when Objective-CL first sees an instance of the class.
+
+
+## Note 2:
+
+At present, it is important to call
+__define-objective-c-generic-function__ before using
+__define-objective-c-method__, because otherwise the generic function
+automatically created by __define-objective-c-method__ may get the wrong
+class.
+
+
+## Note 3:
+
+It is customary to use the #/ notation enabled by
+__enable-method-syntax__ to write method names for
+__define-objective-c-generic-function__.
+
+
+## See also:
+
+  __define-objective-c-generic-function__, __define-objective-c-class__"
   (let ((qualifiers (list)))
     (loop until (listp (first args))
           do (push (pop args) qualifiers))
@@ -77,10 +164,73 @@
 
 
 (defmacro defobjcgeneric (name lambda-list &body options)
+  "Define a new Objective-C generic function.
+
+## Arguments and Values:
+
+*name* --- a *symbol*.
+
+*lambda-list* --- a **generic function lambda list**.
+
+*options* --- a *list* (not evaluated).
+
+
+## Description:
+
+This macro is equivalent to __define-objective-c-generic-function__.
+
+
+## See also:
+
+  __define-objective-c-generic-function__, __defobjcmethod__"
   `(define-objective-c-generic-function ,name ,lambda-list ,@options))
 
 
 (defmacro define-objective-c-generic-function (name lambda-list &body options)
+  "Define a new Objective-C generic function.
+
+## Arguments and Values:
+
+*name* --- a *symbol*.
+
+*lambda-list* --- a **generic function lambda list**.
+
+*options* --- a *list* (not evaluated).
+
+
+## Description:
+
+_define-objective-c-generic-function_ is like __defgeneric__ except in the
+following aspects:
+
+1. *name* is immediately replaced by a *symbol* **intern**ed in package
+   _objective-c-methods_.
+
+2. The default value for the _:generic-function-class_ option is
+   _objective-cl:objective-c-generic-function_.
+
+3. The default value for the _:method-class_ option is
+   _objective-cl:objective-c-method_.
+
+_define-objective-c-generic-function_ recognises the same *options* as
+__defgeneric__, including _:generic-function-class_ and _:method-class_.
+
+
+## Example:
+
+See __define-objective-c-method__.
+
+
+## Note:
+
+It is customary to use the #/ notation enabled by
+__enable-method-syntax__ to write method names for
+__define-objective-c-generic-function__.
+
+
+## See also:
+
+  __define-objective-c-method__, __define-objective-c-class__"
   `(defgeneric ,(intern (symbol-name name) '#:objective-c-methods)
        ,lambda-list
      ,@(unless (position :generic-function-class
