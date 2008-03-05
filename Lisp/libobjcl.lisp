@@ -196,6 +196,13 @@
 
 (defcfun ("objcl_test_foo" objcl-test-foo) :void)
 
+(defcfun ("objcl_method_selector" %objcl-method-selector) :pointer
+  (method :pointer))
+
+(defcfun ("objcl_class_methods" %objcl-class-methods) :pointer
+  (class :pointer)
+  (count-out :pointer))
+
 (defcvar *objcl-current-exception-lock* :pointer)
 (defcvar *objcl-current-exception* :pointer)
 
@@ -918,6 +925,25 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
 
 (defun objc-2.0-runtime-p ()
   (not (zerop (%objcl-objc2-p))))
+
+
+;;;; (@* "Registry update and maintenance")
+(defcallback collect-class-methods :void ((class :pointer))
+  (flet ((collect-methods (class)
+           (with-foreign-object (count-buf :unsigned-int)
+             (let ((method-array (%objcl-class-methods class count-buf)))
+               (unwind-protect
+                   (dotimes (i (mem-ref count-buf :unsigned-int))
+                     (intern-pointer-wrapper 'selector
+                                             :pointer
+                                             (%objcl-method-selector
+                                              (mem-aref method-array :void i))))
+                 (foreign-free method-array))))))
+    (collect-methods class)
+    (collect-methods (%objcl-class-metaclass class))))
+
+(defun collect-methods ()
+  (%objcl-for-each-class-do (callback collect-class-methods)))
 
 
 ;;;; (@* "Slot access")

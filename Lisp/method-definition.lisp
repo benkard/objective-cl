@@ -69,7 +69,8 @@
               else
                 collect :id into type-specifiers
               finally (return
-                        `(defmethod ,name
+                        `(defmethod ,(intern (symbol-name name)
+                                             '#:objective-c-methods)
                              argtypes-start ,@type-specifiers argtypes-end
                              ,@qualifiers ,lambda-list
                            ,@body)))))))
@@ -80,7 +81,8 @@
 
 
 (defmacro define-objective-c-generic-function (name lambda-list &body options)
-  `(defgeneric ,name ,lambda-list
+  `(defgeneric ,(intern (symbol-name name) '#:objective-c-methods)
+       ,lambda-list
      ,@(unless (position :generic-function-class
                          options
                          :key #'car)

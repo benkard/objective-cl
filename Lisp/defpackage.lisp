@@ -39,6 +39,7 @@
            #:define-returns-boolean-exception
            #:undefine-returns-boolean-exception
            #:collect-classes
+           #:collect-methods
 
            ;; Generic functions
            #:objc-eql

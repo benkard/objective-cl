@@ -1053,6 +1053,54 @@ objcl_for_each_class_do (void (*function) (Class))
 }
 
 
+void **
+objcl_class_methods (Class class, unsigned int *count)
+{
+#ifdef __NEXT_RUNTIME__
+  return (void **) class_copyMethodList (class, count);
+#else
+  size_t buflen = 0;
+  void **buf = NULL;
+  MethodList_t list = class->methods;
+
+  *count = 0;
+
+  while (list)
+    {
+      int i;
+      unsigned int position = *count;
+      *count += list->method_count;
+
+      if (buflen < *count)
+        {
+          buflen = *count;
+          buf = realloc (buf, buflen * sizeof (void *));
+        }
+
+      for (i = 0; i < list->method_count; i++)
+        {
+          buf[position + i] = &list->method_list[i];
+        }
+
+      list = list->method_next;
+    }
+
+  return buf;
+#endif
+}
+
+
+SEL
+objcl_method_selector (void *method)
+{
+#ifdef __NEXT_RUNTIME__
+  return method_getName ((Method) method);
+#else
+  return ((Method_t) method)->method_name;
+#endif
+}
+
+
 /* The function objcl_test_foo is a general-purpose debugging tool that
    can be adapted as needed. */
 @interface MLKTestStringHelper

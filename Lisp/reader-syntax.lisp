@@ -78,7 +78,7 @@ Method __selector__s have to be interned prior to use.  As this reader
 macro is not capable of interning new __selector__s, you have to ensure
 that __intern-selector__ is called before the respective __selector__ is
 used.  This is not a problem for __selector__s known at load-time nor for
-__selector__s registered by way of __collect-selectors__.
+__selector__s registered by way of __collect-methods__.
 
 
 ## See also:
