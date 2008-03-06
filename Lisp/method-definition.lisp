@@ -419,10 +419,6 @@ __define-objective-c-generic-function__.
                                ,(typespec->c-type return-type)
                                ,cffi-lambda-list
                              (declare (ignorable ,(cadr arg-symbols)))
-                             #+(or) (progn ;for debugging
-                                      (print '(,(generic-function-name gf)
-                                               ,@arguments))
-                                      (format t "~&~A" (list ,@arg-symbols)))
                              (unwind-protect
                                  (,(if (member (typespec-primary-type return-type)
                                                '(:id :class :selector))
