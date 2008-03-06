@@ -126,7 +126,7 @@ function __super__.
                   ~&~A, respectively.~
                   ~&Have a nice day.\" z a)
       (+ y 20))
-      => #<OBJECTIVE-C-METHOD OBJECTIVE-C-METHODS::|foo:bar:stuff:do:| (NS:MLK-MY-CLASS T T T NS:NS-NUMBER) {ADA4101}>
+      => #<OBJECTIVE-C-METHOD OBJECTIVE-C-METHODS::|foo:bar:stuff:do:| ((EQL NS:MLK-MY-CLASS) NS:MLK-MY-CLASS T T T NS:NS-NUMBER) {CE8E531}>
 
     (#/foo:bar:stuff:do: (#/new (find-objc-class 'ns::mlk-my-class))
                          100
@@ -135,7 +135,7 @@ function __super__.
                          5)
       => Output:
            Hello!  Z and A are #<NS:NS-INT-NUMBER `30' {82F1DC0}> and
-           #<NS:GSC-BUFFER-STRING `FOO!' {82F2190}>, respectively.
+           #<NS:MLK-LISP-STRING `FOO!' {82F2190}>, respectively.
            Have a nice day.
       => 120
 
@@ -151,11 +151,12 @@ happens when Objective-CL first sees an instance of the class.
 
 ## Note 2:
 
-At present, it is important to call
-__define-objective-c-generic-function__ before using
-__define-objective-c-method__, because otherwise the generic function
-automatically created by __define-objective-c-method__ may get the wrong
-class.
+If you do not call __define-objective-c-generic-function__ before using
+__define-objective-c-method__, it will be called implicitly by the
+latter.  There is nothing wrong with relying on this; in fact, if you do
+not want to set any options for the generic function, your code will
+probably seem less cramped if you leave the redundant
+__define-objective-c-generic-function__ calls out.
 
 
 ## Note 3:
@@ -282,7 +283,6 @@ __super__, ill-defined, and probably not desirable anyway.
 
 ## Examples:
 
-    (define-objective-c-generic-function #/characterAtIndex: (self index))
     (define-objective-c-method #/characterAtIndex: :short ((self ns::my-string) (index :unsigned-long))
       (if (weird-string-p self)
           (super (1+ index))
