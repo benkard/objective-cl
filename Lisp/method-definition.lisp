@@ -312,7 +312,7 @@ __define-objective-c-generic-function__.
     (eval (loop for type in argument-types
                 for symbol in arg-symbols
                 collect (list symbol (typespec->c-type type)) into cffi-lambda-list
-                if (member type '(:id :class :selector))
+                if (member (typespec-primary-type type) '(:id :class :selector))
                   collect `(intern-pointer-wrapper ',type :pointer ,symbol)
                     into arguments
                 else
@@ -327,10 +327,13 @@ __define-objective-c-generic-function__.
                                                ,@arguments))
                                       (format t "~&~A" (list ,@arg-symbols)))
                              (unwind-protect
-                                 (,(generic-function-name gf)
-                                   ;; Leave the second argument (the
-                                   ;; selector) out.
-                                   ,@(list* (car arguments) (cddr arguments)))
+                                 (,(case (typespec-primary-type return-type)
+                                     ((:id :class :selector) 'pointer)
+                                     (t 'progn))
+                                  (,(generic-function-name gf)
+                                    ;; Leave the second argument (the
+                                    ;; selector) out.
+                                    ,@(list* (car arguments) (cddr arguments))))
                                ;; FIXME: We may want to wrap signalled
                                ;; SERIOUS-CONDITIONS in some kind of
                                ;; Objective-C exception object and put
