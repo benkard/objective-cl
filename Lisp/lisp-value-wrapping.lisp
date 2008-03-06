@@ -40,16 +40,6 @@
   (:metaclass ns::+ns-object))
 
 
-(defcoercion id ((x list))
-  (intern-lisp-value x))
-
-(defcoercion id ((x string))
-  (intern-lisp-value x))
-
-(defcoercion id ((x t))
-  (intern-lisp-value x))
-
-
 (defvar *lisp-value-wrappers* (make-weak-value-hash-table))
 
 

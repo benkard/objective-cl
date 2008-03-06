@@ -79,7 +79,14 @@
 (defcoercion :id ((x null))
   +nil+)
 
-;; (defcoercion id ((x {list, string, t})) ...): See lisp-value-wrapping.lisp.
+(defcoercion :id ((x list))
+  (intern-lisp-value x))
+
+(defcoercion :id ((x string))
+  (intern-lisp-value x))
+
+(defcoercion :id ((x t))
+  (intern-lisp-value x))
 
 
 (defcoercion :class ((x id))

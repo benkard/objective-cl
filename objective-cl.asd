@@ -63,7 +63,8 @@
                                                               "type-handling"
                                                               "policy"
                                                               "data-types"
-                                                              "method-invocation"))
+                                                              "method-invocation"
+                                                              "lisp-value-wrapping"))
                  (:file "type-handling"      :depends-on ("defpackage"
                                                           "libobjcl"
                                                           "init"))
