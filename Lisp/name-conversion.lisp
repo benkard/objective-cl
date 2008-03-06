@@ -35,6 +35,10 @@
           :initial-value ""))
 
 
+(defun generic-function-name->method-name (gf-name)
+  (symbol-name gf-name))
+
+
 (defun generic-function-name->selector (gf-name)
   (selector (symbol-name gf-name)))
 

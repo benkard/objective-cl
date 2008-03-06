@@ -78,9 +78,13 @@ undefined."))
 
 *name* --- a *symbol*.
 
-*lambda-list* --- a **generic function lambda list**.
+*qualifier* --- a **method qualifier**.
 
-*options* --- a *list* (not evaluated).
+*return-type* --- a *typespec*.
+
+*lambda-list* --- a **modified lambda list**.
+
+*body* --- an **implicit progn**.
 
 
 ## Description:
@@ -99,6 +103,9 @@ following aspects:
 
 _define-objective-c-generic-function_ recognises the same *options* as
 __defgeneric__, including _:generic-function-class_ and _:method-class_.
+
+The **lexical environment** of *body* is augmented to include the
+function __super__.
 
 
 ## Example:
@@ -160,7 +167,8 @@ __define-objective-c-generic-function__.
 
 ## See also:
 
-  __define-objective-c-generic-function__, __define-objective-c-class__"
+  __define-objective-c-generic-function__, __define-objective-c-class__,
+__super__"
   (let ((qualifiers (list)))
     (loop until (listp (first args))
           do (push (pop args) qualifiers))
@@ -173,6 +181,7 @@ __define-objective-c-generic-function__.
               if (listp arg)
                 if (typep (second arg) 'objective-c-type-keyword)
                   collect (second arg) into type-specifiers
+                  and collect (first arg) into arg-names
                   and do (setf (car arg-cons) (first arg))
                 else
                   ;; We simply map all non-OBJECTIVE-C-TYPE-KEYWORD
@@ -184,14 +193,28 @@ __define-objective-c-generic-function__.
                   ;; kind to the method, whose type specifier is :ID as
                   ;; well.
                   collect :id into type-specifiers
+                  and collect (first arg) into arg-names
               else
                 collect :id into type-specifiers
-              finally (return
-                        `(defmethod ,(intern (symbol-name name)
-                                             '#:objective-c-methods)
-                             argtypes-start ,@type-specifiers argtypes-end
-                             ,@qualifiers ,lambda-list
-                           ,@body)))))))
+                and collect arg into arg-names
+              finally (let ((super-args-sym (gensym))
+                            (super-real-args-sym (gensym)))
+                        (return
+                          `(defmethod ,(intern (symbol-name name)
+                                               '#:objective-c-methods)
+                               argtypes-start ,@type-specifiers argtypes-end
+                               ,@qualifiers ,lambda-list
+                               (flet ((super (&rest ,super-args-sym)
+                                        (let ((,super-real-args-sym
+                                               (or ,super-args-sym
+                                                   (list ,@(rest arg-names)))))
+                                          (invoke-by-name-super-v
+                                           ,(first arg-names)
+                                           ,(generic-function-name->method-name
+                                             name)
+                                           (find-objc-class ',(cadar lambda-list))
+                                           ,super-real-args-sym))))
+                                 ,@body)))))))))
 
 
 (defmacro defobjcgeneric (name lambda-list &body options)

@@ -85,7 +85,8 @@
                                                           "libobjcl"
                                                           "type-conversion"
                                                           "type-handling"
-                                                          "data-types"))
+                                                          "data-types"
+                                                          "method-definition"))
                  (:file "instance-management" :depends-on ("defpackage"
                                                            "libobjcl"
                                                            "init"
@@ -96,7 +97,6 @@
                  (:file "method-definition" :depends-on ("defpackage"
                                                          "libobjcl"
                                                          "init"
-                                                         "class-definition"
                                                          "method-invocation"
                                                          "data-types"))
                  (:file "lisp-value-wrapping" :depends-on ("defpackage"

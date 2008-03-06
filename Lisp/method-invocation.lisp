@@ -207,6 +207,11 @@ easier to use with __apply__.
 
   __invoke__"
 
+  (invoke-by-name-super-v receiver method-name nil args))
+
+
+(defun invoke-by-name-super-v (receiver method-name superclass-for-send-super
+                               args)
   ;; TODO: Support varargs.
   (let* ((selector (if (typep method-name 'selector)
                        method-name
@@ -227,7 +232,11 @@ easier to use with __apply__.
               argc (+ 2 (length args)))
       (low-level-invoke receiver
                         selector
-                        (null-pointer)
+                        (if (and superclass-for-send-super
+                                 (not (and (pointerp superclass-for-send-super)
+                                           (null-pointer-p superclass-for-send-super))))
+                            (pointer-to superclass-for-send-super)
+                            (null-pointer))
                         method-return-typestring
                         method-return-type
                         method-arg-typestrings
