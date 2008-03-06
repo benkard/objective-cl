@@ -217,6 +217,11 @@ __super__"
                           `(progn
                              (eval-when (:load-toplevel :execute)
                                (unless (fboundp ',real-name)
+                                 ;; Note that we need not specify a
+                                 ;; :LAMBDA-LIST here, as not supplying
+                                 ;; it means it's simply going to be
+                                 ;; initialised when a method is first
+                                 ;; added to the generic function.
                                  (ensure-generic-function
                                   ',real-name
                                   :generic-function-class

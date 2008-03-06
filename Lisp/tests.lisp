@@ -472,8 +472,7 @@
                    ((self ,subnumclass-name) (number ns::ns-number))
                  (* 2 (super)))))
 
-    (is (eval `(define-objective-c-generic-function #/foo:bar:stuff:do:
-                   (a b c d e &rest f))))
+    ;; We may omit DEFINE-OBJECTIVE-C-GENERIC-FUNCTION.
     (is (eval `(define-objective-c-method #/foo:bar:stuff:do: :int
                    ((x ,class-name)
                     (y :int)

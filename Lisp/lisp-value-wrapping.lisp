@@ -117,8 +117,6 @@
   (:metaclass ns::+ns-object))
 
 
-
-(define-objective-c-generic-function #/description (self))
 (define-objective-c-method #/description :id ((self ns::mlk-lisp-value))
   (#/stringWithUTF8String: (find-objc-class 'ns-string)
                            (format nil "<MLKLispValue: ~A>"
@@ -133,7 +131,6 @@
                                                     :base 10))))
 
 
-(define-objective-c-generic-function #/characterAtIndex: (self index))
 (define-objective-c-method #/characterAtIndex: :short ((self ns::mlk-lisp-string)
                                                        (index :unsigned-long))
     ;; index is actually NSUInteger ==
@@ -144,18 +141,15 @@
   (char-int (char (lisp-value self) index)))
 
 
-(define-objective-c-generic-function #/length (self))
 (define-objective-c-method #/length :unsigned-long ((self ns::mlk-lisp-string))
   (length (lisp-value self)))
 
 
-(define-objective-c-generic-function #/objectAtIndex: (self index))
 (define-objective-c-method #/objectAtIndex: ((self ns::mlk-lisp-array)
                                              (index :unsigned-long))
   (aref (lisp-value self) index))
 
 
-(define-objective-c-generic-function #/count (self))
 (define-objective-c-method #/count ((self ns::mlk-lisp-array))
   (length (lisp-value self)))
 
