@@ -16,6 +16,7 @@
 ;;;; <http://www.gnu.org/licenses/>.
 
 (in-package #:mulk.objective-cl)
+#.(enable-method-syntax)
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -37,6 +38,22 @@
      ()
   #+(or) (:default-constructor new)
   (:metaclass ns::+ns-object))
+
+
+(define-objective-c-generic-function #/description (self))
+
+(define-objective-c-method #/description :id ((self ns::mlk-lisp-value ))
+  (#/stringWithUTF8String: (find-objc-class 'ns-string)
+                           (format nil "<MLKLispValue: ~A>"
+                                   (write-to-string (lisp-value self)
+                                                    :readably nil
+                                                    :escape t
+                                                    :circle t
+                                                    :length 50
+                                                    :level 5
+                                                    :pretty nil
+                                                    :radix nil
+                                                    :base 10))))
 
 
 (defcoercion id ((x list))
@@ -113,3 +130,6 @@
 (defclass ns::mlk-lisp-list (ns::ns-array lisp-value-wrapper-mixin)
      ()
   (:metaclass ns::+ns-object))
+
+
+#.(disable-method-syntax)
