@@ -424,17 +424,21 @@ __define-objective-c-generic-function__.
                                                ,@arguments))
                                       (format t "~&~A" (list ,@arg-symbols)))
                              (unwind-protect
-                                 (coerce-object
-                                  (,(generic-function-name gf)
-                                    ;; Pass the class this method is
-                                    ;; being defined for as the first
-                                    ;; argument.  This is needed so that
-                                    ;; super calls can work.
-                                    ',(class-name class)
-                                    ;; Leave the second argument (the
-                                    ;; selector) out.
-                                    ,@(list* (car arguments) (cddr arguments)))
-                                  ',return-type)
+                                 (,(if (member (typespec-primary-type return-type)
+                                               '(:id :class :selector))
+                                       'pointer
+                                       'progn)
+                                  (coerce-object
+                                   (,(generic-function-name gf)
+                                     ;; Pass the class this method is
+                                     ;; being defined for as the first
+                                     ;; argument.  This is needed so that
+                                     ;; super calls can work.
+                                     ',(class-name class)
+                                     ;; Leave the second argument (the
+                                     ;; selector) out.
+                                     ,@(list* (car arguments) (cddr arguments)))
+                                   ',return-type))
                                ;; FIXME: We may want to wrap signalled
                                ;; SERIOUS-CONDITIONS in some kind of
                                ;; Objective-C exception object and put
