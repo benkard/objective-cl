@@ -219,7 +219,8 @@ __super__"
                                            (first ,captured-args-sym)
                                            ,(generic-function-name->method-name
                                              name)
-                                           (find-objc-class ',(cadar lambda-list))
+                                           (objcl-class-superclass
+                                            (find-objc-class ',(cadar lambda-list)))
                                            (or ,super-args-sym
                                                (rest ,captured-args-sym)))))
                                    (declare (ignorable (function super)))
