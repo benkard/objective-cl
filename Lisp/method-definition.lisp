@@ -209,8 +209,8 @@ __super__"
               finally (let ((super-args-sym (gensym))
                             (captured-args-sym (gensym))
                             (class-arg-sym (gensym))
-                            (class-name (class-name (find-objc-class
-                                                     (cadar lambda-list)))))
+                            (class-name (intern (symbol-name (cadar lambda-list))
+                                                '#:objective-c-classes)))
                         (return
                           `(defmethod ,(intern (symbol-name name)
                                                '#:objective-c-methods)
