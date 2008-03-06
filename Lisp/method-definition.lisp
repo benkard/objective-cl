@@ -213,8 +213,7 @@ __super__"
                                                '#:objective-c-methods)
                                argtypes-start ,@type-specifiers argtypes-end
                                ,@qualifiers ,lambda-list
-                               (let ((,captured-args-sym
-                                      (list ,@(rest arg-names))))
+                               (let ((,captured-args-sym (list ,@arg-names)))
                                  (flet ((super (&rest ,super-args-sym)
                                           (invoke-by-name-super-v
                                            (first ,captured-args-sym)
