@@ -44,14 +44,13 @@
   (intern-lisp-value x))
 
 (defcoercion id ((x string))
-  ;; FIXME: Implement INTERN-LISP-VALUE.
-  (primitive-invoke (find-objc-class 'ns-string)
-                    "stringWithUTF8String:"
-                    'id
-                    x))
+  (intern-lisp-value x))
 
 (defcoercion id ((x t))
   (intern-lisp-value x))
+
+
+(defvar *lisp-value-wrappers* (make-weak-value-hash-table))
 
 
 (defun intern-lisp-value (value)
@@ -65,7 +64,9 @@
   ;;
   ;; will evaluate to true unless we generally intern Lisp value
   ;; wrappers.
-  (error "FIXME"))
+  (or (weak-gethash value *lisp-value-wrappers* nil)
+      (setf (weak-gethash value *lisp-value-wrappers*)
+            (make-lisp-value value))))
 
 
 (defun make-lisp-value (value)
