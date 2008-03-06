@@ -430,8 +430,19 @@
   (let ((class-name (intern (format nil "~A~D"
                                     '#:mlk-test-string
                                     (incf *class-counter*))))
+        (numclass-name (intern (format nil "~A~D"
+                                       '#:mlk-test-number
+                                       (incf *class-counter*))
+                               '#:objective-c-classes))
+        (subnumclass-name (intern (format nil "~A~D"
+                                          '#:mlk-test-sub-number
+                                          (incf *class-counter*))
+                                  '#:objective-c-classes))
         (class nil)
-        (instance nil))
+        (instance nil)
+        (numinstance nil)
+        (subnuminstance nil))
+    (is (find-objc-class "NSNumber"))
     (setq class
           (is (c2mop:ensure-class class-name
                                   :direct-superclasses
@@ -448,11 +459,21 @@
 
     ;; Method definition.
     #.(enable-method-syntax)
+    (is (eval `(define-objective-c-generic-function #/prettifyNumber:
+                   (self number))))
+
+    (is (eval `(define-objective-c-class ,numclass-name (ns::ns-object) ())))
+    (is (eval `(define-objective-c-method #/prettifyNumber: :int
+                   ((self ,numclass-name) (number ns::ns-number))
+                 (- (#/intValue number)))))
+
+    (is (eval `(define-objective-c-class ,subnumclass-name (,numclass-name) ())))
+    (is (eval `(define-objective-c-method #/prettifyNumber: :int
+                   ((self ,subnumclass-name) (number ns::ns-number))
+                 (* 2 (super)))))
+
     (is (eval `(define-objective-c-generic-function #/foo:bar:stuff:do:
-                   (a b c d e &rest f)
-                 (:generic-function-class objective-c-generic-function)
-                 (:method-class objective-c-method))))
-    (is (find-objc-class "NSNumber"))
+                   (a b c d e &rest f))))
     (is (eval `(define-objective-c-method #/foo:bar:stuff:do: :int
                    ((x ,class-name)
                     (y :int)
@@ -467,6 +488,8 @@
     ;; Sanity checks.
     (is (typep class 'objective-c-class))
     (setq instance (is (invoke (invoke class 'alloc) 'init)))
+    (setq numinstance (is (invoke (find-objc-class numclass-name) 'new)))
+    (setq subnuminstance (is (invoke (find-objc-class subnumclass-name) 'new)))
 
     ;; Class finalisation.  (Should be automatic upon instance
     ;; creation.)
@@ -474,6 +497,8 @@
 
     ;; Method calls.
     (is (= 170 (invoke instance :foo 150 :bar nil :stuff nil :do 100)))
+    (is (= -30 (invoke numinstance :prettify-number 30)))
+    (is (= -60 (invoke subnuminstance :prettify-number 30)))
 
     ;; Object identity preservation.
     (is (eql instance
