@@ -210,25 +210,35 @@ __super__"
                             (captured-args-sym (gensym))
                             (class-arg-sym (gensym))
                             (class-name (intern (symbol-name (cadar lambda-list))
-                                                '#:objective-c-classes)))
+                                                '#:objective-c-classes))
+                            (real-name (intern (symbol-name name)
+                                               '#:objective-c-methods)))
                         (return
-                          `(defmethod ,(intern (symbol-name name)
-                                               '#:objective-c-methods)
-                               argtypes-start ,@type-specifiers argtypes-end
-                               ,@qualifiers ((,class-arg-sym (eql ',class-name))
-                                             ,@lambda-list)
-                               (let ((,captured-args-sym (list ,@arg-names)))
-                                 (flet ((super (&rest ,super-args-sym)
-                                          (invoke-by-name-super-v
-                                           (first ,captured-args-sym)
-                                           ,(generic-function-name->method-name
-                                             name)
-                                           (objcl-class-superclass
-                                            (find-objc-class ',class-name))
-                                           (or ,super-args-sym
-                                               (rest ,captured-args-sym)))))
-                                   (declare (ignorable (function super)))
-                                   ,@body))))))))))
+                          `(progn
+                             (eval-when (:load-toplevel :execute)
+                               (unless (fboundp ',real-name)
+                                 (ensure-generic-function
+                                  ',real-name
+                                  :generic-function-class
+                                    (find-class 'objective-c-generic-function)
+                                  :method-class
+                                    (find-class 'objective-c-method))))
+                             (defmethod ,real-name
+                                 argtypes-start ,@type-specifiers argtypes-end
+                                 ,@qualifiers ((,class-arg-sym (eql ',class-name))
+                                               ,@lambda-list)
+                                 (let ((,captured-args-sym (list ,@arg-names)))
+                                   (flet ((super (&rest ,super-args-sym)
+                                            (invoke-by-name-super-v
+                                             (first ,captured-args-sym)
+                                             ,(generic-function-name->method-name
+                                               name)
+                                             (objcl-class-superclass
+                                              (find-objc-class ',class-name))
+                                             (or ,super-args-sym
+                                                 (rest ,captured-args-sym)))))
+                                     (declare (ignorable (function super)))
+                                     ,@body)))))))))))
 
 
 (defun super (&rest args)
