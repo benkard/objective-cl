@@ -77,7 +77,7 @@ obj/libobjcl.dylib: $(FFI_DEPS) obj/libobjcl.dylib.$(VERSION)
 	ln -s -f libobjcl.dylib.$(VERSION) $@
 
 obj/libobjcl.dylib.$(VERSION): $(libobjcl_OBJ_FILES)
-	make -p obj
+	mkdir -p $(CURDIR)/obj
 	gcc -dynamiclib -current_version $(VERSION) -flat_namespace -undefined warning -install_name $(CURDIR)/obj/libobjcl.dylib.$(VERSION) -o $@ $(libobjcl_OBJ_FILES) -fnext-runtime -framework AppKit -framework Foundation -lm $(ADDITIONAL_LDFLAGS) $(ADDITIONAL_OBJCFLAGS)
 
 obj/%.o: %.m
