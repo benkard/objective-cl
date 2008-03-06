@@ -404,13 +404,12 @@ __define-objective-c-generic-function__.
                                                ,@arguments))
                                       (format t "~&~A" (list ,@arg-symbols)))
                              (unwind-protect
-                                 (,(case (typespec-primary-type return-type)
-                                     ((:id :class :selector) 'pointer)
-                                     (t 'progn))
+                                 (coerce-object
                                   (,(generic-function-name gf)
                                     ;; Leave the second argument (the
                                     ;; selector) out.
-                                    ,@(list* (car arguments) (cddr arguments))))
+                                    ,@(list* (car arguments) (cddr arguments)))
+                                  ',return-type)
                                ;; FIXME: We may want to wrap signalled
                                ;; SERIOUS-CONDITIONS in some kind of
                                ;; Objective-C exception object and put

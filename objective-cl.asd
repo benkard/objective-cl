@@ -57,6 +57,13 @@
                                                           "type-handling"
                                                           "policy"
                                                           "data-types"))
+                 (:file "type-conversion-policy" :depends-on ("defpackage"
+                                                              "memory-management"
+                                                              "data-types"
+                                                              "type-handling"
+                                                              "policy"
+                                                              "data-types"
+                                                              "method-invocation"))
                  (:file "type-handling"      :depends-on ("defpackage"
                                                           "libobjcl"
                                                           "init"))

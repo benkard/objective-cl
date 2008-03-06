@@ -40,3 +40,9 @@
        (make-struct-wrapper foreign-value-cell typespec t))
       ((:void) (values))
       (otherwise (cffi:mem-ref foreign-value-cell c-type)))))
+
+
+;; COERCE-OBJECT is the high-level facility that other parts of
+;; Objective-CL may rely on for their conversion needs.  Its methods
+;; are implemented in type-conversion-policy.lisp.
+(defgeneric coerce-object (object type))

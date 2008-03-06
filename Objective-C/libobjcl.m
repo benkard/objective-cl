@@ -386,7 +386,7 @@ objcl_get_method_implementation (id object,
   Class target_class;
   /* struct objc_super super_struct;
      super_struct.receiver = object;
-     super_struct.super_class = superclass_for_send_super;
+     super_struct.class = superclass_for_send_super;
   */
 
   if (objcl_object_is_class (object))
