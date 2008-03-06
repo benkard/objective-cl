@@ -432,11 +432,11 @@
                                     (incf *class-counter*))))
         (numclass-name (intern (format nil "~A~D"
                                        '#:mlk-test-number
-                                       (incf *class-counter*))
+                                       *class-counter*)
                                '#:objective-c-classes))
         (subnumclass-name (intern (format nil "~A~D"
                                           '#:mlk-test-sub-number
-                                          (incf *class-counter*))
+                                          *class-counter*)
                                   '#:objective-c-classes))
         (class nil)
         (instance nil)

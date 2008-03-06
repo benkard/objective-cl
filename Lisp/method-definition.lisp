@@ -223,7 +223,20 @@ __super__"
                                  ;; it means it's simply going to be
                                  ;; initialised when a method is first
                                  ;; added to the generic function.
-                                 (ensure-generic-function
+                                 ;;
+                                 ;; For some reason,
+                                 ;; ENSURE-GENERIC-FUNCTION raises an
+                                 ;; error on Allegro CL claiming that
+                                 ;; MAKE-INSTANCE of
+                                 ;; OBJECTIVE-C-GENERIC-FUNCTION does
+                                 ;; not understand the
+                                 ;; :GENERIC-FUNCTION-CLASS initarg.
+                                 ;; Calling
+                                 ;; ENSURE-GENERIC-FUNCTION-USING-CLASS
+                                 ;; instead does not display this
+                                 ;; behaviour.  Weird.
+                                 (ensure-generic-function-using-class
+                                  nil
                                   ',real-name
                                   :generic-function-class
                                     (find-class 'objective-c-generic-function)
