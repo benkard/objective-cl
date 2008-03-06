@@ -207,12 +207,16 @@ __super__"
                 collect :id into type-specifiers
                 and collect arg into arg-names
               finally (let ((super-args-sym (gensym))
-                            (captured-args-sym (gensym)))
+                            (captured-args-sym (gensym))
+                            (class-arg-sym (gensym))
+                            (class-name (class-name (find-objc-class
+                                                     (cadar lambda-list)))))
                         (return
                           `(defmethod ,(intern (symbol-name name)
                                                '#:objective-c-methods)
                                argtypes-start ,@type-specifiers argtypes-end
-                               ,@qualifiers ,lambda-list
+                               ,@qualifiers ((,class-arg-sym (eql ',class-name))
+                                             ,@lambda-list)
                                (let ((,captured-args-sym (list ,@arg-names)))
                                  (flet ((super (&rest ,super-args-sym)
                                           (invoke-by-name-super-v
@@ -220,7 +224,7 @@ __super__"
                                            ,(generic-function-name->method-name
                                              name)
                                            (objcl-class-superclass
-                                            (find-objc-class ',(cadar lambda-list)))
+                                            (find-objc-class ',class-name))
                                            (or ,super-args-sym
                                                (rest ,captured-args-sym)))))
                                    (declare (ignorable (function super)))
@@ -340,7 +344,7 @@ __define-objective-c-generic-function__.
 
   __define-objective-c-method__, __define-objective-c-class__"
   `(defgeneric ,(intern (symbol-name name) '#:objective-c-methods)
-       ,lambda-list
+       (,(gensym "CLASS") ,@lambda-list)
      ,@(unless (position :generic-function-class
                          options
                          :key #'car)
@@ -369,7 +373,7 @@ __define-objective-c-generic-function__.
 (defmethod add-method :after ((gf objective-c-generic-function)
                               (method objective-c-method))
   ;; FIXME: Support &REST arguments.
-  (let* ((class (first (method-specializers method)))
+  (let* ((class (second (method-specializers method)))
          (method-name (generic-function-name->selector
                        (generic-function-name gf)))
          (registered-p (foreign-class-registered-p class))
@@ -406,6 +410,11 @@ __define-objective-c-generic-function__.
                              (unwind-protect
                                  (coerce-object
                                   (,(generic-function-name gf)
+                                    ;; Pass the class this method is
+                                    ;; being defined for as the first
+                                    ;; argument.  This is needed so that
+                                    ;; super calls can work.
+                                    ',(class-name class)
                                     ;; Leave the second argument (the
                                     ;; selector) out.
                                     ,@(list* (car arguments) (cddr arguments)))
