@@ -198,18 +198,17 @@ __super__"
                 collect :id into type-specifiers
                 and collect arg into arg-names
               finally (let ((super-args-sym (gensym))
-                            (super-real-args-sym (gensym)))
+                            (captured-args-sym (gensym)))
                         (return
                           `(defmethod ,(intern (symbol-name name)
                                                '#:objective-c-methods)
                                argtypes-start ,@type-specifiers argtypes-end
                                ,@qualifiers ,lambda-list
-                               (flet ((super (&rest ,super-args-sym)
-                                        (let ((,super-real-args-sym
-                                               (or ,super-args-sym
-                                                   (list ,@(rest arg-names)))))
+                               (let ((,captured-args-sym
+                                      (list ,@(rest arg-names))))
+                                 (flet ((super (&rest ,super-args-sym)
                                           (invoke-by-name-super-v
-                                           ,(first arg-names)
+                                           (first ,captured-args-sym)
                                            ,(generic-function-name->method-name
                                              name)
                                            (find-objc-class ',(cadar lambda-list))
