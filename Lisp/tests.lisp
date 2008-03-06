@@ -473,7 +473,7 @@
                  (* 2 (super)))))
 
     ;; We may omit DEFINE-OBJECTIVE-C-GENERIC-FUNCTION.
-    (is (eval `(define-objective-c-method #/foo:bar:stuff:do: :int
+    (is (eval `(define-objective-c-method #/foo:bar:pling:do: :int
                    ((x ,class-name)
                     (y :int)
                     z
@@ -495,7 +495,7 @@
     (is (foreign-class-registered-p class))
 
     ;; Method calls.
-    (is (= 170 (invoke instance :foo 150 :bar nil :stuff nil :do 100)))
+    (is (= 170 (invoke instance :foo 150 :bar nil :pling nil :do 100)))
     (is (= -30 (invoke numinstance :prettify-number 30)))
     (is (= -60 (invoke subnuminstance :prettify-number 30)))
 
