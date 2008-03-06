@@ -222,6 +222,7 @@ __super__"
                                            (find-objc-class ',(cadar lambda-list))
                                            (or ,super-args-sym
                                                (rest ,captured-args-sym)))))
+                                   (declare (ignorable (function super)))
                                    ,@body))))))))))
 
 
