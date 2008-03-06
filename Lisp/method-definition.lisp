@@ -165,6 +165,15 @@ __enable-method-syntax__ to write method names for
 __define-objective-c-generic-function__.
 
 
+## Note 4:
+
+Do not call __call-next-method__ in the body of an
+__objective-c-method__.  Its behaviour is quite different from
+__super__, ill-defined, and probably not desirable anyway.
+
+Use __super__ instead.
+
+
 ## See also:
 
   __define-objective-c-generic-function__, __define-objective-c-class__,
@@ -212,8 +221,53 @@ __super__"
                                            ,(generic-function-name->method-name
                                              name)
                                            (find-objc-class ',(cadar lambda-list))
-                                           ,super-real-args-sym))))
-                                 ,@body)))))))))
+                                           (or ,super-args-sym
+                                               (rest ,captured-args-sym)))))
+                                   ,@body))))))))))
+
+
+(defun super (&rest args)
+  "Send a super message to the receiver of the current message.
+
+## Syntax:
+
+*args* --- a **list**.
+
+
+## Description:
+
+A _super_ call is only valid inside the body of a **method** defined by
+means of __define-objective-c-method__.  In this case, the Objective-C
+**method** of the same name defined in the superclass of the class
+specialised over by the method is called.  In other words, a super call
+is made.
+
+The behaviour is similar in spirit to calling __call-next-method__ in
+the body of a __standard-method__ except that it will be done by the
+Objective-C runtime, thereby ignoring any pure-Lisp superclasses.
+__super__ is therefore single-inheritance only.
+
+If __super__ is called with no arguments, the original method arguments
+are passed to the super method.  Otherwise, the supplied arguments are
+passed.
+
+
+## Note:
+
+Do not call __call-next-method__ in the body of an
+__objective-c-method__.  Its behaviour is quite different from
+__super__, ill-defined, and probably not desirable anyway.
+
+
+## Examples:
+
+    (define-objective-c-generic-function #/characterAtIndex: (self index))
+    (define-objective-c-method #/characterAtIndex: :short ((self ns::my-string) (index :unsigned-long))
+      (if (weird-string-p self)
+          (super (1+ index))
+          (super)))"
+  (declare (ignore args))
+  (error "Tried to call ~S outside an Objective-C method." 'super))
 
 
 (defmacro defobjcgeneric (name lambda-list &body options)
