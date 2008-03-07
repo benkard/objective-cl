@@ -172,15 +172,22 @@ __define-objective-c-method__"
                                           name)))
                              superclasses))
          (objc-superclass (or (car objc-superclasses) 'ns::ns-object)))
-    (assert (null (cdr objc-superclasses)))
-    `(progn
+    (assert (endp (cdr objc-superclasses)))
+    `(prog2
        (find-objc-class ',objc-superclass)
        (defclass ,name ,(or superclasses '(ns::ns-object)) ,slots
          ,@(unless (member :metaclass options :key #'car)
              (if (find-class name nil)
                  `((:metaclass ,(class-name (class-of (find-class name)))))
                  `((:metaclass ns::+ns-object))))
-         ,@options))))
+         ,@options)
+       (define-objective-c-method #:|retain| :id ((instance ,name))
+         (super)
+         (retain instance)
+         instance)
+       (define-objective-c-method #:|release| :void ((instance ,name))
+         (release instance)
+         (super)))))
 
 
 (defclass foreign-slot-definition-mixin ()
@@ -544,3 +551,22 @@ intern any missing superclass objects.
 
   __collect-methods__"
   (%objcl-for-each-class-do (callback collect-class)))
+
+
+;;;; (@* "Memory management")
+(defvar *retained-lisp-objects* (make-hash-table :test #'eql))
+
+(defun retain (instance)
+  ;; Ensure that INSTANCE is not garbage-collected on the Lisp side.
+  (setf (gethash (pointer-address (pointer instance))
+                 *retained-lisp-objects*)
+        instance))
+
+(defun release (instance)
+  ;; If the reference count drops to 1, only the Lisp side has a
+  ;; reference to the instance left.  (The Lisp side has certainly got
+  ;; one because this very function does.)  In this case, we make the
+  ;; Lisp wrapper object eligible for garbage collection by removing it
+  ;; from the hash table.
+  (when (<= (invoke-by-name instance "retainCount") 2)
+    (remhash (pointer-address (pointer instance)) *retained-lisp-objects*)))
