@@ -15,7 +15,7 @@
 ;;;; along with this program.  If not, see
 ;;;; <http://www.gnu.org/licenses/>.
 
-(defvar asdf::*objcl-version* "0.2.0")
+(defvar asdf::*objcl-version* "0.2.1")
 
 (defsystem "objective-cl"
   :description "A portable Objective C bridge."
