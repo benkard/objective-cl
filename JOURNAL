@@ -1,5 +1,18 @@
 -*- mode: muse -*-
 
+* 2008-03-07, 02:17:50 CET
+
+** Memory Management
+
+This is what the GNUstep manual says about the #dealloc method:
+
+  In some circumstances, an object may wish to prevent itself from being
+  deallocated, it can do this simply be refraining from calling the
+  superclass implementation.
+
+Maybe we could use this in the case of a garbage-collected runtime.
+
+
 * 2008-03-05, 18:48:48 CET
 
 ** CMUCL and the MOP
