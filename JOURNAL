@@ -7,7 +7,7 @@
 This is what the GNUstep manual says about the #dealloc method:
 
   In some circumstances, an object may wish to prevent itself from being
-  deallocated, it can do this simply be refraining from calling the
+  deallocated, it can do this simply [by] refraining from calling the
   superclass implementation.
 
 Maybe we could use this in the case of a garbage-collected runtime.
