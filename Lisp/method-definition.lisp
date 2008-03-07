@@ -507,14 +507,3 @@ __define-objective-c-generic-function__.
            :return-type (or return-type :id)
            :argument-types argument-types
            new-initargs)))
-
-
-#+(or)
-(defgeneric bla (x y z &rest r)
-  (:generic-function-class objective-c-generic-function)
-  (:method-class objective-c-method))
-
-#+(or)
-(defmethod bla :abc ((x number) (y symbol) c &rest r)
-  (declare (ignore c r))
-  (+ x 3))

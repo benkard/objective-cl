@@ -556,6 +556,9 @@ intern any missing superclass objects.
 ;;;; (@* "Memory management")
 (defvar *retained-lisp-objects* (make-hash-table :test #'eql))
 
+;;; FIXME: Should we override #dealloc?  It may be the only way to get
+;;; any information at all on a garbage-collected Objective-C runtime.
+
 (defun retain (instance)
   ;; Ensure that INSTANCE is not garbage-collected on the Lisp side.
   (setf (gethash (pointer-address (pointer instance))
