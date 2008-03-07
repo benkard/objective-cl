@@ -36,7 +36,7 @@
            :char :short :int :long :long-long
            :unsigned-char :unsigned-short :unsigned-int
            :unsigned-long :unsigned-long-long :pointer
-           :float :double))
+           :float :double :void))
 
 
 ;;;; (@* "Objective-C object wrapper classes")
