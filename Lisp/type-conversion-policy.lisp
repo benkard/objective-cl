@@ -22,6 +22,10 @@
   (coerce-object object (typespec-primary-type type)))
 
 
+(defcoercion :void (x)
+  (values))
+
+
 (defcoercion :int (x)
   (coerce-object x 'integer))
 
