@@ -216,7 +216,7 @@ __super__"
                                                '#:objective-c-methods)))
                         (return
                           `(progn
-                             (eval-when (:load-toplevel :execute)
+                             (eval-when (:compile-toplevel :load-toplevel :execute)
                                (unless (fboundp ',real-name)
                                  ;; Note that we need not specify a
                                  ;; :LAMBDA-LIST here, as not supplying
