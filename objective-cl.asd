@@ -1,5 +1,5 @@
 ;;;; Objective-CL, an Objective-C bridge for Common Lisp.
-;;;; Copyright (C) 2007  Matthias Andreas Benkard.
+;;;; Copyright (C) 2007, 2008  Matthias Andreas Benkard.
 ;;;;
 ;;;; This program is free software: you can redistribute it and/or
 ;;;; modify it under the terms of the GNU General Public License as
@@ -17,13 +17,27 @@
 
 (defvar asdf::*objcl-version* "0.2.1")
 
+
+#+@use-prebuilt-objective-cl@
+(progn
+  (defpackage #:objcl-asdf
+    (:use #:cl #:asdf)
+    (:export #:objc-source-file
+             #:*objc-obj-dir*))
+
+  (in-package #:objcl-asdf)
+  (defvar *objc-obj-dir*
+    @prebuilt-objective-cl-location@)
+  (in-package #:asdf))
+
+
 (defsystem "objective-cl"
   :description "A portable Objective C bridge."
   :version asdf::*objcl-version*
   :author "Matthias Benkard <matthias@benkard.de>"
   :licence "GNU Lesser General Public License, version 3 or higher"
-  :depends-on (#:cffi #:trivial-garbage #:split-sequence #:objective-cl-libobjcl
-               #:closer-mop)
+  :depends-on (#:cffi #:trivial-garbage #:split-sequence #:closer-mop
+               #-@use-prebuilt-objective-cl@ #:objective-cl-libobjcl)
   :components
   ((:module "Lisp"
     :components ((:file "defpackage")

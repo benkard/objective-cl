@@ -19,6 +19,7 @@
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
+  (pushnew objcl-asdf:*objc-obj-dir* cffi:*foreign-library-directories*)
   (dolist (subdir '("shared_obj/" "obj/"))
     (pushnew (merge-pathnames subdir objcl-asdf:*objc-obj-dir*)
              cffi:*foreign-library-directories*)))

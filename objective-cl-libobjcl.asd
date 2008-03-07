@@ -1,5 +1,5 @@
 ;;;; Objective-CL, an Objective-C bridge for Common Lisp.
-;;;; Copyright (C) 2007  Matthias Andreas Benkard.
+;;;; Copyright (C) 2007, 2008  Matthias Andreas Benkard.
 ;;;;
 ;;;; This program is free software: you can redistribute it and/or
 ;;;; modify it under the terms of the GNU General Public License as
