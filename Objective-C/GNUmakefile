@@ -86,7 +86,7 @@ obj/%.o: %.m
 endif
 
 ../libffi-3.0.4/.libs/libffi.a:
-	(cd ../libffi-3.0.4 && chmod +x ltconfig && sh ./configure && make)
+	(cd ../libffi-3.0.4 && chmod +x ltconfig install-sh && sh ./configure && make)
 
 libffi_clean:
 	-make -C ../libffi-3.0.4 distclean
