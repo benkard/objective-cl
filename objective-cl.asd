@@ -19,16 +19,20 @@
 
 
 #+@use-prebuilt-objective-cl@
-(progn
-  (defpackage #:objcl-asdf
-    (:use #:cl #:asdf)
-    (:export #:objc-source-file
-             #:*objc-obj-dir*))
+(defpackage #:objcl-asdf
+  (:use #:cl #:asdf)
+  (:export #:objc-source-file
+           #:*objc-obj-dir*))
 
-  (in-package #:objcl-asdf)
-  (defvar *objc-obj-dir*
+#+@use-prebuilt-objective-cl@
+(in-package #:objcl-asdf)
+
+#+@use-prebuilt-objective-cl@
+(defvar *objc-obj-dir*
     @prebuilt-objective-cl-location@)
-  (in-package #:asdf))
+
+#+@use-prebuilt-objective-cl@
+(in-package #:asdf)
 
 
 (defsystem "objective-cl"
