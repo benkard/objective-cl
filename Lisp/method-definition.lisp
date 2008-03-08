@@ -264,7 +264,7 @@ __super__"
 (defun super (&rest args)
   "Send a super message to the receiver of the current message.
 
-## Syntax:
+## Arguments and Values:
 
 *args* --- a **list**.
 
