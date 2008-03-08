@@ -1,6 +1,6 @@
 #! /bin/sh
 
-TMPDIR=PACKAGES
+TMPDIR=PACKAGE-BUILD
 
 VERSION=`grep -e "^VERSION =" version.make | sed "s/^.*= //"`
 mkdir -p "$TMPDIR"
@@ -14,7 +14,8 @@ chmod +x debian/rules
 cd ..
 tar czf "cl-objective-cl_${VERSION}.orig.tar.gz" "objective-cl-${VERSION}"
 cd "objective-cl-${VERSION}"
-dpkg-buildpackage -rfakeroot
+#dpkg-buildpackage -rfakeroot
+debuild
 cd ..
 rm -rf "objective-cl-${VERSION}"
 cd ..

@@ -9,6 +9,7 @@ Package: cl-objective-cl
 Section: libs
 Architecture: all
 Depends: ${misc:Depends}, cl-objective-cl-cffi (>= ${source:Version}), cl-objective-cl-cffi (<< ${source:Version}.1~), cl-cffi, cl-trivial-garbage, cl-split-sequence, cl-closer-mop, cl-asdf, common-lisp-controller
+Suggests: cl-objective-cl-doc
 Description: A portable Objective-C bridge for Common Lisp
  Objective-CL lets a Lisp programmer make use of Objective-C frameworks
  by providing a bridge that neatly integrates Objective-C classes and
@@ -24,6 +25,7 @@ Package: cl-objective-cl-cffi
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Recommends: cl-objective-cl
 Description: Architecture-dependent files needed by Objective-CL
  Objective-CL lets a Lisp programmer make use of Objective-C frameworks
  by providing a bridge that neatly integrates Objective-C classes and
