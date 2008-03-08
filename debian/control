@@ -1,6 +1,6 @@
 Source: cl-objective-cl
 Priority: extra
-Maintainer: Matthias Benkard <matthias@benkard.de>
+Maintainer: Matthias Andreas Benkard <matthias@benkard.de>
 Build-Depends: debhelper (>= 5), libffi-dev, gnustep-make, libgnustep-gui-dev
 Standards-Version: 3.7.2
 Section: libs
@@ -8,7 +8,7 @@ Section: libs
 Package: cl-objective-cl
 Section: libs
 Architecture: all
-Depends: ${misc:Depends}, cl-objective-cl-cffi (= ${Source-Version})
+Depends: ${misc:Depends}, cl-objective-cl-cffi (= ${Source-Version}), cl-cffi, cl-trivial-garbage, cl-split-sequence, cl-closer-mop
 Description: A portable Objective-C bridge for Common Lisp
  Objective-CL lets a Lisp programmer make use of Objective-C frameworks
  by providing a bridge that neatly integrates Objective-C classes and
@@ -48,4 +48,4 @@ Description: Documentation for Objective-CL
  is therefore suitable for GNUstep and Cocoa programmers alike.  It is
  not tied to any particular Lisp compiler, either.
  .
- This package contains the architecture-dependent Objective-C glue code.
+ This package contains the reference manual in HTML format.
