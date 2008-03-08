@@ -20,6 +20,8 @@ Description: A portable Objective-C bridge for Common Lisp
  not tied to any particular Lisp compiler, either.
  .
  This package contains the architecture-independent Lisp code.
+ .
+ Website: http://matthias.benkard.de/objective-cl
 
 Package: cl-objective-cl-cffi
 Section: libs
@@ -36,6 +38,8 @@ Description: Architecture-dependent files needed by Objective-CL
  not tied to any particular Lisp compiler, either.
  .
  This package contains the architecture-dependent Objective-C glue code.
+ .
+ Website: http://matthias.benkard.de/objective-cl
 
 Package: cl-objective-cl-doc
 Section: doc
@@ -51,3 +55,5 @@ Description: Documentation for Objective-CL
  not tied to any particular Lisp compiler, either.
  .
  This package contains the reference manual in HTML format.
+ .
+ Website: http://matthias.benkard.de/objective-cl
