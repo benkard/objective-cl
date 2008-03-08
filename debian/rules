@@ -39,11 +39,17 @@ install: build
 	mkdir -p debian/tmp/usr/share/common-lisp/source/objective-cl/Lisp/
 	mkdir -p debian/tmp/usr/share/common-lisp/systems/
 	mkdir -p debian/tmp/usr/share/doc/cl-objective-cl/documentation/
-	cp Objective-C/obj/libobjcl.so.$(version) debian/tmp/usr/lib/cl-objective-cl/
+
+	cp -p Objective-C/obj/libobjcl.so.$(version) debian/tmp/usr/lib/cl-objective-cl/
+	ln -s libobjcl.so.$(version) debian/tmp/usr/lib/cl-objective-cl/libobjcl.so.$(major)
+	ln -s libobjcl.so.$(version) debian/tmp/usr/lib/cl-objective-cl/libobjcl.so
+
 	cp Lisp/*.lisp debian/tmp/usr/share/common-lisp/source/objective-cl/Lisp/
+
 	cp *.asd debian/tmp/usr/share/common-lisp/source/objective-cl/
 	ln -s ../source/objective-cl/{objective-cl,objective-cl-tests,objective-cl-libobjcl}.asd debian/tmp/usr/share/common-lisp/systems/
 	sed 's|@prebuilt-objective-cl-location@|"/usr/lib/cl-objective-cl/"|g;s|@use-prebuilt-objective-cl@|(and)|g' --in-place debian/tmp/usr/share/common-lisp/source/objective-cl/objective-cl.asd
+
 	cp -pP Documentation/* debian/tmp/usr/share/doc/cl-objective-cl/documentation/
 
 
