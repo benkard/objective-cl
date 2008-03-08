@@ -1,5 +1,5 @@
 cl-objective-cl (0.2.1-1) unstable; urgency=low
 
-  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+  * Initial release. (Closes: #nnnn)  <nnnn is the bug number of your ITP>
 
  -- Matthias Andreas Benkard <matthias@benkard.de>  Sat, 08 Mar 2008 01:54:55 +0100

@@ -17,7 +17,7 @@ License:
     /usr/share/common-licenses/LGPL-3 for details.
 
 The Debian packaging is (C) 2008, Matthias Benkard <mulk@wirselkraut> and
-is licensed under the GPL, see `/usr/share/common-licenses/GPL'.
+is licensed under the GPL, see `/usr/share/common-licenses/LGPL-3'.
 
 The license expressed in the file COPYING.PyObjC applies to the
 following files in the `Objective-C/PyObjC' directory:
