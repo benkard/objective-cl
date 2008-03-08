@@ -1,0 +1,84 @@
+#! /usr/bin/make -f
+# -*- makefile -*-
+
+#export DH_VERBOSE=1
+
+include version.make
+version=$(VERSION)
+major=`echo $(version) | cut -d. -f1`
+
+
+configure: configure-stamp
+configure-stamp:
+	dh_testdir
+	./configure
+	touch configure-stamp
+
+
+build: build-stamp
+build-stamp: configure-stamp 
+	dh_testdir
+	$(MAKE)
+	touch $@
+
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp configure-stamp
+	$(MAKE) clean
+	dh_clean
+
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k 
+	dh_installdirs
+	mkdir -p debian/tmp/usr/lib/cl-objective-cl/
+	mkdir -p debian/tmp/usr/share/common-lisp/source/objective-cl/Lisp/
+	mkdir -p debian/tmp/usr/share/common-lisp/systems/
+	mkdir -p debian/tmp/usr/share/doc/cl-objective-cl/documentation/
+	cp Objective-C/obj/libobjcl.so.$(version) debian/tmp/usr/lib/cl-objective-cl/
+	cp Lisp/*.lisp debian/tmp/usr/share/common-lisp/source/objective-cl/Lisp/
+	cp *.asd debian/tmp/usr/share/common-lisp/source/objective-cl/
+	ln -s ../source/objective-cl/{objective-cl,objective-cl-tests,objective-cl-libobjcl}.asd debian/tmp/usr/share/common-lisp/systems/
+	sed 's|@prebuilt-objective-cl-location@|"/usr/lib/cl-objective-cl/"|g;s|@use-prebuilt-objective-cl@|(and)|g' --in-place debian/tmp/usr/share/common-lisp/source/objective-cl/objective-cl.asd
+	cp -pP Documentation/* debian/tmp/usr/share/doc/cl-objective-cl/documentation/
+
+
+binary-indep: build install
+
+
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs 
+	dh_installdocs
+	dh_installexamples
+	dh_install --sourcedir=debian/tmp --autodest
+#	dh_installmenu
+#	dh_installdebconf	
+#	dh_installlogrotate
+#	dh_installemacsen
+#	dh_installpam
+#	dh_installmime
+#	dh_installinit
+#	dh_installcron
+#	dh_installinfo
+	dh_installman
+#	dh_lisp -pcl-objective-cl
+	dh_link
+	dh_strip
+	dh_compress
+	dh_fixperms
+#	dh_makeshlibs
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install configure

@@ -1,0 +1,51 @@
+Source: cl-objective-cl
+Priority: extra
+Maintainer: Matthias Benkard <matthias@benkard.de>
+Build-Depends: debhelper (>= 5), libffi-dev, gnustep-make, libgnustep-gui-dev
+Standards-Version: 3.7.2
+Section: libs
+
+Package: cl-objective-cl
+Section: libs
+Architecture: all
+Depends: ${misc:Depends}, cl-objective-cl-cffi (= ${Source-Version})
+Description: A portable Objective-C bridge for Common Lisp
+ Objective-CL lets a Lisp programmer make use of Objective-C frameworks
+ by providing a bridge that neatly integrates Objective-C classes and
+ methods with the Common Lisp Object System.
+ .
+ The bridge works on both the GNU and NeXT (that is, Apple) runtimes and
+ is therefore suitable for GNUstep and Cocoa programmers alike.  It is
+ not tied to any particular Lisp compiler, either.
+ .
+ This package contains the architecture-independent Lisp code.
+
+Package: cl-objective-cl-cffi
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Architecture-dependent files needed by Objective-CL
+ Objective-CL lets a Lisp programmer make use of Objective-C frameworks
+ by providing a bridge that neatly integrates Objective-C classes and
+ methods with the Common Lisp Object System.
+ .
+ The bridge works on both the GNU and NeXT (that is, Apple) runtimes and
+ is therefore suitable for GNUstep and Cocoa programmers alike.  It is
+ not tied to any particular Lisp compiler, either.
+ .
+ This package contains the architecture-dependent Objective-C glue code.
+
+Package: cl-objective-cl-doc
+Section: doc
+Architecture: all
+Recommends: www-browser
+Description: Documentation for Objective-CL
+ Objective-CL lets a Lisp programmer make use of Objective-C frameworks
+ by providing a bridge that neatly integrates Objective-C classes and
+ methods with the Common Lisp Object System.
+ .
+ The bridge works on both the GNU and NeXT (that is, Apple) runtimes and
+ is therefore suitable for GNUstep and Cocoa programmers alike.  It is
+ not tied to any particular Lisp compiler, either.
+ .
+ This package contains the architecture-dependent Objective-C glue code.
