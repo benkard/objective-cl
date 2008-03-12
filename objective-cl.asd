@@ -131,7 +131,8 @@
                                                            "class-definition"
                                                            "method-invocation"
                                                            "method-definition"
-                                                           "reader-syntax"))
+                                                           "reader-syntax"
+                                                           "data-types"))
                  (:file "post-init"          :depends-on ("defpackage"
                                                           "libobjcl"
                                                           "init"

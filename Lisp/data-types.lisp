@@ -123,18 +123,31 @@ The following calls are all equivalent:
                                      &rest initargs
                                      &key
                                      &allow-other-keys)
-  ;; FIXME: CMUCL 19d does not allow the second argument to
+  ;; CMUCL 19d does not allow the second argument to
   ;; PCL:SET-FUNCALLABLE-INSTANCE-FUNCTION to be a closure.  As we need
-  ;; to close over SELECTOR, this piece of code throws weird errors on
-  ;; CMUCL and will not work.
+  ;; to close over SELECTOR, simply using a lambda below leads to weird
+  ;; errors on CMUCL and will not work.
   ;;
   ;; In particular, one possible symptom is that SELECTOR may not be a
   ;; selector but something different when INVOKE-BY-NAME is called.
+  ;;
+  ;; Therefore, we handle this in a somewhat different manner for CMUCL.
+  ;; See SELECTOR-FUNCTION below.
   (declare (ignore slot-names initargs))
   (c2mop:set-funcallable-instance-function
    selector
-   #'(lambda (receiver &rest args)
-       (apply #'invoke-by-name receiver selector args))))
+   #-cmu #'(lambda (receiver &rest args)
+             (apply #'invoke-by-name receiver selector args))
+   #+cmu (selector-function selector)))
+
+
+#+cmu
+(defun selector-function (selector)
+  ;; FIXME?  This is okay, as load-forms for selectors are defined
+  ;; below.  Unfortunately, having to call the compiler for each newly
+  ;; interned selector makes COLLECT-SELECTORS slow.
+  (compile nil `(lambda (receiver &rest args)
+                  (apply #'invoke-by-name receiver ,selector args))))
 
 
 (defmethod initialize-instance :after ((selector selector)
