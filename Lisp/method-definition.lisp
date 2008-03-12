@@ -239,9 +239,9 @@ __super__"
                                   nil
                                   ',real-name
                                   :generic-function-class
-                                    (find-class 'objective-c-generic-function)
+                                    'objective-c-generic-function
                                   :method-class
-                                    (find-class 'objective-c-method))))
+                                    'objective-c-method)))
                              (defmethod ,real-name
                                  argtypes-start ,@type-specifiers argtypes-end
                                  ,@qualifiers
