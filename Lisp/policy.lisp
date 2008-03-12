@@ -63,7 +63,6 @@ to determine the intentional type by method selector.
     (setf (gethash key *boolean-return-exceptions*) t)))
 
 
-;; FIXME: Document.
 (defun undefine-returns-boolean-exception (selector-designator)
   "Revert the effect of __define-returns-boolean-exception__ for a given selector.
 

@@ -495,18 +495,11 @@ seems like an acceptable trade-off.
     (aref lisp-managed-cell)))
 
 
-;; FIXME: Document.
 (defgeneric (setf foreign-value-lisp-managed-p) (managedp foreign-value))
 (defmethod (setf foreign-value-lisp-managed-p)
     (managedp (foreign-value foreign-value))
   (with-slots (lisp-managed-cell) foreign-value
     (setf (aref lisp-managed-cell) (if managedp t nil))))
-
-
-;; FIXME: Document.
-(defgeneric foreign-value-pointer (foreign-value))
-(defmethod foreign-value-pointer ((foreign-value foreign-value))
-  (pointer-to foreign-value))
 
 
 (defun make-struct-wrapper (pointer typespec managedp)

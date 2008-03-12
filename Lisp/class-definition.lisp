@@ -376,12 +376,6 @@ __define-objective-c-method__"
           "Tried to SLOT-MAKUNBOUND a foreign slot"))
 
 
-(defmethod c2mop:compute-slots ((class objective-c-class))
-  ;; FIXME: Maybe add lots of foreign slots here whose presence the
-  ;; Objective-C runtime tells us.
-  (call-next-method))
-
-
 (defun ensure-objective-c-class-pair (name
                                       direct-superclasses
                                       direct-slots
