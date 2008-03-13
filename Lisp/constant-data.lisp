@@ -16,6 +16,7 @@
 ;;;; <http://www.gnu.org/licenses/>.
 
 (in-package #:mulk.objective-cl)
+#.(enable-type-declaration-syntax)
 
 
 ;;;; (@* "Allocation Parameters")
@@ -151,22 +152,27 @@
 
 
 ;;;; (@* "Constant accessors")
-(declaim (ftype (function (*) symbol) lisp-value->type-name))
+#? * -> symbol
 (defun lisp-value->type-name (value)
   (car (rassoc-if #'(lambda (type)
                       (typep value type))
                   *objcl-type-map*)))
 
-(declaim (ftype (function (symbol) string) type-name->type-id))
+#? symbol -> string
 (defun type-name->type-id (type-name)
   (string (cdr (assoc type-name *objcl-api-type-names*))))
 
-(declaim (ftype (function (symbol) symbol) type-name->c-type))
+#? symbol -> symbol
 (defun type-name->c-type (type-name)
   (cdr (assoc type-name *objcl-c-type-map*)))
 
+#? symbol -> symbol
 (defun typespec-name->type-name (typespec-name)
   (cdr (assoc typespec-name *objcl-typespec-map*)))
 
+#? symbol -> string
 (defun typespec-name->type-id (typespec-name)
   (type-name->type-id (typespec-name->type-name typespec-name)))
+
+
+#.(disable-type-declaration-syntax)

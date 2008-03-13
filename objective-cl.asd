@@ -45,7 +45,9 @@
   :components
   ((:module "Lisp"
     :components ((:file "defpackage")
-                 (:file "constant-data"      :depends-on ("defpackage"))
+                 (:file "internal-reader-syntax" :depends-on ("defpackage"))
+                 (:file "constant-data"      :depends-on ("defpackage"
+                                                          "internal-reader-syntax"))
                  (:file "conditions"         :depends-on ("defpackage"))
                  (:file "parameters"         :depends-on ("defpackage"))
                  (:file "data-types"         :depends-on ("defpackage"
@@ -60,6 +62,7 @@
                                                           "parameters"
                                                           "libobjcl"))
                  (:file "libobjcl"           :depends-on ("defpackage"
+                                                          "internal-reader-syntax"
                                                           "constant-data"
                                                           "data-types"
                                                           "name-conversion"
@@ -104,7 +107,6 @@
                  (:file "reader-syntax"      :depends-on ("defpackage"
                                                           "method-invocation"
                                                           "internal-reader-syntax"))
-                 (:file "internal-reader-syntax" :depends-on ("defpackage"))
                  (:file "utilities"          :depends-on ("init"
                                                           "defpackage"
                                                           "method-invocation"

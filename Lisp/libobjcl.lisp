@@ -16,6 +16,7 @@
 ;;;; <http://www.gnu.org/licenses/>.
 
 (in-package #:mulk.objective-cl)
+#.(enable-type-declaration-syntax)
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -266,9 +267,7 @@ objects or classes, let alone send messages to them.
     (%shutdown-runtime)))
 
 
-(declaim (ftype (function ((or string symbol) &optional t)
-                          (or null objective-c-class))
-                find-objc-class))
+#? (or string symbol) &optional t -> (or null objective-c-class)
 (defun find-objc-class (class-name &optional errorp)
   "Retrieve an Objective-C class by name.
 
@@ -333,8 +332,7 @@ conventional case for namespace identifiers in Objective-C."
                   nil))))
 
 
-(declaim (ftype (function (string) (or null objective-c-class))
-                find-objc-class-by-name))
+#? string -> (or null objective-c-class)
 (defun find-objc-class-by-name (class-name-string)
   ;; Note that this function is able to find classes that are not yet
   ;; registered with the Objective-C runtime simply by looking for an
@@ -469,8 +467,7 @@ conventional case for namespace identifiers in Objective-C."
            ,sym))))
 
 
-(declaim (ftype (function (string) (or null selector))
-                find-selector-by-name))
+#? string -> (or null selector)
 (defun find-selector-by-name (selector-name)
   (let ((selector-ptr (%objcl-find-selector selector-name)))
     (if (cffi:null-pointer-p selector-ptr)
@@ -486,8 +483,7 @@ conventional case for namespace identifiers in Objective-C."
     (intern-pointer-wrapper 'selector :pointer selector-ptr)))
 
 
-(declaim (ftype (function ((or objective-c-class id exception)) string)
-                objc-class-name))
+#? (or objective-c-class id exception) -> string
 (defun objc-class-name (class)
   "Find the name of a class.
 
@@ -526,7 +522,7 @@ If *name* is the name of an existing class:
   (%objcl-class-name (pointer-to class)))
 
 
-(declaim (ftype (function (selector) string) selector-name))
+#? selector -> string
 (defun selector-name (selector)
   "Find the name of a selector.
 
@@ -566,17 +562,14 @@ If *name* is the name of an existing selector:
   (%objcl-selector-name (pointer-to selector)))
 
 
-(declaim (ftype (function ((or id objective-c-class exception) selector) t)
-                get-method-implementation))
+#? (or id objective-c-class exception) selector -> t
 (defun get-method-implementation (object selector)
   (declare (type selector selector))
   (%objcl-get-method-implementation (pointer-to object)
                                     (pointer-to selector)))
 
 
-(declaim (ftype (function ((or selector symbol string list) &optional t)
-                          (or null selector))
-                find-selector))
+#? (or selector symbol string list) &optional t -> (or null selector)
 (defun find-selector (selector-name &optional (errorp t))
   "Retrieve a method selector by name.
 
@@ -835,8 +828,7 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
         '(satisfies cffi:pointerp)))))
 
 
-(declaim (ftype (function ((or selector string symbol list)) selector)
-                selector))
+#? (or selector string symbol list) -> selector
 (defun selector (designator)
   "Convert an object into a selector.
 
@@ -1012,3 +1004,6 @@ __enable-method-syntax__.
 
 (defun objcl-object-backed-by-lisp-class-p (instance)
   (objcl-object-backed-by-lisp-class-p/pointer (pointer-to instance)))
+
+
+#.(disable-type-declaration-syntax)
