@@ -93,6 +93,10 @@
            (arg-types (first typedecl-parts))
            (return-types (second typedecl-parts)))
     `(progn
-       (declaim (ftype (function (,@arg-types) (values ,@return-types))
+       (declaim (ftype (function (,@arg-types)
+                                 (values ,@return-types
+                                         ,@(unless
+                                               (member '&rest return-types)
+                                             '(&rest nil))))
                        ,function-name))
        ,defun-form))))
