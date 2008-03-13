@@ -95,14 +95,34 @@
                                                            (symbol-name x)
                                                            (symbol-name y))))
                                            :count 2))
-           (function-name (cadr defun-form))
            (arg-types (first typedecl-parts))
-           (return-types (second typedecl-parts)))
-    `(progn
-       (declaim (ftype (function (,@arg-types)
-                                 (values ,@return-types
-                                         ,@(unless
-                                               (member '&rest return-types)
-                                             '(&rest nil))))
-                       ,function-name))
-       ,defun-form))))
+           (return-types (second typedecl-parts))
+           (return-type `(values ,@return-types
+                                 ,@(unless
+                                       (member '&rest return-types)
+                                     '(&rest nil)))))
+      (destructuring-bind (head function-name lambda-list . body) defun-form
+        (let* ((decls-end (position-if #'(lambda (form)
+                                           (not (or (stringp form)
+                                                    (and (listp form)
+                                                         (eq (first form)
+                                                             'declare)))))
+                                       body))
+               (declarations-and-docs (subseq body 0 decls-end))
+               (real-body (subseq body decls-end)))
+        `(progn
+           (declaim (ftype (function (,@arg-types) ,return-type)
+                           ,function-name))
+           (,head ,function-name ,lambda-list
+             ,@declarations-and-docs
+             (declare
+               ,@(loop for arg in lambda-list
+                       for type in arg-types
+                       for arg-name = (cond ((atom arg) arg)
+                                            (t (car arg)))
+                       unless (or (member arg lambda-list-keywords)
+                                  (and (symbolp type)
+                                       (string= (symbol-name type) "*")))
+                         collect `(type ,type ,arg-name)))
+             (the ,return-type
+               ,@real-body))))))))
