@@ -16,7 +16,7 @@
 ;;;; <http://www.gnu.org/licenses/>.
 
 (in-package #:mulk.objective-cl)
-#.(enable-type-declaration-syntax)
+#.(in-type-declaration-syntax)
 
 
 ;;;; (@* "Allocation Parameters")
@@ -173,6 +173,3 @@
 #? symbol -> string
 (defun typespec-name->type-id (typespec-name)
   (type-name->type-id (typespec-name->type-name typespec-name)))
-
-
-#.(disable-type-declaration-syntax)

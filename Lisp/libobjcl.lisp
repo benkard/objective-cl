@@ -16,7 +16,7 @@
 ;;;; <http://www.gnu.org/licenses/>.
 
 (in-package #:mulk.objective-cl)
-#.(enable-type-declaration-syntax)
+#.(in-type-declaration-syntax)
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -1016,6 +1016,3 @@ __enable-method-syntax__.
 #? (or id objective-c-class exception) -> t
 (defun objcl-object-backed-by-lisp-class-p (instance)
   (objcl-object-backed-by-lisp-class-p/pointer (pointer-to instance)))
-
-
-#.(disable-type-declaration-syntax)

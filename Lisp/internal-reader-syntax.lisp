@@ -33,6 +33,12 @@
   (values))
 
 
+(defun in-type-declaration-syntax ()
+  (setq *readtable* (copy-readtable *readtable*))
+  (set-dispatch-macro-character #\# #\? #'read-type-declaration)
+  (values))
+
+
 (defun enable-type-declaration-syntax ()
   (save-readtable)
   (set-dispatch-macro-character #\# #\? #'read-type-declaration)
