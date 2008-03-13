@@ -35,11 +35,13 @@
 
 (defun enable-type-declaration-syntax ()
   (save-readtable)
-  (set-dispatch-macro-character #\# #\? #'read-type-declaration))
+  (set-dispatch-macro-character #\# #\? #'read-type-declaration)
+  (values))
 
 
 (defun disable-type-declaration-syntax ()
-  (restore-readtable))
+  (restore-readtable)
+  (values))
 
 
 (defun read-type-declaration (stream subchar argument)
@@ -77,15 +79,20 @@
                        (loop for x = (read in nil eof-value nil)
                              until (eq x eof-value)
                              collect x)))
-           (typedecl-parts (split-sequence:split-sequence '->
-                                                          typedecl
-                                                          :test
-                                                          #'eq
-                                                          :count 2))
+           (typedecl-parts
+            (split-sequence:split-sequence '->
+                                           typedecl
+                                           :test #'(lambda (x y)
+                                                     (and (symbolp x)
+                                                          (symbolp y)
+                                                          (string=
+                                                           (symbol-name x)
+                                                           (symbol-name y))))
+                                           :count 2))
            (function-name (cadr defun-form))
            (arg-types (first typedecl-parts))
            (return-types (second typedecl-parts)))
     `(progn
-       (declaim (ftype ,function-name
-                       (function (,@arg-types) (values ,@return-types))))
+       (declaim (ftype (function (,@arg-types) (values ,@return-types))
+                       ,function-name))
        ,defun-form))))
