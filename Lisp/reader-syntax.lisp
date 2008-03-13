@@ -20,19 +20,6 @@
 
 (defvar *method-syntax-macro-chars* (list))
 (defvar *bracket-syntax-macro-chars* (list))
-(defvar *readtable-stack* (list))
-
-
-(defun restore-readtable ()
-  (when *readtable-stack*
-    (setq *readtable* (pop *readtable-stack*)))
-  (values))
-
-
-(defun save-readtable ()
-  (push *readtable* *readtable-stack*)
-  (setq *readtable* (copy-readtable *readtable*))
-  (values))
 
 
 (defun enable-method-syntax ()

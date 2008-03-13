@@ -102,7 +102,9 @@
                                                           "conditions"
                                                           "memory-management"))
                  (:file "reader-syntax"      :depends-on ("defpackage"
-                                                          "method-invocation"))
+                                                          "method-invocation"
+                                                          "internal-reader-syntax"))
+                 (:file "internal-reader-syntax" :depends-on ("defpackage"))
                  (:file "utilities"          :depends-on ("init"
                                                           "defpackage"
                                                           "method-invocation"
