@@ -378,6 +378,7 @@ conventional case for namespace identifiers in Objective-C."
                                   :direct-superclasses (list superclass)))))))
 
 
+#? (or string symbol) -> (or null objective-c-meta-class)
 (defun find-objc-meta-class (meta-class-name &optional errorp)
   (let ((meta-class
          (etypecase meta-class-name
@@ -390,6 +391,7 @@ conventional case for namespace identifiers in Objective-C."
                        nil))))
 
 
+#? string -> (or null objective-c-meta-class)
 (defun find-objc-meta-class-by-name (class-name-string)
   (let ((class-ptr (%objcl-find-meta-class class-name-string)))
     (if (objc-pointer-null class-ptr)
@@ -475,6 +477,7 @@ conventional case for namespace identifiers in Objective-C."
         (intern-pointer-wrapper 'selector :pointer selector-ptr))))
 
 
+#? string -> selector
 (defun intern-selector-by-name (selector-name)
   (let ((selector-ptr (%objcl-intern-selector selector-name)))
     (assert (not (cffi:null-pointer-p selector-ptr))
@@ -665,6 +668,7 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
            (error (make-condition 'no-such-selector :designator selector-name)))))
 
 
+#? (or string symbol list) -> selector
 (defun intern-selector (selector-name)
   "Retrieve a method selector by name, or create it if it does not exist.
 
@@ -966,17 +970,21 @@ __enable-method-syntax__.
 
 
 ;;;; (@* "Slot access")
+#? c-pointer -> string
 (defun objcl-slot-type (slot)
   (%objcl-slot-type slot))
 
+#? c-pointer -> string
 (defun objcl-slot-name (slot)
   (%objcl-slot-name slot))
 
+#? class -> list
 (defun objcl-class-direct-slots (class)
   (if (typep class 'objective-c-class)
       (objcl-class-direct-slots/pointer (pointer-to class))
       nil))
 
+#? c-pointer -> list
 (defun objcl-class-direct-slots/pointer (class-ptr)
   (with-foreign-objects ((count-ptr :unsigned-int)
                          (element-size-ptr :unsigned-int))
@@ -993,15 +1001,19 @@ __enable-method-syntax__.
                   collecting (mem-ref current-slot :pointer))
           (foreign-free array-pointer))))))
 
+#? c-pointer -> t
 (defun objcl-class-backed-by-lisp-class-p/pointer (class-ptr)
   (not (zerop (%objcl-class-backed-by-lisp-class-p class-ptr))))
 
+#? c-pointer t -> t
 (defun objcl-class-set-backed-by-lisp-class/pointer (class-ptr backed-p)
   (%objcl-class-set-backed-by-lisp-class class-ptr (if backed-p 1 0)))
 
+#? c-pointer -> t
 (defun objcl-object-backed-by-lisp-class-p/pointer (object-ptr)
   (not (zerop (%objcl-object-backed-by-lisp-class-p object-ptr))))
 
+#? (or id objective-c-class exception) -> t
 (defun objcl-object-backed-by-lisp-class-p (instance)
   (objcl-object-backed-by-lisp-class-p/pointer (pointer-to instance)))
 
