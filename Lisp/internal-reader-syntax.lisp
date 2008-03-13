@@ -126,3 +126,18 @@
                          collect `(type ,type ,arg-name)))
              (the ,return-type
                ,@real-body))))))))
+
+
+;; Quick test.
+#||
+\(progn
+   #.(disable-type-declaration-syntax)
+   #.(enable-type-declaration-syntax)
+   (pprint
+    '#? symbol t * &rest list ->
+    (defun typespec-name->type-id (typespec-name x y &rest rest)
+      "abc"
+      (declare foo)
+      "mulk"
+      (type-name->type-id (typespec-name->type-name typespec-name)))))
+||#
