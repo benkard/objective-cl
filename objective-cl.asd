@@ -137,6 +137,9 @@
                                                            "method-definition"
                                                            "reader-syntax"
                                                            "data-types"))
+                 (:file "util-sequences"     :depends-on ("defpackage"
+                                                          "method-invocation"
+                                                          "libobjcl"))
                  (:file "post-init"          :depends-on ("defpackage"
                                                           "libobjcl"
                                                           "init"
