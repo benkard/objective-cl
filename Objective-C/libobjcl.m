@@ -96,9 +96,15 @@ objcl_initialise_runtime (void)
       TRACE (@"Initialise runtime.");
       objcl_autorelease_pool = [[NSAutoreleasePool alloc] init];
 
+#if 0
 #ifndef __NEXT_RUNTIME__
-#if defined(GS_FAKE_MAIN) || defined(GS_PASS_ARGUMENTS) \
+#if defined(GS_FAKE_MAIN) || defined(GS_PASS_ARGUMENTS)         \
                           || defined(LIB_FOUNDATION_LIBRARY)
+      /* FIXME: The following is disabled because it makes [NSBundle
+         allBundles] fail with an NSInternalInconsistencyException.
+         This may be because we lie about the executable path.
+
+         Then again, it may be completely unneeded, anyway. */
 
       TRACE (@"Initialise environment.");
       if (!process)
@@ -111,6 +117,7 @@ objcl_initialise_runtime (void)
                          environment: environ];
           process = [NSProcessInfo processInfo];
         }
+#endif
 #endif
 #endif
 
