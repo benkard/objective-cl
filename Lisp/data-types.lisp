@@ -143,11 +143,27 @@ The following calls are all equivalent:
 
 #+cmu
 (defun selector-function (selector)
-  ;; FIXME?  This is okay, as load-forms for selectors are defined
-  ;; below.  Unfortunately, having to call the compiler for each newly
-  ;; interned selector makes COLLECT-SELECTORS slow.
-  (compile nil `(lambda (receiver &rest args)
-                  (apply #'invoke-by-name receiver ,selector args))))
+  ;; FIXME?  This is okay regardless of whether load-forms for selectors
+  ;; are defined, as those are only needed for the serialisation done by
+  ;; COMPILE-FILE, not for compilation per se.  (CL semantics _are_
+  ;; defined on forms, not on source text, after all.)  Unfortunately,
+  ;; having to invoke the compiler for each newly interned selector
+  ;; makes COLLECT-SELECTORS slow.
+  ;;
+  ;;   (compile nil `(lambda (receiver &rest args)
+  ;;                   (apply #'invoke-by-name receiver ,selector args)))
+  ;;
+  ;; Faster, but yields interpreted functions:
+  ;;
+  ;;   (coerce `(lambda (receiver &rest args)
+  ;;              (apply #'invoke-by-name receiver ,selector args))
+  ;;           'function)
+  ;;
+  ;; Maybe compile the function upon the first call?
+  (let ((*compile-verbose* nil))
+    (let ((lambda-form `(lambda (receiver &rest args)
+                          (apply #'invoke-by-name receiver ,selector args))))
+      (compile lambda-form nil))))
 
 
 (defmethod initialize-instance :after ((selector selector)
