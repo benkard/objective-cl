@@ -1,5 +1,11 @@
--*- mode: muse -*-
+#author Matthias Benkard
+#date 2007-09-23 - <lisp>(format-time-string "%Y-%m-%d")</lisp>
+#title Objective-CL Development Journal
+#desc News from the Objective-CL lab
 
+; Time-stamp: <2008-03-18 16:55:34 mulk>
+; 
+; C-c C-t	muse-project-publish-this-file
 ; C-c i t	insert-time-stamp
 
 
@@ -70,24 +76,28 @@ First, some stats (this is on Wirselkraut, my Dell Inspiron 6400).
 
 *** CLISP 2.44
 
+<example>
 OBJCL[3]> (time (collect-classes))
 Real time: 14.182854 sec.
 Run time: 14.180886 sec.
 Space: 189717640 Bytes
 GC: 123, GC time: 2.412143 sec.
 0
+</example>
 
 
 *** Allegro CL 8.1
 
+<example>
 OBJCL(3): (time (collect-classes))
-; cpu time (non-gc) 2,660 msec user, 10 msec system
-; cpu time (gc)     620 msec user, 0 msec system
-; cpu time (total)  3,280 msec user, 10 msec system
-; real time  3,291 msec
-; space allocation:
-;  1,816,989 cons cells, 44,365,376 other bytes, 72,082 static bytes
+ ; cpu time (non-gc) 2,660 msec user, 10 msec system
+ ; cpu time (gc)     620 msec user, 0 msec system
+ ; cpu time (total)  3,280 msec user, 10 msec system
+ ; real time  3,291 msec
+ ; space allocation:
+ ;  1,816,989 cons cells, 44,365,376 other bytes, 72,082 static bytes
 0
+</example>
 
 Note that Allegro CL defers class finalisation until the first instance
 of a class is created.  Then again, half the classes created are
@@ -97,6 +107,7 @@ impressive, either way.
 
 *** SBCL 1.0.14.debian
 
+<example>
 \* (time (collect-classes))
 STYLE-WARNING:
    slot names with the same SYMBOL-NAME but different SYMBOL-PACKAGE (possible
@@ -112,6 +123,7 @@ STYLE-WARNING:
    package problem) for class
    #<NS:+NS-OBJECT NS:+GSXMLP-LIST-PARSER {B75ED3E0}>:
        (SB-PCL::NAME NS:NAME)
+</example>
 
 That's how it starts off.  The STYLE-WARNINGs go on and on.  At first,
 they rush by fast, but each new class seems to take more time than the
@@ -121,9 +133,10 @@ order to tell you the TIME stats because it could well take decades...
 
 *** CMUCL CVS 19d 19d-release (19D)
 
+<example>
 \* (time (collect-classes))
-; Compiling LAMBDA NIL:
-; Compiling Top-Level Form:
+ ; Compiling LAMBDA NIL:
+ ; Compiling Top-Level Form:
 
 Type-error in KERNEL::INVALID-ARRAY-INDEX-ERROR-HANDLER:
    4 is not of type (INTEGER 0 (0))
@@ -141,6 +154,7 @@ Source:
 ; File: target:code/hash-new.lisp
 (AREF KV-VECTOR (* 2 I))
 0]
+</example>
 
 I don't have the slightest idea what that could mean.  A bug in CMUCL's
 hash table code?
@@ -315,6 +329,7 @@ big-endian machines.
 In principle, the typespec "c" is supposed indicate a char.  Now look at
 the following SLIME session transcript (SBCL/PowerPC on Mac OS X):
 
+<example>
 OBJECTIVE-CL> (defparameter *tmp*
                 (invoke (find-objc-class 'ns-string)
                         :string-with-u-t-f-8-string "Mulk."))
@@ -338,6 +353,7 @@ OBJECTIVE-CL> (primitive-invoke *tmp* :is-equal :long *tmp2*)
 1
 OBJECTIVE-CL> (primitive-invoke *tmp* :is-equal :long-long *tmp2*)
 4294967296
+</example>
 
 Now, I see why the last value is bogus (I'd be surprised if it weren't,
 actually), but why the heck is the correct value (1, because, you see,
@@ -516,3 +532,14 @@ slower than directly calling stuff from Objective-C).
 ** By The Way
 
 Gorm rules.  We need to make Objective-CL fully Gorm-compatible.
+
+
+----
+
+*Matthias Benkard, <lisp>(format-time-string "%d. %B %Y, %k:%M %Z")</lisp>*
+
+http://matthias.benkard.de/
+
+; Local Variables:
+; mode: muse
+; End:
