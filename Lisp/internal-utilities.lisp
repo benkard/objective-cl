@@ -87,9 +87,10 @@
 ;; Compatibility with older versions of CFFI.
 (unless (fboundp 'foreign-funcall-pointer)
   (defmacro foreign-funcall-pointer (pointer options &rest args)
-    (if (find-symbol "FOREIGN-FUNCALL-POINTER" '#:cffi)
-        `(cffi:foreign-funcall-pointer ,pointer ,options ,@args)
-        `(cffi:foreign-funcall (,pointer ,@options) ,@args))))
+    (let ((foreign-funcall-pointer-sym (find-symbol "FOREIGN-FUNCALL-POINTER" '#:cffi)))
+      (if foreign-funcall-pointer-sym
+          `(,foreign-funcall-pointer-sym ,pointer ,options ,@args)
+          `(cffi:foreign-funcall (,pointer ,@options) ,@args)))))
 
 
 ;; Caching of function values.

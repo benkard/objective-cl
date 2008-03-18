@@ -1005,7 +1005,7 @@ __enable-method-syntax__.
 (defun objcl-class-backed-by-lisp-class-p/pointer (class-ptr)
   (not (zerop (%objcl-class-backed-by-lisp-class-p class-ptr))))
 
-#? c-pointer t ->
+#? c-pointer t -> &rest t
 (defun objcl-class-set-backed-by-lisp-class/pointer (class-ptr backed-p)
   (%objcl-class-set-backed-by-lisp-class class-ptr (if backed-p 1 0)))
 
