@@ -3,7 +3,7 @@
 #title Objective-CL Development Diary
 #desc News from the Objective-CL lab
 
-; Time-stamp: <2008-03-18 17:50:00 mulk>
+; Time-stamp: <2008-03-18 18:00:52 mulk>
 ; 
 ; C-c i t	insert-time-stamp
 ; C-c C-t	muse-project-publish-this-file
@@ -169,7 +169,7 @@ I don't have the slightest idea what that could mean.  A bug in CMUCL's
 hash table code?
 
 
-*** LispWorks Personal 5.0.1
+*** <verbatim>LispWorks</verbatim> Personal 5.0.1
 
 Not timed yet.  Will do that someday.
 
@@ -237,26 +237,27 @@ For the GNU runtime (from JIGS, the Java Interface to GNUstep):
  - =JIGS/ObjcRuntimeUtilities.h=
  - =JIGS/ObjcRuntimeUtilities2.m=
 
-For the NeXT runtime (from PyObjC):
+For the NeXT runtime (from <verbatim>PyObjC</verbatim>):
 
  - =PyObjC/pyobjc-compat.h=
  - =PyObjC/objc-runtime-compat.h=
  - =PyObjC/objc-runtime-compat.m=
 
-Both the JIGS and PyObjC codebases are impressively modular.  Those guys
-know what they're doing.
+Both the JIGS and <verbatim>PyObjC</verbatim> codebases are impressively
+modular.  Those guys know what they're doing.
 
 
 * 2008-01-27, 12:55:06 CET
 
 Objective-CL now includes its own version of libffi, imported from an
-older version of PyObjC.  (The current version only supports x86 and
-PowerPC.)  Interestingly, according to the Web, Mac OS X 10.5 includes
-its own version of libffi.  This is really good news!  We can finally
-rest assured that Objective-CL does not break on Mac OS X because of
-libffi bitrot anytime soon.  In order to take advantage of this new
-state of the world, the build system has been changed so as to only
-compile our own version of libffi if we can't find any on the system.
+older version of <verbatim>PyObjC</verbatim>.  (The current version only
+supports x86 and PowerPC.)  Interestingly, according to the Web, Mac OS
+X 10.5 includes its own version of libffi.  This is really good news!
+We can finally rest assured that Objective-CL does not break on Mac OS X
+because of libffi bitrot anytime soon.  In order to take advantage of
+this new state of the world, the build system has been changed so as to
+only compile our own version of libffi if we can't find any on the
+system.
 
 The downside?  We now depend on autoconf.  I don't consider this a
 problem, though.
@@ -298,16 +299,17 @@ http://svn.gna.org/svn/gnustep/libs/base/trunk/Headers/Additions/GNUstepBase/obj
 ** `char' Does Actually Indicate a Char, Sometimes
 
 The latest changes made the test cases fail on GNUstep/x86, which either
-means that the PyObjC code is wrong, or the GNU runtime has very weird
-calling conventions that use =ints= as wrappers for =chars= or something.
-Anyway, I have reverted the changes for GNUstep and left them in place
-for Mac OS X (but note that I left the PyObjC code as it is, which means
-that libffi is still directed to treats chars as ints).  As a result,
-both NeXT/PowerPC and GNUstep/x86 work for now, but I'm uncertain about
-the status of other architectures as well as calling methods with chars
-and shorts as arguments, which I've got no test cases for.  I'm not
-confident that either GNUstep/PowerPC/SPARC/whatever or NeXT/x86 work
-the way my code expects them to.
+means that the <verbatim>PyObjC</verbatim> code is wrong, or the GNU
+runtime has very weird calling conventions that use =ints= as wrappers for
+=chars= or something.  Anyway, I have reverted the changes for GNUstep and
+left them in place for Mac OS X (but note that I left the
+<verbatim>PyObjC</verbatim> code as it is, which means that libffi is
+still directed to treats chars as ints).  As a result, both NeXT/PowerPC
+and GNUstep/x86 work for now, but I'm uncertain about the status of
+other architectures as well as calling methods with chars and shorts as
+arguments, which I've got no test cases for.  I'm not confident that
+either GNUstep/PowerPC/SPARC/whatever or NeXT/x86 work the way my code
+expects them to.
 
 
 * 2007-10-04, 16:52:32 CEST
@@ -316,14 +318,14 @@ the way my code expects them to.
 
 There's a good chance that I've figured out what to do about the
 =char/int= mess.  As it turns out, it isn't even limited to =chars=, as
-=shorts= are affected, too.  According to the code I took from PyObjC,
-specifically the typespec conversion functions in =libffi_support.m=, both
-GNUstep and NeXT/PowerPC treat =chars= and =shorts= as =ints=.  The only
-platform that isn't brain-damaged in this way seems to be NeXT/x86.  Or
-maybe it's even more brain-damaged, as it treats =shorts= and =chars=
-normally when they are used as arguments, but as =ints= when they're used
-as return values!  At least GNUstep and NeXT/PowerPC are brain-damaged
-in a *consistent* manner.
+=shorts= are affected, too.  According to the code I took from
+<verbatim>PyObjC</verbatim>, specifically the typespec conversion
+functions in =libffi_support.m=, both GNUstep and NeXT/PowerPC treat =chars=
+and =shorts= as =ints=.  The only platform that isn't brain-damaged in this
+way seems to be NeXT/x86.  Or maybe it's even more brain-damaged, as it
+treats =shorts= and =chars= normally when they are used as arguments, but as
+=ints= when they're used as return values!  At least GNUstep and
+NeXT/PowerPC are brain-damaged in a *consistent* manner.
 
 I figure the reason I never saw this problem in GNUstep is probably
 endianness.  The little-endian x86 lets you treat pointers to =ints= as
