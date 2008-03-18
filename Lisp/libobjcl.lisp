@@ -48,9 +48,9 @@
   (argc :int)
   (superclass-for-send-super :pointer)
   (return-typespec :string)
-  (arg-typespecs (:array :string))
+  (arg-typespecs :pointer)  ;array
   (return-value (:pointer :void))
-  (argv (:array (:pointer :void))))
+  (argv :pointer))  ;array
 
 (defcfun ("objcl_find_class" %objcl-find-class) :pointer
   (class-name :string))
@@ -145,7 +145,7 @@
   (callback :pointer)
   (argc :int)
   (return-typespec :string)
-  (arg-typespecs (:array :string)))
+  (arg-typespecs :pointer))             ;array
 
 (defcfun ("objcl_acquire_lock" %objcl-acquire-lock) :pointer
   (lock :pointer))
@@ -157,10 +157,10 @@
   (class-name :string)
   (superclass :pointer)
   (protocol-numer :int)
-  (protocol-names (:array :string))
+  (protocol-names :pointer)             ;array
   (ivar-number :int)
-  (ivar-names (:array :string))
-  (ivar-typespecs (:array :string)))
+  (ivar-names :pointer)                   ;array
+  (ivar-typespecs :pointer))              ;array
 
 (defcfun ("objcl_add_method" %objcl-add-method) :void
   (class :pointer)
@@ -169,7 +169,7 @@
   (callback :pointer)
   (argc :int)
   (return-typespec :string)
-  (arg-typespecs (:array :string))
+  (arg-typespecs :pointer)              ;array
   (signature :string)
   (registered-p :int))
 
