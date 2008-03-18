@@ -1,9 +1,9 @@
 #author Matthias Benkard
 #date 2007-09-23 - <lisp>(format-time-string "%Y-%m-%d")</lisp>
-#title Objective-CL Development Journal
+#title Objective-CL Development Diary
 #desc News from the Objective-CL lab
 
-; Time-stamp: <2008-03-18 16:55:34 mulk>
+; Time-stamp: <2008-03-18 17:37:47 mulk>
 ; 
 ; C-c C-t	muse-project-publish-this-file
 ; C-c i t	insert-time-stamp
@@ -13,7 +13,7 @@
 
 ** Profiling INVOKE
 
-I always profile INVOKE like this:
+I always profile **invoke** like this:
 
 <example>
 (let ((x (invoke (find-objc-class 'ns-method-signature)
@@ -26,7 +26,7 @@ I always profile INVOKE like this:
 
 Of course, this is a ridiculous microbenchmark that doesn't yield much
 information about actual Objective-C usage, but it's certainly useful
-for finding the bottlenecks of INVOKE calls.
+for finding the bottlenecks of **invoke** calls.
 
 Whether the performance of repeated invocation of the very same method
 on the very same object is all that interesting is, of course, an
@@ -37,7 +37,7 @@ entirely different matter.
 
 ** Memory Management
 
-This is what the GNUstep manual says about the #dealloc method:
+This is what the GNUstep manual says about the =#dealloc= method:
 
   In some circumstances, an object may wish to prevent itself from being
   deallocated, it can do this simply [by] refraining from calling the
@@ -52,13 +52,13 @@ Maybe we could use this in the case of a garbage-collected runtime.
 
 I have just discovered a discouraging bug in CMUCL's version of PCL that
 is confirmed by what Closer-to-MOP's feature list says:
-PCL:SET-FUNCALLABLE-INSTANCE-FUNCTION does not accept a closure as its
+**pcl:set-funcallable-instance-function** does not accept a closure as its
 second argument, it only accepts pure functions that don't close over
 things.
 
 Really.  That is a horrible bug.  It means that Objective-CL is broken
-on CMUCL in a fundamental way (see the definition of SHARED-INITIALIZE
-:AFTER (SELECTOR ...) in data-types.lisp) and I don't have the slightest
+on CMUCL in a fundamental way (see the definition of **shared-initialize
+:after (selector ...)** in =data-types.lisp=) and I don't have the slightest
 idea how to work around it.
 
 
@@ -68,7 +68,7 @@ idea how to work around it.
 
 Collecting all Objective-C classes and creating CLOS classes out of
 them, which is what the only recently introduced function
-COLLECT-CLASSES does, works reliably both on Allegro CL and on GNU
+**collect-classes** does, works reliably both on Allegro CL and on GNU
 CLISP.  There are some serious problems on CMUCL and SBCL, though.
 
 First, some stats (this is on Wirselkraut, my Dell Inspiron 6400).
@@ -125,10 +125,10 @@ STYLE-WARNING:
        (SB-PCL::NAME NS:NAME)
 </example>
 
-That's how it starts off.  The STYLE-WARNINGs go on and on.  At first,
+That's how it starts off.  The **style-warnings** go on and on.  At first,
 they rush by fast, but each new class seems to take more time than the
 previous one to create.  I'm not going to wait for it to complete in
-order to tell you the TIME stats because it could well take decades...
+order to tell you the **time** stats because it could well take decades...
 
 
 *** CMUCL CVS 19d 19d-release (19D)
@@ -186,7 +186,7 @@ bridge side-by-side, it's their responsibility to rename packages as
 needed.  Reader macros aren't essential for using Objective-CL, so they
 may be left disabled in such a case, anyway.  I'm going to try hard to
 use Objective-CL-specific package names within my own code
-(i.e. OBJECTIVE-C-CLASSES rather than NS), so renaming packages won't
+(i.e. **objective-c-classes** rather than **NS**), so renaming packages won't
 break things.
 
 I'll be opting for direct API compatibility for now.  It seems to be the
@@ -196,17 +196,17 @@ right choice.
 * 2008-01-29, 21:34:16 CET
 
 In the Objective-C 2.0 runtime, the functions
-class_add{Method,Protocol,Ivar}, class_copyMethodList,
-{class,protocol}_copyProtocolList, protocol_copyMethodDescriptionList,
-and class_copyPropertyList are probably our friends.
-class_copyMethodList may be used to together with
-method_setImplementation for good effect.
+=class_add{Method,Protocol,Ivar}=, =class_copyMethodList=,
+={class,protocol}_copyProtocolList=, =protocol_copyMethodDescriptionList=,
+and =class_copyPropertyList= are probably our friends.
+=class_copyMethodList= may be used to together with
+=method_setImplementation= for good effect.
 
 But...  What about the GNU runtime?  Is it okay to inspect a Class'
-`methods' member (see objc.h and objc-api.h) and change the IMPs that
+=methods= member (see =objc.h= and =objc-api.h=) and change the =IMPs= that
 the individual members point to?  Is it possible to add new methods at
-runtime by using class_add_method_list and thus
-ObjcUtilities_register_method_list?  Is the behaviour of these two
+runtime by using =class_add_method_list= and thus
+=ObjcUtilities_register_method_list=?  Is the behaviour of these two
 functions specified if a method list for a given class has already been
 registered in the past?  If so, do they replace the original list or
 amend it?
@@ -224,15 +224,15 @@ definition.
 
 For the GNU runtime (from JIGS, the Java Interface to GNUstep):
 
- * JIGS/ObjcRuntimeUtilities.c
- * JIGS/ObjcRuntimeUtilities.h
- * JIGS/ObjcRuntimeUtilities2.m
+ - =JIGS/ObjcRuntimeUtilities.c=
+ - =JIGS/ObjcRuntimeUtilities.h=
+ - =JIGS/ObjcRuntimeUtilities2.m=
 
 For the NeXT runtime (from PyObjC):
 
- * PyObjC/pyobjc-compat.h
- * PyObjC/objc-runtime-compat.h
- * PyObjC/objc-runtime-compat.m
+ - =PyObjC/pyobjc-compat.h=
+ - =PyObjC/objc-runtime-compat.h=
+ - =PyObjC/objc-runtime-compat.m=
 
 Both the JIGS and PyObjC codebases are impressively modular.  Those guys
 know what they're doing.
@@ -256,28 +256,28 @@ problem, though.
 * 2007-10-10, 12:02:38 CEST
 
 I've cleaned the Objective-C code up by making the NeXT and GNU
-runtime-specific code converge a bit.  This also makes FIND-SELECTOR
-return NIL for unknown selectors on the NeXT runtime, so compile-time
+runtime-specific code converge a bit.  This also makes **find-selector**
+return **nil** for unknown selectors on the NeXT runtime, so compile-time
 warnings about unknown methods are possible there now.  The latter
-relies on sel_isMapped, whose semantics are not entirely clear to me.
-On the one hand, Apple's reference manual states: “You can use this
-function to determine whether a given address is a valid selector,”
+relies on =sel_isMapped=, whose semantics are not entirely clear to me.
+On the one hand, Apple's reference manual states: *“You can use this
+function to determine whether a given address is a valid selector,”*
 which I interpret as meaning that it takes a selector pointer as an
 argument, not a string.  On the other hand, in the preceding section,
-the same document states: “You can still use the sel_isMapped function
-to determine whether a method name is mapped to a selector.”
+the same document states: *“You can still use the sel_isMapped function
+to determine whether a method name is mapped to a selector.”*
 
-So if I have two strings that aren't the same under POINTER-EQ, but that
+So if I have two strings that aren't the same under **pointer-eq**, but that
 both name the same valid selector that is registered with the runtime,
-like "self", say, does sel_isMapped work reliably in this case?  I'm not
+like ="self"=, say, does =sel_isMapped= work reliably in this case?  I'm not
 sure.
 
 On another note, I wonder what the difference between
-sel_get_uid/sel_getUid and sel_register_name/sel_registerName might be.
+=sel_get_uid/sel_getUid= and =sel_register_name/sel_registerName= might be.
 They seem to do the same thing.
 
-Maybe this whole #ifdef mess isn't even strictly necessary, anyway.  I
-could just copy objc-gnu2next.h from the GNUstep project (LGPLv3, so the
+Maybe this whole =#ifdef= mess isn't even strictly necessary, anyway.  I
+could just copy =objc-gnu2next.h= from the GNUstep project (LGPLv3, so the
 licensing is fine).
 
 http://svn.gna.org/svn/gnustep/libs/base/trunk/Headers/Additions/GNUstepBase/objc-gnu2next.h
@@ -290,7 +290,7 @@ http://svn.gna.org/svn/gnustep/libs/base/trunk/Headers/Additions/GNUstepBase/obj
 
 The latest changes made the test cases fail on GNUstep/x86, which either
 means that the PyObjC code is wrong, or the GNU runtime has very weird
-calling conventions that use ints as wrappers for chars or something.
+calling conventions that use =ints= as wrappers for =chars= or something.
 Anyway, I have reverted the changes for GNUstep and left them in place
 for Mac OS X (but note that I left the PyObjC code as it is, which means
 that libffi is still directed to treats chars as ints).  As a result,
@@ -306,19 +306,19 @@ the way my code expects them to.
 ** `char' Does Not Indicate a Char, Continued
 
 There's a good chance that I've figured out what to do about the
-char/int mess.  As it turns out, it isn't even limited to chars, as
-shorts are affected, too.  According to the code I took from PyObjC,
-specifically the typespec conversion functions in libffi_support.m, both
-GNUstep and NeXT/PowerPC treat chars and shorts as ints.  The only
+=char/int= mess.  As it turns out, it isn't even limited to =chars=, as
+=shorts= are affected, too.  According to the code I took from PyObjC,
+specifically the typespec conversion functions in =libffi_support.m=, both
+GNUstep and NeXT/PowerPC treat =chars= and =shorts= as =ints=.  The only
 platform that isn't brain-damaged in this way seems to be NeXT/x86.  Or
-maybe it's even more brain-damaged, as it treats shorts and chars
-normally when they are used as arguments, but as ints when they're used
+maybe it's even more brain-damaged, as it treats =shorts= and =chars=
+normally when they are used as arguments, but as =ints= when they're used
 as return values!  At least GNUstep and NeXT/PowerPC are brain-damaged
 in a *consistent* manner.
 
 I figure the reason I never saw this problem in GNUstep is probably
-endianness.  The little-endian x86 lets you treat pointers to ints as
-pointers to chars without breaking anything, but that doesn't work in
+endianness.  The little-endian x86 lets you treat pointers to =ints= as
+pointers to =chars= without breaking anything, but that doesn't work in
 big-endian machines.
 
 
@@ -326,7 +326,7 @@ big-endian machines.
 
 ** `char' Does Not Indicate a Char
 
-In principle, the typespec "c" is supposed indicate a char.  Now look at
+In principle, the typespec "c" is supposed indicate a =char=.  Now look at
 the following SLIME session transcript (SBCL/PowerPC on Mac OS X):
 
 <example>
@@ -357,17 +357,17 @@ OBJECTIVE-CL> (primitive-invoke *tmp* :is-equal :long-long *tmp2*)
 
 Now, I see why the last value is bogus (I'd be surprised if it weren't,
 actually), but why the heck is the correct value (1, because, you see,
-the strings *are* equal and +YES+ is 1 on my machine) returned only for
-the wrong return type?  The return type is specified as `c', but it's
-actually an int!  What's going on here?  And rather more importantly:
+the strings *are* equal and **+yes+** is 1 on my machine) returned only for
+the wrong return type?  The return type is specified as ="c"=, but it's
+actually an =int=!  What's going on here?  And rather more importantly:
 What can I do about this?  I don't feel exactly comfortable about
-cheating and treating `c' as specifying an int on all systems based on
+cheating and treating ="c"= as specifying an =int= on all systems based on
 the NeXT runtime without having any indication about what else there is
 in the NeXT runtime that has to be special-cased.  I haven't seen this
 weird behaviour documented anywhere.  Even this specific case is
-non-trivial, for I don't know whether this applies to all chars, or only
-to chars that are booleans, or only to chars that are returned, or even
-only to chars that are returned *and* are actually booleans.
+non-trivial, for I don't know whether this applies to all =chars=, or only
+to =chars= that are booleans, or only to =chars= that are returned, or even
+only to =chars= that are returned *and* are actually booleans.
 
 
 * 2007-09-26, 00:13:11 CEST
@@ -389,21 +389,21 @@ to make them available under the terms of the LGPLv3 in the first place
 
 ** Value Conversion Madness
 
-Open question: Should NSArray instances be converted to lists or arrays
-automatically?  If so, we ought to make functions like OBJC-CLASS-OF
+Open question: Should =NSArray= instances be converted to lists or arrays
+automatically?  If so, we ought to make functions like **objc-class-of**
 behave in a reasonable way for those kinds of objects, i.e. return
-NSArray or NSMutableArray (whatever it is that INVOKE makes out of them
+=NSArray= or =NSMutableArray= (whatever it is that **invoke** makes out of them
 when converting them into Objective-C instances again).
 
-Note that we *must not* convert NSMutableArray instances or any other
+Note that we *must not* convert =NSMutableArray= instances or any other
 mutable objects in this way!  Note also that our decision *must* be based
 on the dynamic type of the object, not the static one, because a method
-whose return type is NSArray may as well return an NSMutableArray that
+whose return type is =NSArray= may as well return an =NSMutableArray= that
 we've fed it sometime earlier.  This is okay for immutable objects, but
 mutable objects are bound to cause trouble when such a thing happens.
 
-Related types of objects are strings (NSString), hash tables
-(NSDictionary), and numbers (NSNumber).
+Related types of objects are strings (=NSString=), hash tables
+(=NSDictionary=), and numbers (=NSNumber=).
 
 Note that such behaviour would make it impossible to fully identify CLOS
 classes with Objective-C classes, as arrays would have no Objective-C
@@ -411,14 +411,14 @@ class to belong to.  Then again, why would you want to distinguish
 Objective-C arrays from Lisp arrays in your Lisp code, anyway?  Real
 integration means not having to worry about such things.
 
-On the other hand, conversion of large NSArrays may be prohibitively
+On the other hand, conversion of large =NSArrays= may be prohibitively
 expensive, so a switch is needed, either way.  The real question is what
 the default behaviour should look like.
 
-There's an alternative to consider, too.  For NSArrays, there is
+There's an alternative to consider, too.  For =NSArrays=, there is
 Christophe Rhodes' user-extensible sequence proposal, but even without
 support for that, we can provide a *conduit* (a package) that looks like
-the COMMON-LISP package, but overloads all sequence and hash-table
+the **common-lisp** package, but overloads all sequence and hash-table
 functions.  Overloading all sequence functions might be a lot of work,
 though.
 
@@ -428,24 +428,24 @@ though.
 ** Improved Memory Management for the Masses
 
 Up until now, the second-generation method invocation procedures
-(LOW-LEVEL-INVOKE and PRIMITIVE-INVOKE) simply called MAKE-INSTANCE for
+(**low-level-invoke** and **primitive-invoke**) simply called **make-instance** for
 every object received from Objective-C, which meant that although a
 lookup in the caching hash tables was done, method dispatch for
-MAKE-INSTANCE was needed.  Therefore, everything just worked, but did so
+**make-instance** was needed.  Therefore, everything just worked, but did so
 slowly.
 
 I realised yesterday, after having profiled the code and detected that
-MAKE-INSTANCE method dispatch was the speed bottleneck of INVOKE calls
-now, that overriding MAKE-INSTANCE wasn't really necessary for memory
+**make-instance** method dispatch was the speed bottleneck of **invoke** calls
+now, that overriding **make-instance** wasn't really necessary for memory
 management, as we could put instances into the hash tables and register
 finalisers for them just after they were fully created.
 
 So that's what I made the program do.  One of the results is much
 shorter and clearer code, but the more interesting one is a speed
 improvement of around the factor 3, making 100'000 calls to
-NSMethodSignature#getArgumentTypeAtIndex:, which previously called
-MAKE-INSTANCE for each returned value, take around 10s on my machine.
-With the CFFI speed hack enabled, caching CFFI::PARSE-TYPE results, this
+=NSMethodSignature#getArgumentTypeAtIndex:=, which previously called
+**make-instance** for each returned value, take around 10s on my machine.
+With the CFFI speed hack enabled, caching **cffi::parse-type** results, this
 figure even goes down to around 2s (that's 50'000 method calls per
 second).
 
@@ -464,8 +464,8 @@ even worse, optimisationwise).
 
 It's probably best not to spend too much time pondering this, though,
 because without the CFFI speed hack, the improvement would probably not
-be noticeable, anyway (CFFI::PARSE-TYPE is most often called by
-CFFI:MEM-REF and CFFI:MEM-AREF, not by the allocation routines).
+be noticeable, anyway (**cffi::parse-type** is most often called by
+**cffi:mem-ref** and **cffi:mem-aref**, not by the allocation routines).
 
 
 ** Milestones Lying Ahead
@@ -492,8 +492,8 @@ handled differently depending on the runtime.  In the case of GNUstep, I
 don't even know how to register new selectors yet.
 
 Third, varargs.  These are easy to implement, but I'm not sure how they
-should look like in the case of INVOKE.  Maybe a special keyword
-indicator like :* would work for indicating the end of the method name,
+should look like in the case of **invoke**.  Maybe a special keyword
+indicator like =:*= would work for indicating the end of the method name,
 but I think that could be a bit ugly.
 
 We shall see.
@@ -503,21 +503,21 @@ We shall see.
 
 On another note, I briefly checked out OpenMCL's support for Objective-C
 by randomly typing a bunch of method invocations into the listener and
-calling APROPOS a lot.  Here's what stuck:
+calling **apropos** a lot.  Here's what stuck:
 
-1. You have to explicitely create selectors by using @SELECTOR.  Why is
-that?  What's wrong with symbols and strings?
+ 1. You have to explicitely create selectors by using **@selector**.  Why is
+    that?  What's wrong with symbols and strings?
 
-2. Strings designate only NSString objects, not C strings.  Why?
+ 2. Strings designate only =NSString= objects, not C strings.  Why?
 
-3. The bridge is just as fast as I expect using libffi from C to be on
-that machine, that is, more than 20 times as fast as Objective-CL with
-the speed hack enabled (250'000 method calls per second; my Inspiron is
-faster, so don't compare this value to the ones above).
+ 3. The bridge is just as fast as I expect using libffi from C to be on
+    that machine, that is, more than 20 times as fast as Objective-CL
+    with the speed hack enabled (250'000 method calls per second; my
+    Inspiron is faster, so don't compare this value to the ones above).
 
-4. There's no FIND-OBJC-CLASS, but FIND-CLASS works.  Objective-C
-classes seem to be normal CLOS classes whose names are found in the NS
-package.
+ 4. There's no **find-objc-class**, but **find-class** works.  Objective-C
+    classes seem to be normal CLOS classes whose names are found in the
+    NS package.
 
 All in all, what struck me the most was the fact that the OpenMCL
 Objective-C bridge does not seem to make use of the concept of
@@ -536,7 +536,7 @@ Gorm rules.  We need to make Objective-CL fully Gorm-compatible.
 
 ----
 
-*Matthias Benkard, <lisp>(format-time-string "%d. %B %Y, %k:%M %Z")</lisp>*
+*Matthias Benkard, <lisp>(format-time-string "%Y-%m-%d, %k:%M %Z")</lisp>*
 
 http://matthias.benkard.de/
 
