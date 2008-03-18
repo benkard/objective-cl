@@ -1,5 +1,32 @@
 -*- mode: muse -*-
 
+; C-c i t	insert-time-stamp
+
+
+* 2008-03-18, 15:31:30 CET
+
+** Profiling INVOKE
+
+I always profile INVOKE like this:
+
+<example>
+(let ((x (invoke (find-objc-class 'ns-method-signature)
+                 :method-signature-for-selector 'new)))
+  (sb-sprof:with-profiling (:max-samples 500
+                            :loop t
+                            :report :flat)
+    (dotimes (i 100) (invoke x :get-argument-type-at-index 0))))
+</example>
+
+Of course, this is a ridiculous microbenchmark that doesn't yield much
+information about actual Objective-C usage, but it's certainly useful
+for finding the bottlenecks of INVOKE calls.
+
+Whether the performance of repeated invocation of the very same method
+on the very same object is all that interesting is, of course, an
+entirely different matter.
+
+
 * 2008-03-07, 02:17:50 CET
 
 ** Memory Management
