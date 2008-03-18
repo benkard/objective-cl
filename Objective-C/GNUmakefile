@@ -46,6 +46,8 @@ ifdef USE_LIBFFI
 ADDITIONAL_OBJCFLAGS += -DUSE_LIBFFI
 ifneq ($(HAVE_ANY_FFI_H),1)
 ADDITIONAL_LDFLAGS += ../libffi-3.0.4/.libs/libffi.a
+# We might want to consider linking with libffi.so instead because of
+# -fPIC issues.
 LIBRARIES_DEPEND_UPON += ../libffi-3.0.4/.libs/libffi.a
 ADDITIONAL_OBJCFLAGS += -I../libffi-3.0.4/include
 FFI_DEPS += ../libffi-3.0.4/.libs/libffi.a
@@ -86,7 +88,7 @@ obj/%.o: %.m
 endif
 
 ../libffi-3.0.4/.libs/libffi.a:
-	(cd ../libffi-3.0.4 && chmod +x ltconfig install-sh && sh ./configure && make)
+	(cd ../libffi-3.0.4 && chmod +x ltconfig install-sh && sh ./configure --with-pic && make)
 
 libffi_clean:
 	-make -C ../libffi-3.0.4 distclean
