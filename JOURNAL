@@ -3,10 +3,19 @@
 #title Objective-CL Development Diary
 #desc News from the Objective-CL lab
 
-; Time-stamp: <2008-03-18 17:37:47 mulk>
+; Time-stamp: <2008-03-18 17:50:00 mulk>
 ; 
-; C-c C-t	muse-project-publish-this-file
 ; C-c i t	insert-time-stamp
+; C-c C-t	muse-project-publish-this-file
+; C-c C-e	muse-edit-link-at-point
+; C-c C-i	muse-insert-thing
+
+
+----
+
+Context: [[http://matthias.benkard.de/objective-cl][The Objective-CL Project]].
+
+----
 
 
 * 2008-03-18, 15:31:30 CET
