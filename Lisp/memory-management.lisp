@@ -21,6 +21,7 @@
 (defvar *id-objects* (make-weak-value-hash-table))
 (defvar *exception-objects* (make-weak-value-hash-table))
 (defvar *selector-objects* (make-weak-value-hash-table))
+(defvar *class-objects* (make-hash-table))
 
 
 (defun intern-pointer-wrapper (class &rest initargs &key pointer &allow-other-keys)
@@ -37,7 +38,9 @@
              (find-objc-meta-class-by-name (%objcl-class-name pointer))))
           ((%objcl-object-is-class pointer)
            (return-from intern-pointer-wrapper
-             (find-objc-class-by-name (%objcl-class-name pointer))))
+             (or (gethash (pointer-address pointer) *class-objects*)
+                 (setf (gethash (pointer-address pointer) *class-objects*)
+                       (find-objc-class-by-name (%objcl-class-name pointer))))))
           ((objcl-object-backed-by-lisp-class-p/pointer pointer)
            (return-from intern-pointer-wrapper
              (apply #'intern-lisp-managed-foreign-instance initargs)))))

@@ -732,9 +732,11 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
 
 (defun object-get-class (obj)
   ;; OPTIMISE: Both find-objc-class-by-name and %objcl-class-name are
-  ;; slow and mostly unneeded.
-  (find-objc-class-by-name
-   (%objcl-class-name (%objcl-object-get-class (pointer obj)))))
+  ;; slow and mostly unneeded.  We can simply retrieve classes by class
+  ;; pointer if they have already been registered in a hash table
+  ;; somewhere.
+  (intern-pointer-wrapper 'objective-c-class
+                          :pointer (%objcl-object-get-class (pointer obj))))
 
 (defun object-get-meta-class (obj)
   (find-objc-meta-class-by-name

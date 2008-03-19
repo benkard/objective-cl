@@ -3,7 +3,7 @@
 #title Objective-CL Development Diary
 #desc News from the Objective-CL lab
 
-; Time-stamp: <2008-03-19 03:07:26 mulk>
+; Time-stamp: <2008-03-19 03:19:55 mulk>
 ; 
 ; C-c i t	insert-time-stamp
 ; C-c C-t	muse-project-publish-this-file
@@ -45,7 +45,7 @@ Evaluation took:
 
 After:
 
-</example>
+<example>
 Evaluation took:
   5.868 seconds of real time
   5.824364 seconds of user run time
@@ -59,6 +59,24 @@ Evaluation took:
 What I did was add a **name** slot to class **selector** so that **selector-name**
 need only access a slot now instead of calling a foreign function and
 converting the returned value to a Lisp string.
+
+After that, I enhanced **intern-pointer-wrapper** to intern classes, because
+**object-get-class**, another frequently called function, had to first
+acquire the class name associated with a class pointer and then finally
+call **find-objc-class-by-name** with that name.  The result:
+
+<example>
+Evaluation took:
+  4.058 seconds of real time
+  4.020251 seconds of user run time
+  0.016001 seconds of system run time
+  [Run times include 0.148 seconds GC run time.]
+  0 calls to %EVAL
+  0 page faults and
+  76,830,440 bytes consed.
+</example>
+
+That's gonna be it for now.  I'll call it a night.
 
 
 * 2008-03-18, 15:31:30 CET
