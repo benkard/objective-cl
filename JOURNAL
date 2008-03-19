@@ -3,7 +3,7 @@
 #title Objective-CL Development Diary
 #desc News from the Objective-CL lab
 
-; Time-stamp: <2008-03-19 03:19:55 mulk>
+; Time-stamp: <2008-03-19 12:44:21 mulk>
 ; 
 ; C-c i t	insert-time-stamp
 ; C-c C-t	muse-project-publish-this-file
@@ -16,6 +16,27 @@
 Context: [[http://matthias.benkard.de/objective-cl][The Objective-CL Project]].
 
 ----
+
+
+* 2008-03-19, 12:38:56 CET
+
+** Evil Microoptimisation
+
+After moving **(object-get-class receiver)** from **invoke-by-name-super-v** to
+**retrieve-method-signature-info**:
+
+<example>
+Evaluation took:
+  3.764 seconds of real time
+  3.760235 seconds of user run time
+  0.012001 seconds of system run time
+  [Run times include 0.096 seconds GC run time.]
+  0 calls to %EVAL
+  0 page faults and
+  72,809,568 bytes consed.
+</example>
+
+Finally, an excuse to use the **&aux** lambda list keyword.  Hooray!
 
 
 * 2008-03-19, 03:03:50 CET
@@ -77,6 +98,11 @@ Evaluation took:
 </example>
 
 That's gonna be it for now.  I'll call it a night.
+
+(By the way, this is using CFFI 0.9.2.  The Darcs version is
+significantly slower.  Remember the CFFI speed hack I mentioned sometime
+way back in the beginning?  It's needed for a Darcs CFFI, but I don't
+think it's needed for CFFI 0.9.2.)
 
 
 * 2008-03-18, 15:31:30 CET

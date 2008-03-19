@@ -215,17 +215,13 @@ easier to use with __apply__.
   ;; TODO: Support varargs.
   (let* ((selector (if (typep method-name 'selector)
                        method-name
-                       (find-selector method-name)))
-         (class (object-get-class receiver)))
+                       (find-selector method-name))))
     (multiple-value-bind (argc
                           method-return-typestring
                           method-return-type
                           method-arg-typestrings
                           method-arg-types)
-        (retrieve-method-signature-info class selector
-                                        (if (object-is-class-p receiver)
-                                            :class
-                                            :instance))
+        (retrieve-method-signature-info receiver selector)
       (assert (= argc (+ 2 (length args)))
               (args)
               "Wrong number of arguments (expected ~A, got ~A)."
@@ -296,17 +292,19 @@ easier to use with __apply__.
 
 
 (define-cached-function retrieve-method-signature-info
-    (class selector &optional (instance-or-class :instance))
-    (cons (cffi:pointer-address (pointer-to class))
+    (receiver selector
+     &aux (class-ptr (%objcl-object-get-class (pointer receiver))))
+    (cons (cffi:pointer-address class-ptr)
           (cffi:pointer-address (pointer-to selector)))
-  (let* ((signature
-          (objc-or (if (eq instance-or-class :instance)
+  (let* ((class (object-get-class receiver))
+         (signature
+          (objc-or (if (object-is-class-p receiver)
                        (primitive-invoke class
-                                         "instanceMethodSignatureForSelector:"
+                                         "methodSignatureForSelector:"
                                          'id
                                          selector)
                        (primitive-invoke class
-                                         "methodSignatureForSelector:"
+                                         "instanceMethodSignatureForSelector:"
                                          'id
                                          selector))
                    (error (make-condition 'message-not-understood
