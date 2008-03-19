@@ -525,46 +525,6 @@ If *name* is the name of an existing class:
   (%objcl-class-name (pointer-to class)))
 
 
-#? selector -> string
-(defun selector-name (selector)
-  "Find the name of a selector.
-
-## Arguments and Values:
-
-*selector* --- an **object** of **type** __selector__.
-
-Returns: *name* --- a **string**.
-
-
-## Description:
-
-__selector-name__ returns the name of *selector*.
-
-
-## Examples:
-
-    (selector-name (selector '(:string-with-c-string :encoding)))
-     ;=> \"stringWithCString:encoding:\"
-
-
-## Note:
-
-If *x* is an **object** of **type** __selector__:
-
-    (objc-equal x (find-selector (selector-name x)))  ;=> T
-
-If *name* is the name of an existing selector:
-
-    (equal name (selector-name (find-selector name)))  ;=> T
-
-
-## See Also:
-
-  __find-selector__, __selector__"
-  (declare (type selector selector))
-  (%objcl-selector-name (pointer-to selector)))
-
-
 #? (or id objective-c-class exception) selector -> t
 (defun get-method-implementation (object selector)
   (declare (type selector selector))
@@ -771,6 +731,8 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
   (%objcl-object-is-meta-class (pointer obj)))
 
 (defun object-get-class (obj)
+  ;; OPTIMISE: Both find-objc-class-by-name and %objcl-class-name are
+  ;; slow and mostly unneeded.
   (find-objc-class-by-name
    (%objcl-class-name (%objcl-object-get-class (pointer obj)))))
 

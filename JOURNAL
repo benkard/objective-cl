@@ -3,7 +3,7 @@
 #title Objective-CL Development Diary
 #desc News from the Objective-CL lab
 
-; Time-stamp: <2008-03-18 18:00:52 mulk>
+; Time-stamp: <2008-03-19 03:07:26 mulk>
 ; 
 ; C-c i t	insert-time-stamp
 ; C-c C-t	muse-project-publish-this-file
@@ -16,6 +16,49 @@
 Context: [[http://matthias.benkard.de/objective-cl][The Objective-CL Project]].
 
 ----
+
+
+* 2008-03-19, 03:03:50 CET
+
+** Optimising INVOKE
+
+The benchmark:
+
+<example>
+(let ((x (invoke (find-objc-class 'ns-method-signature)
+                 :method-signature-for-selector 'new)))
+  (time (dotimes (i 100000) (invoke x :get-argument-type-at-index 0))))
+</example>
+
+Before:
+
+<example>
+Evaluation took:
+  7.727 seconds of real time
+  7.136446 seconds of user run time
+  0.080005 seconds of system run time
+  [Run times include 0.288 seconds GC run time.]
+  0 calls to %EVAL
+  0 page faults and
+  218,448,224 bytes consed.
+</example>
+
+After:
+
+</example>
+Evaluation took:
+  5.868 seconds of real time
+  5.824364 seconds of user run time
+  0.032002 seconds of system run time
+  [Run times include 0.256 seconds GC run time.]
+  0 calls to %EVAL
+  0 page faults and
+  122,487,656 bytes consed.
+</example>
+
+What I did was add a **name** slot to class **selector** so that **selector-name**
+need only access a slot now instead of calling a foreign function and
+converting the returned value to a Lisp string.
 
 
 * 2008-03-18, 15:31:30 CET

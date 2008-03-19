@@ -81,8 +81,46 @@
   t)
 
 
+(defgeneric selector-name (selector)
+  (:documentation "Find the name of a selector.
+
+## Arguments and Values:
+
+*selector* --- an **object** of **type** __selector__.
+
+Returns: *name* --- a **string**.
+
+
+## Description:
+
+__selector-name__ returns the name of *selector*.
+
+
+## Examples:
+
+    (selector-name (selector '(:string-with-c-string :encoding)))
+     ;=> \"stringWithCString:encoding:\"
+
+
+## Note:
+
+If *x* is an **object** of **type** __selector__:
+
+    (objc-equal x (find-selector (selector-name x)))  ;=> T
+
+If *name* is the name of an existing selector:
+
+    (equal name (selector-name (find-selector name)))  ;=> T
+
+
+## See Also:
+
+  __find-selector__, __selector__"))
+
+
 (defclass selector (c2mop:funcallable-standard-object c-pointer-wrapper)
-     ()
+     ((name :accessor selector-name
+            :type string))
   (:metaclass c2mop:funcallable-standard-class)
   (:documentation "An Objective-C method selector.
 
@@ -134,6 +172,8 @@ The following calls are all equivalent:
   ;; Therefore, we handle this in a somewhat different manner for CMUCL.
   ;; See SELECTOR-FUNCTION below.
   (declare (ignore slot-names initargs))
+  (setf (slot-value selector 'name)
+        (%objcl-selector-name (pointer-to selector)))
   (c2mop:set-funcallable-instance-function
    selector
    #-cmu #'(lambda (receiver &rest args)

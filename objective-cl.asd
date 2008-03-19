@@ -60,7 +60,8 @@
                  (:file "performance-hacks"  :depends-on ("defpackage"))
                  (:file "policy"             :depends-on ("defpackage"
                                                           "parameters"
-                                                          "libobjcl"))
+                                                          "libobjcl"
+                                                          "data-types"))
                  (:file "libobjcl"           :depends-on ("defpackage"
                                                           "internal-reader-syntax"
                                                           "constant-data"
