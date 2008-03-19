@@ -296,19 +296,18 @@ easier to use with __apply__.
      &aux (class-ptr (%objcl-object-get-class (pointer receiver))))
     (cons (cffi:pointer-address class-ptr)
           (cffi:pointer-address (pointer-to selector)))
-  (let* ((class (object-get-class receiver))
-         (signature
+  (let* ((signature
           (objc-or (if (object-is-class-p receiver)
-                       (primitive-invoke class
+                       (primitive-invoke receiver
                                          "methodSignatureForSelector:"
                                          'id
                                          selector)
-                       (primitive-invoke class
+                       (primitive-invoke (object-get-class receiver)
                                          "instanceMethodSignatureForSelector:"
                                          'id
                                          selector))
                    (error (make-condition 'message-not-understood
-                                          :class class
+                                          :class (object-get-class receiver)
                                           :selector selector))))
          (argc (primitive-invoke signature "numberOfArguments" :unsigned-int))
          (method-return-typestring (primitive-invoke signature
