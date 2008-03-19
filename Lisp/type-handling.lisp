@@ -26,7 +26,8 @@
   bit-field-start
   bit-field-length
   bit-field-type
-  array-length)
+  array-length
+  unrecognised-tokens)
 
 
 (defun parse-typespec (typestring &optional return-type-p (start 0))
@@ -45,17 +46,27 @@
                       (otherwise name-and-children))))
       (case primary-type
         ((:bit-field bit-field)
-         (destructuring-bind (start length type) name-and-children
-           (make-typespec :primary-type :bit-field
-                          :qualifiers qualifiers
-                          :bit-field-start start
-                          :bit-field-length length
-                          :bit-field-type type)))
+         (ecase +runtime-type+
+           (:gnu (destructuring-bind (start length type) name-and-children
+                   (make-typespec :primary-type :bit-field
+                                  :qualifiers qualifiers
+                                  :bit-field-start start
+                                  :bit-field-length length
+                                  :bit-field-type type)))
+           (:next (destructuring-bind (start length) name-and-children
+                    (make-typespec :primary-type :bit-field
+                                   :qualifiers qualifiers
+                                   :bit-field-start start
+                                   :bit-field-length length)))))
         ((:array array)
          (make-typespec :primary-type primary-type
                         :qualifiers qualifiers
                         :array-length (first name-and-children)
                         :children (mapcar #'list->typespec children)))
+        ((:unrecognised unrecognised)
+         (make-typespec :primary-type primary-type
+                        :qualifiers qualifiers
+                        :unrecognised-tokens name-and-children))
         (otherwise
          (make-typespec :primary-type primary-type
                         :qualifiers qualifiers
@@ -65,15 +76,19 @@
 
 (defun typespec->list (typespec)
   (with-slots (primary-type qualifiers name children bit-field-start
-               bit-field-length bit-field-type array-length)
+               bit-field-length bit-field-type array-length
+               unrecognised-tokens)
       typespec
     `(,primary-type
       ,qualifiers
       ,@(when name (list name))
-      ,@(when bit-field-start (list bit-field-start))
+      ,@(when bit-field-length ;BIT-FIELD-START is NIL on Mac OS X, but
+                               ;we need it regardless.
+          (list bit-field-start))
       ,@(when bit-field-length (list bit-field-length))
       ,@(when bit-field-type (list bit-field-type))
       ,@(when array-length (list array-length))
+      ,@unrecognised-tokens
       ,@(mapcar #'typespec->list children))))
 
 
