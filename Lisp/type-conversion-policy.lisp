@@ -19,6 +19,9 @@
 
 
 (defmethod coerce-object (object (type list))
+  (coerce-object object (typespec type)))
+
+(defmethod coerce-object (object (type typespec))
   (coerce-object object (typespec-primary-type type)))
 
 

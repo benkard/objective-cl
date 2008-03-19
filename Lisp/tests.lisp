@@ -29,7 +29,8 @@
                           #:foreign-class-registered-p
                           #:define-objective-c-method #:defobjcmethod
                           #:objective-c-generic-function #:objective-c-method
-                          #:+nil+ #:+yes+ #:+no+ #:selector))
+                          #:+nil+ #:+yes+ #:+no+ #:selector
+                          #:typespec-primary-type))
 (in-package #:mulk.objective-cl.tests)
 (in-root-suite)
 
@@ -101,7 +102,7 @@
                                          "Klum."))))
   (is (primitive-invoke (find-objc-class 'ns-string)
                         :is-subclass-of-class
-                        (first (parse-typespec "c" t))
+                        (typespec-primary-type (parse-typespec "c" t))
                         (find-objc-class 'ns-object)))
   ;; performSelector:withObject: cannot be used with non-id return
   ;; types.
@@ -135,63 +136,67 @@
 #.(disable-objective-c-syntax)
 
 
+(defun typespec-equalp (t1 t2)
+  (equalp (objcl::typespec t1)
+          (objcl::typespec t2)))
+
 (deftest parsing-typespecs ()
-  (is (equal (parse-typespec "@0:4{_NSRange=II}8")
-             '(id ())))
-  (is (equal (parse-typespec ":4{_NSRange=II}8")
-             '(selector ())))
-  (is (equal (parse-typespec "{_NSRange=II}8")
-             '(struct () "_NSRange"
-               (:unsigned-int ())
-               (:unsigned-int ()))))
-  (is (equal (parse-typespec "rnNoV^V[10rjd]4")
-             ;; Actually, the order of the qualifiers doesn't
-             ;; matter, which means that this test is dumber than
-             ;; it ought to be.
-             '(pointer (oneway out inout in const)
-               (array (oneway)
-                10
-                (complex (const) (:double nil))))))
-  (is (equal (parse-typespec "ROi")
-             ;; Here, too, the order of the qualifiers is irrelevant.
-             '(:int (bycopy byref))))
-  (is (equal (parse-typespec "(?=)")
-             '(union () "?")))
-  (is (equal (parse-typespec "{?=rb123rjf456iii}")
-             (if (eq objcl::+runtime-type+ :gnu)
-                 '(struct () "?"
-                   (bit-field (const) 123 456
-                    (complex (const) (:float ())))
-                   (:int ())
-                   (:int ())
-                   (:int ()))
-                 '(struct () "?"
-                   (bit-field (const) nil 123)
-                   (complex (const) (:float ()))
-                   (:unrecognised () #\4)
-                   (:unrecognised () #\5)
-                   (:unrecognised () #\6)
-                   (:int ())
-                   (:int ())
-                   (:int ())))))
-  (is (equal (parse-typespec "^[100{?=ii}]")
-             '(pointer ()
-               (array () 100
-                (struct () "?" (:int ()) (:int ()))))))
-  (is (equal (parse-typespec "{?=BiIlLqQfd@#:*?}")
-             '(struct () "?"
-               (:boolean ())
-               (:int ())
-               (:unsigned-int ())
-               (:long ())
-               (:unsigned-long ())
-               (:long-long ())
-               (:unsigned-long-long ())
-               (:float ())
-               (:double ())
-               (id ()) (objective-c-class ()) (selector ())
-               (:string ())
-               (:unknown ()))))
+  (is (typespec-equalp (parse-typespec "@0:4{_NSRange=II}8")
+                       '(id ())))
+  (is (typespec-equalp (parse-typespec ":4{_NSRange=II}8")
+                       '(selector ())))
+  (is (typespec-equalp (parse-typespec "{_NSRange=II}8")
+                       '(struct () "_NSRange"
+                         (:unsigned-int ())
+                         (:unsigned-int ()))))
+  (is (typespec-equalp (parse-typespec "rnNoV^V[10rjd]4")
+                       ;; Actually, the order of the qualifiers doesn't
+                       ;; matter, which means that this test is dumber than
+                       ;; it ought to be.
+                       '(pointer (oneway out inout in const)
+                         (array (oneway)
+                          10
+                          (complex (const) (:double nil))))))
+  (is (typespec-equalp (parse-typespec "ROi")
+                       ;; Here, too, the order of the qualifiers is irrelevant.
+                       '(:int (bycopy byref))))
+  (is (typespec-equalp (parse-typespec "(?=)")
+                       '(union () "?")))
+  (is (typespec-equalp (parse-typespec "{?=rb123rjf456iii}")
+                       (if (eq objcl::+runtime-type+ :gnu)
+                           '(struct () "?"
+                             (bit-field (const) 123 456
+                              (complex (const) (:float ())))
+                             (:int ())
+                             (:int ())
+                             (:int ()))
+                           '(struct () "?"
+                             (bit-field (const) nil 123)
+                             (complex (const) (:float ()))
+                             (:unrecognised () #\4)
+                             (:unrecognised () #\5)
+                             (:unrecognised () #\6)
+                             (:int ())
+                             (:int ())
+                             (:int ())))))
+  (is (typespec-equalp (parse-typespec "^[100{?=ii}]")
+                       '(pointer ()
+                         (array () 100
+                          (struct () "?" (:int ()) (:int ()))))))
+  (is (typespec-equalp (parse-typespec "{?=BiIlLqQfd@#:*?}")
+                       '(struct () "?"
+                         (:boolean ())
+                         (:int ())
+                         (:unsigned-int ())
+                         (:long ())
+                         (:unsigned-long ())
+                         (:long-long ())
+                         (:unsigned-long-long ())
+                         (:float ())
+                         (:double ())
+                         (id ()) (objective-c-class ()) (selector ())
+                         (:string ())
+                         (:unknown ()))))
   (let ((funky-spec (parse-typespec "{?=cC}")))
     (is (member funky-spec
                 '((struct () "?"
@@ -200,7 +205,7 @@
                   (struct () "?"
                    (:int ((nominally :char)))
                    (:unsigned-int ((nominally :unsigned-char)))))
-                :test #'equalp)))
+                :test #'typespec-equalp)))
   (let ((funky-spec (parse-typespec "{?=sS}")))
     (is (member funky-spec
                 '((struct () "?"
@@ -209,29 +214,29 @@
                   (struct () "?"
                    (:int ((nominally :short)))
                    (:unsigned-int ((nominally :unsigned-short)))))
-                :test #'equalp)))
-  (is (equal (parse-typespec "{Mulk=*{Untermulk={Unteruntermulk=}}i}")
-             '(struct () "Mulk"
-               (:string ())
-               (struct () "Untermulk"
-                (struct () "Unteruntermulk"))
-               (:int ()))))
-  (is (equal (parse-typespec "^^{OpaqueStruct}")
-             '(pointer ()
-               (pointer ()
-                (struct (opaque) "OpaqueStruct")))))
-  (is (equal (parse-typespec "^{_GSKeyBinding=ii@\"GSKeyBindingAction\"@\"GSKeyBindingTable\"}")
-             '(pointer ()
-               (struct () "_GSKeyBinding"
-                (:int ())
-                (:int ())
-                (id ((:type "GSKeyBindingAction")))
-                (id ((:type "GSKeyBindingTable")))))))
-  (is (equal (parse-typespec "{?=\"next\"@\"GCObject\"\"previous\"@\"GCObject\"\"flags\"{?=}}")
-             '(struct () "?"
-               (id ((:type "GCObject") (:name "next")))
-               (id ((:type "GCObject") (:name "previous")))
-               (struct ((:name "flags")) "?")))))
+                :test #'typespec-equalp)))
+  (is (typespec-equalp (parse-typespec "{Mulk=*{Untermulk={Unteruntermulk=}}i}")
+                       '(struct () "Mulk"
+                         (:string ())
+                         (struct () "Untermulk"
+                          (struct () "Unteruntermulk"))
+                         (:int ()))))
+  (is (typespec-equalp (parse-typespec "^^{OpaqueStruct}")
+                       '(pointer ()
+                         (pointer ()
+                          (struct (opaque) "OpaqueStruct")))))
+  (is (typespec-equalp (parse-typespec "^{_GSKeyBinding=ii@\"GSKeyBindingAction\"@\"GSKeyBindingTable\"}")
+                       '(pointer ()
+                         (struct () "_GSKeyBinding"
+                          (:int ())
+                          (:int ())
+                          (id ((:type "GSKeyBindingAction")))
+                          (id ((:type "GSKeyBindingTable")))))))
+  (is (typespec-equalp (parse-typespec "{?=\"next\"@\"GCObject\"\"previous\"@\"GCObject\"\"flags\"{?=}}")
+                       '(struct () "?"
+                         (id ((:type "GCObject") (:name "next")))
+                         (id ((:type "GCObject") (:name "previous")))
+                         (struct ((:name "flags")) "?")))))
 
 
 (deftest printing-typespecs ()

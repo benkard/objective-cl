@@ -18,7 +18,66 @@
 (in-package #:mulk.objective-cl)
 
 
+(defstruct typespec
+  primary-type
+  qualifiers
+  name
+  children
+  bit-field-start
+  bit-field-length
+  bit-field-type
+  array-length)
+
+
 (defun parse-typespec (typestring &optional return-type-p (start 0))
+  (list->typespec (parse-typespec-to-list typestring return-type-p start)))
+
+
+(defun list->typespec (list)
+  (destructuring-bind (primary-type qualifiers . name-and-children) list
+    (let ((name (case primary-type
+                  ((struct union :struct :union)
+                   (first name-and-children))
+                  (otherwise nil)))
+          (children (case primary-type
+                      ((struct union array :struct :union :array)
+                       (rest name-and-children))
+                      (otherwise name-and-children))))
+      (case primary-type
+        ((:bit-field bit-field)
+         (destructuring-bind (start length type) name-and-children
+           (make-typespec :primary-type :bit-field
+                          :qualifiers qualifiers
+                          :bit-field-start start
+                          :bit-field-length length
+                          :bit-field-type type)))
+        ((:array array)
+         (make-typespec :primary-type primary-type
+                        :qualifiers qualifiers
+                        :array-length (first name-and-children)
+                        :children (mapcar #'list->typespec children)))
+        (otherwise
+         (make-typespec :primary-type primary-type
+                        :qualifiers qualifiers
+                        :name name
+                        :children (mapcar #'list->typespec children)))))))
+
+
+(defun typespec->list (typespec)
+  (with-slots (primary-type qualifiers name children bit-field-start
+               bit-field-length bit-field-type array-length)
+      typespec
+    `(,primary-type
+      ,qualifiers
+      ,@(when name (list name))
+      ,@(when bit-field-start (list bit-field-start))
+      ,@(when bit-field-length (list bit-field-length))
+      ,@(when bit-field-type (list bit-field-type))
+      ,@(when array-length (list array-length))
+      ,@(mapcar #'typespec->list children))))
+
+
+(defun parse-typespec-to-list (typestring &optional return-type-p (start 0))
   "Parse a typestring like \"@0:4{_NSRange=II}8\" into something like (ID ()).
 
 \"rn{_NSRange=II}8\" is parsed into (STRUCT (CONST IN)
@@ -97,7 +156,7 @@ Returns: (VALUES typespec byte-position string-position)"
                                 collect (multiple-value-bind (typespec
                                                               byte-position
                                                               new-string-pos)
-                                            (parse-typespec
+                                            (parse-typespec-to-list
                                              typestring
                                              nil
                                              string-position)
@@ -109,9 +168,9 @@ Returns: (VALUES typespec byte-position string-position)"
               (#\^ (list 'pointer
                          qualifiers
                          (multiple-value-bind (typespec byte-pos new-str-pos)
-                             (parse-typespec typestring
-                                             nil
-                                             (1+ string-position))
+                             (parse-typespec-to-list typestring
+                                                     nil
+                                                     (1+ string-position))
                            (declare (ignore byte-pos))
                            (prog1 typespec
                                   (setq string-position new-str-pos)))))
@@ -124,7 +183,7 @@ Returns: (VALUES typespec byte-position string-position)"
                            (prog1 count
                                   (setq string-position new-str-pos)))
                          (multiple-value-bind (typespec byte-pos new-str-pos)
-                             (parse-typespec typestring nil string-position)
+                             (parse-typespec-to-list typestring nil string-position)
                            (declare (ignore byte-pos))
                            ;; Skip end marker (right bracket).
                            (prog1 typespec
@@ -133,7 +192,7 @@ Returns: (VALUES typespec byte-position string-position)"
                (list 'complex
                      qualifiers
                      (multiple-value-bind (typespec byte-pos new-str-pos)
-                         (parse-typespec typestring nil (1+ string-position))
+                         (parse-typespec-to-list typestring nil (1+ string-position))
                        (declare (ignore byte-pos))
                        (prog1 typespec
                               (setq string-position new-str-pos)))))
@@ -150,7 +209,7 @@ Returns: (VALUES typespec byte-position string-position)"
                      (multiple-value-setq (bit-field-typespec
                                            byte-position
                                            string-position)
-                         (parse-typespec typestring nil string-position))
+                         (parse-typespec-to-list typestring nil string-position))
                      (multiple-value-setq (bit-field-length string-position)
                          (parse-integer typestring
                                         :start string-position
@@ -232,8 +291,9 @@ Returns: (VALUES typespec byte-position string-position)"
 
 (defun typespec (typespec-designator)
   (etypecase typespec-designator
-    (symbol (list typespec-designator ()))
-    (list typespec-designator)))
+    (symbol (make-typespec :primary-type typespec-designator))
+    (list (list->typespec typespec-designator))
+    (typespec typespec-designator)))
 
 
 (defun print-typespec-to-string (typespec)
@@ -244,7 +304,7 @@ Returns: (VALUES typespec byte-position string-position)"
 (defun print-typespec (typespec &optional (stream *standard-output*))
   "Convert a TYPESPEC into a typestring and write the result to a STREAM."
   (destructuring-bind (type-name modifiers &rest rest)
-      (typespec typespec)
+      (typespec->list (typespec typespec))
     (dolist (modifier modifiers)
       (format stream "~A" (case modifier
                             (const #\r)
@@ -275,20 +335,22 @@ Returns: (VALUES typespec byte-position string-position)"
                         (format stream "~C" (ecase type-name
                                               (struct #\})
                                               (union #\))))))
-      ((bit-field) (if (eq +runtime-type+ :gnu)
-                       (destructuring-bind (alignment length . children) rest
-                         (format stream "b~D" alignment)
-                         (dolist (child children)
-                           (print-typespec child stream))
-                         (format stream "~D" length))
-                       (destructuring-bind (alignment length . children) rest
-                         (declare (ignore alignment children))
-                         (format stream "b~D" length))))
-      ((array) (destructuring-bind (length . children) rest
-                 (format stream "[~D" length)
-                 (dolist (child children)
-                   (print-typespec child stream))
-                 (format stream "]")))
+      ((bit-field :bit-field)
+       (if (eq +runtime-type+ :gnu)
+           (destructuring-bind (alignment length . children) rest
+             (format stream "b~D" alignment)
+             (dolist (child children)
+               (print-typespec child stream))
+             (format stream "~D" length))
+           (destructuring-bind (alignment length . children) rest
+             (declare (ignore alignment children))
+             (format stream "b~D" length))))
+      ((array :array)
+       (destructuring-bind (length . children) rest
+         (format stream "[~D" length)
+         (dolist (child children)
+           (print-typespec child stream))
+         (format stream "]")))
       ((:unrecognised) (format stream "~{~A~}" rest))
       (t (format stream "~A" (typespec-name->type-id type-name))
          (dolist (child rest)
@@ -301,8 +363,4 @@ Returns: (VALUES typespec byte-position string-position)"
   ;; type found.
   (cadr (find-if #'(lambda (x) (and (consp x)
                                     (eq (car x) 'nominally)))
-                 (cadr (typespec typespec)))))
-
-
-(defun typespec-primary-type (typespec)
-  (car (typespec typespec)))
+                 (typespec-qualifiers (typespec typespec)))))

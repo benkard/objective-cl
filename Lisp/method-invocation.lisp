@@ -263,25 +263,26 @@ easier to use with __apply__.
 
 (defun primitive-invoke (receiver method-name return-type &rest args)
   (flet ((ad-hoc-value->typespec (arg)
-           (etypecase arg
-             ;; According to Allegro CL, strings
-             ;; are POINTERP (and thus elements of
-             ;; the C-POINTER type), so they have
-             ;; to come first in this TYPECASE
-             ;; form.  Weird.
-             ;;
-             ;; By the way, pointers are
-             ;; represented as integers in Allegro
-             ;; CL, so all integers are POINTERP,
-             ;; too.
-             (string '(:string ()))
-             (selector '(selector ()))
-             (c-pointer-wrapper '(id ()))
-             (c-pointer '(:pointer ()))
-             (integer '(:int ())))))
-    (let ((return-typespec `(,return-type ()))
-          (arg-typespecs (list* '(id ())
-                                '(selector ())
+           (typespec
+            (etypecase arg
+              ;; According to Allegro CL, strings
+              ;; are POINTERP (and thus elements of
+              ;; the C-POINTER type), so they have
+              ;; to come first in this TYPECASE
+              ;; form.  Weird.
+              ;;
+              ;; By the way, pointers are
+              ;; represented as integers in Allegro
+              ;; CL, so all integers are POINTERP,
+              ;; too.
+              (string '(:string ()))
+              (selector '(selector ()))
+              (c-pointer-wrapper '(id ()))
+              (c-pointer '(:pointer ()))
+              (integer '(:int ()))))))
+    (let ((return-typespec (typespec `(,return-type ())))
+          (arg-typespecs (list* (typespec '(id ()))
+                                (typespec '(selector ()))
                                 (mapcar #'ad-hoc-value->typespec args))))
       (low-level-invoke receiver
                         (selector method-name)
@@ -387,7 +388,7 @@ easier to use with __apply__.
                 for arg in args
                 for arg-type in (cddr arg-types) ;skip the first two arguments
                 for arg-c-type in (cddr arg-c-types) ;likewise
-                do (case (car arg-type)
+                do (case (typespec-primary-type arg-type)
                      ((:pointer)
                       (setf (argref :pointer i) arg))
                      ((objective-c-class exception)

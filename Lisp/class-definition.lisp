@@ -197,6 +197,7 @@ __define-objective-c-method__"
                  :type (or null string))
    (foreign-type :initarg :foreign-type
                  :initform nil
+                 :type typespec
                  :accessor slot-definition-foreign-type)
    (foreign-slot :initarg :foreign-slot
                  :initform nil
@@ -277,7 +278,7 @@ __define-objective-c-method__"
             :initfunction (or initfunction
                               #'(lambda ()
                                   (or initform *objcl-foreign-default-initform*)))
-            :foreign-type foreign-type
+            :foreign-type (typespec foreign-type)
             :foreign-name foreign-name
             :foreign-slot foreign-slot
             :class class))))

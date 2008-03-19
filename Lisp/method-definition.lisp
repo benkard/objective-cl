@@ -407,7 +407,7 @@ __define-objective-c-generic-function__.
          (method-name (generic-function-name->selector
                        (generic-function-name gf)))
          (registered-p (foreign-class-registered-p class))
-         (return-type (method-return-type method))
+         (return-type (typespec (method-return-type method)))
          (method-argument-types (method-argument-types method))
          (argument-types (list* (first method-argument-types)
                                 :selector
@@ -421,9 +421,10 @@ __define-objective-c-generic-function__.
                                   (gensym "ARG"))
                               argument-types)))
     (eval (loop for type in argument-types
+                for typespec = (typespec type)
                 for symbol in arg-symbols
-                collect (list symbol (typespec->c-type type)) into cffi-lambda-list
-                if (member (typespec-primary-type type) '(:id :class :selector))
+                collect (list symbol (typespec->c-type typespec)) into cffi-lambda-list
+                if (member (typespec-primary-type typespec) '(:id :class :selector))
                   collect `(intern-pointer-wrapper ',type :pointer ,symbol)
                     into arguments
                 else
