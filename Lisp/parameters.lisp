@@ -64,17 +64,17 @@ Objective-CL.
 
 \(With __install-reader-syntax__ enabled.)
 
-    (defvar *tmp*)
-    (setq *trace-method-calls* t)
+    (defvar \\*tmp\\*)
+    (setq \\*trace-method-calls\\* t)
 
-    (setq *tmp* [NSString new])
+    (setq \\*tmp\\* [NSString new])
     ; Invoking [new].
 
-    (setq *tmp* [NSString string])
+    (setq \\*tmp\\* [NSString string])
     ; Invoking [string].
     ; Invoking [retain].
 
-    (setq *tmp* nil)
+    (setq \\*tmp\\* nil)
     (gc :full t)
     ; Invoking [release].
     ; Invoking [release].

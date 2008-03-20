@@ -277,8 +277,8 @@ objects or classes, let alone send messages to them.
 
 *errorp* --- a **generalized boolean**.
 
-Returns: *class* --- an __objc-class__ object representing the Objective
-C class whose name is *class-name*.
+Returns: *class* --- an __objective-c-class__ object representing the
+Objective C class whose name is *class-name*.
 
 
 ## Description:
@@ -309,8 +309,8 @@ __find-objc-class__.
 
 ## Examples:
 
-    (find-objc-class \"NSObject\")     ;=> #<OBJC-CLASS NSObject>
-    (find-objc-class 'ns-object)     ;=> #<OBJC-CLASS NSObject>
+    (find-objc-class \"NSObject\")     ;=> #<NS:+NS-OBJECT NS:NS-OBJECT {B5C1C480}>
+    (find-objc-class 'ns-object)     ;=> #<NS:+NS-OBJECT NS:NS-OBJECT {B5C1C480}>
     (find-objc-class 'nsobject)      ;=> NIL
 
 
