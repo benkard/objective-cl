@@ -71,6 +71,37 @@ undefined."))
   `(define-objective-c-method ,name ,@args))
 
 
+;; Put simply, a DEFINE-OBJECTIVE-C-METHOD form is transformed into a
+;; DEFMETHOD form along with the code needed for initialisation of the
+;; corresponding Objective-C method and registration of the callback.
+;;
+;; Note that mapping Objective-C methods to generic functions in a naive
+;; way breaks super calls, because the following can (and will) happen:
+;;
+;;  1. Someone sends a message to a Lisp-based instance.
+;;
+;;  2. The callback is entered.  It calls the generic function of the
+;;     same name, which invokes the effective method applying to the
+;;     object and method arguments.
+;;
+;;  2. The method calls super.
+;;
+;;  3. The callback for the parent class is entered.  It, in turn, calls
+;;     the generic function of the same name, which invokes the same
+;;     effective method called in step 1.  Oops.
+;;
+;; There are two solutions to this problem:
+;;
+;;  1. Do not use generic functions and methods at all, but define a
+;;     function for each callback.
+;;
+;;  2. Pass the class name as the first argument so that the dispatch
+;;     mechanism may dispatch over it.
+;;
+;; Option (2), which is what we do, is preferable because it allows the
+;; user to dispatch over an arbitrary set of arguments other than the
+;; first by reusing the standard CLOS generic function dispatch
+;; mechanism.
 (defmacro define-objective-c-method (name &rest args)
   "Define a new Objective-C method.
 
