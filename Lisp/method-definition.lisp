@@ -74,9 +74,12 @@ undefined."))
 (defmacro define-objective-c-method (name &rest args)
   "Define a new Objective-C method.
 
+*args* ::= \\{*qualifier*\\}\\* *lambda-list* [[\\{*declaration*\\}\\* | *docstring*]] \\{*form*\\}\\*
+
+
 ## Arguments and Values:
 
-*name* --- a *symbol*.
+*name* --- a **symbol**.
 
 *qualifier* --- a **method qualifier**.
 
@@ -84,7 +87,11 @@ undefined."))
 
 *lambda-list* --- a **modified lambda list**.
 
-*body* --- an **implicit progn**.
+*docstring* --- a **string** (not evaluated).
+
+*declaration* --- a **local declaration** (not evaluated).
+
+*forms* --- an **implicit progn**.
 
 
 ## Description:
@@ -126,7 +133,9 @@ function __super__.
                   ~&~A, respectively.~
                   ~&Have a nice day.\" z a)
       (+ y 20))
-      => #<OBJECTIVE-C-METHOD OBJECTIVE-C-METHODS::|foo:bar:stuff:do:| ((EQL NS:MLK-MY-CLASS) NS:MLK-MY-CLASS T T T NS:NS-NUMBER) {CE8E531}>
+      => #<OBJECTIVE-C-METHOD
+           OBJECTIVE-C-METHODS::|foo:bar:stuff:do:|
+           ((EQL NS:MLK-MY-CLASS) NS:MLK-MY-CLASS T T T NS:NS-NUMBER) {CE8E531}>
 
     (#/foo:bar:stuff:do: (#/new (find-objc-class 'ns::mlk-my-class))
                          100
