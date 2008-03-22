@@ -1,0 +1,127 @@
+#author Matthias Benkard
+#date 2008-03-22 - <lisp>(format-time-string "%Y-%m-%d")</lisp>
+#title Objective-CL Change Log
+#desc Objective-C changes by version.
+
+; Note to readers of this file: You ought to be able to read this file
+; as plain text just fine.  The peculiar markup above is included in
+; this header for muse-mode to be able to format this change log as an
+; HTML file intended for publication on the project web site.
+
+----
+
+Context: [[http://matthias.benkard.de/objective-cl][The Objective-CL Project]].
+
+----
+
+* 0.2.2 (?)
+
+ - CMUCL compatibility has been restored.
+ - The function IN-METHOD-SYNTAX has been added.  It's like
+   ENABLE-METHOD-SYNTAX except that it does not store the original
+   syntax to be restored by DISABLE-METHOD-SYNTAX later.  Use this for
+   file-local readtable changes (as opposed to code-block-local ones).
+ - =NSArray= implements the generic sequence protocol on SBCL.
+ - Initialisation behaviour has changed on GNUstep.  This should fix
+   some potential crashes related to =NSBundle=.
+ - A number of compilation errors on AMD64 machines have been fixed.
+ - CFFI 0.9.2 is supported.  Previously, a Darcs checkout of CFFI had to
+   be used.
+ - Method invocation speed has improved.
+
+
+* 0.2.1 (2008-03-07)
+
+ - Objective-C instances and selectors returned by method callbacks are
+   converted into pointers correctly.
+ - All class definitions done through DEFINE-OBJECTIVE-C-CLASS make the
+   class name be interned in the OBJECTIVE-C-CLASSES package.
+ - Foreign Lisp value wrapper types =MLKLispString=, =MLKLispArray=, and
+   =MLKLispList= have been implemented and are used automatically when
+   passing Lisp values to foreign code.
+ - Add function SUPER.  Methods can call it in order to do a super call.
+ - Lisp-managed Objective-C instances are not destroyed all of a sudden
+   by the Lisp garbage collector.
+ - Methods with a void return type don't return anything.
+ - DEFINE-OBJECTIVE-C-GENERIC-FUNCTION calls have been made obsolete by
+   a more prudent version of DEFINE-OBJECTIVE-C-METHOD.
+
+
+* 0.2.0 (2008-03-05)
+
+ - LOW-LEVEL-INVOKE and PRIMITIVE-INVOKE have been unified.
+ - Initialisation is more robust than before.
+ - char and BOOL return values are distinguished by an explicit policy
+   rather than naively treating all chars as BOOLs.
+ - Type handling has been improved, especially in those cases where the
+   actual type and the nominal type differ (e.g. what the runtime tells
+   us are chars are actually ints).
+ - Passing booleans to methods as arguments does the right thing.
+ - In theory, structs and unions can be returned by methods, which used
+   to be unsupported.  In practise, this support is untested.
+ - The user is now able to define Objective-C classes from Lisp.
+ - The build system is both more robust and faster than before.  The
+   speed improvement is achieved by trying to use the system's `cp'
+   command before falling back to manual copying.
+ - The function COLLECT-CLASSES has been added.  Its purpose is to
+   collect and register (i.e. intern) all classes known to the
+   Objective-C runtime on the Lisp side.
+ - Whereas before, just about any version of libffi sufficed, libffi 3.x
+   is now required for its much improved closure support.  Accordingly,
+   the included version of libffi has been updated to 3.0.4.  Note that
+   this change in requirements will cause Leopard's integrated version
+   of libffi to be rejected by the build system.
+ - The user is now able to define Objective-C methods from Lisp.
+ - CMUCL is not supported in this release.
+
+
+* 0.1.1 (2008-02-11)
+
+ - CLISP compatibility is finally a reality.
+ - 0.1.0's build system was broken by choosing to run `make' in the
+   wrong directory, thereby neglecting to run `configure' if needed.
+   This has been fixed.
+
+
+* 0.1.0 (2008-02-10)
+
+ - The Objective-C 2.0 runtime is supported (in theory, at least; no one
+   is known to have tested the support so far).
+ - Objective-C classes are mapped onto CLOS classes via the MOP.
+   Metaclasses are likewise mapped to CLOS metaclasses.  Foreign slots
+   can be accessed by way of SLOT-VALUE.
+ - Selectors have been made funcallable.
+ - On the NeXT runtime, bit fields don't confuse the type specification
+   parser anymore.
+ - All internal method calls have been made independent of the
+   READTABLE-CASE setting.
+
+
+* 0.0.3 (2008-01-27)
+
+ - The build procedure now tries to use a preinstalled libffi, if such a
+   thing can be found on the system.
+
+
+* 0.0.2 (2008-01-26)
+
+ - The libffi build procedure used to be buggy on Mac OS X.  It should
+   work now.
+
+
+* 0.0.1 (2008-01-26)
+
+ - This is the first public release.
+ - We've got method invocation and object instantiation.  More is
+   planned for later.
+
+
+----
+
+*Matthias Benkard, <lisp>(format-time-string "%Y-%m-%d, %k:%M %Z")</lisp>*
+
+http://matthias.benkard.de/
+
+; Local Variables:
+; mode: muse
+; End:
