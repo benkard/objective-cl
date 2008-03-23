@@ -203,7 +203,7 @@ The following calls are all equivalent:
   (let ((*compile-verbose* nil))
     (let ((lambda-form `(lambda (receiver &rest args)
                           (apply #'invoke-by-name receiver ,selector args))))
-      (compile lambda-form nil))))
+      (compile nil lambda-form))))
 
 
 (defmethod initialize-instance :after ((selector selector)
