@@ -1,9 +1,9 @@
 #author Matthias Benkard
 #date 2007-09-23 - <lisp>(format-time-string "%Y-%m-%d")</lisp>
 #title Objective-CL Development Diary
-#desc News from the Objective-CL lab
+#desc Random news from the Objective-CL lab
 
-; Time-stamp: <2008-03-19 12:44:21 mulk>
+; Time-stamp: <2008-03-23 12:56:15 mulk>
 ; 
 ; C-c i t	insert-time-stamp
 ; C-c C-t	muse-project-publish-this-file
@@ -16,6 +16,81 @@
 Context: [[http://matthias.benkard.de/objective-cl][The Objective-CL Project]].
 
 ----
+
+
+* 2008-03-21, 21:17:36 CET
+
+** A Self-Evaluating Form
+
+**#1=(quote #1#)**
+
+<example>
+    +---------------+
+    |               |
+    v               |
+ +------+------+    |
+ |      |      |    |
+ |      |   --------+
+ |  |   |      |
+ +--|---+------+
+    |
+    v
+  QUOTE
+</example>
+
+
+
+* 2008-03-21, 19:50:17 CET
+
+** SUPER vs. CALL-NEXT-METHOD
+
+It just dawned on me that by changing the way
+**objective-c-generic-function** dispatch works, it may be possible to give
+**call-next-method** a useful semantics.
+
+Assuming =MLKFnord= is a Lisp-backed Objective-C class which =mulk= is an
+instance of, and =MLKSlack= is a Lisp-backed superclass of =MLKFnord=, then
+the call =[mulk foo: 10 bar: nil]= is done as follows:
+
+ 1. =MLKFnord's= =foo=:bar: callback is entered.
+
+ 2. The callback calls (#/foo:bar: 'mlk-fnord mulk 10 nil).
+
+ 3. The generic function computes an effective method for these
+    arguments and calls it.
+
+ 4. The effective method calls **super**.
+
+ 5. **super** causes =MLKSlack's= =foo:bar:= callback to be entered.
+
+ 6. The callback calls =(#/foo:bar: 'mlk-slack mulk 10 nil)=.  And so on.
+
+I'm experimenting with an alternative approach that does away with the
+extra class name argument.  Here are some random thoughts (which may be
+completely wrong), in no particular order:
+
+ * For **call-next-method** to be useful in a multiple inheritance setting,
+   Objective-C classes must be last in the class precedence list,
+   because =NSObject's= version of a method will never call **super** and
+   therefore the call chain will always end there, regardless of what we
+   do on the Lisp side.
+
+ * A method's definition class must be stored in its method metaobject.
+
+ * A callback needs to call **compute-applicable-methods**, remove all
+   methods up to the "current" one (which is the first one with the
+   callback's class as the definition class, that is, the class named by
+   what is now the artificial class name argument that makes **super** calls
+   work), and call the form returned by **compute-effective-method** for the
+   trimmed list of applicable methods.
+
+The nice thing is that this gives **call-next-method** a meaning that isn't
+completely bogus.  The bad thing is that it might make method calls
+(**call-next-method** and **super**, at least) slow.  This new idea is, after
+all, way off the usual way of invoking the CLOS dispatch mechanism.
+
+Note that we could still use normal CLOS generic function dispatch if
+the object's class is the same as the callback's definition class.
 
 
 * 2008-03-19, 12:38:56 CET
