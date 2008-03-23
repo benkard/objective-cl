@@ -3,7 +3,7 @@
 #title Objective-CL Development Diary
 #desc Random news from the Objective-CL lab
 
-; Time-stamp: <2008-03-23 12:56:15 mulk>
+; Time-stamp: <2008-03-23 14:10:56 mulk>
 ; 
 ; C-c i t	insert-time-stamp
 ; C-c C-t	muse-project-publish-this-file
@@ -52,9 +52,9 @@ Assuming =MLKFnord= is a Lisp-backed Objective-C class which =mulk= is an
 instance of, and =MLKSlack= is a Lisp-backed superclass of =MLKFnord=, then
 the call =[mulk foo: 10 bar: nil]= is done as follows:
 
- 1. =MLKFnord's= =foo=:bar: callback is entered.
+ 1. =MLKFnord's= =foo:bar:= callback is entered.
 
- 2. The callback calls (#/foo:bar: 'mlk-fnord mulk 10 nil).
+ 2. The callback calls =(#/foo:bar: 'mlk-fnord mulk 10 nil)=.
 
  3. The generic function computes an effective method for these
     arguments and calls it.
@@ -69,15 +69,15 @@ I'm experimenting with an alternative approach that does away with the
 extra class name argument.  Here are some random thoughts (which may be
 completely wrong), in no particular order:
 
- * For **call-next-method** to be useful in a multiple inheritance setting,
+ - For **call-next-method** to be useful in a multiple inheritance setting,
    Objective-C classes must be last in the class precedence list,
    because =NSObject's= version of a method will never call **super** and
    therefore the call chain will always end there, regardless of what we
    do on the Lisp side.
 
- * A method's definition class must be stored in its method metaobject.
+ - A method's definition class must be stored in its method metaobject.
 
- * A callback needs to call **compute-applicable-methods**, remove all
+ - A callback needs to call **compute-applicable-methods**, remove all
    methods up to the "current" one (which is the first one with the
    callback's class as the definition class, that is, the class named by
    what is now the artificial class name argument that makes **super** calls
