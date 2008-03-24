@@ -722,7 +722,8 @@ separating parts by hyphens works nicely in all of the `:INVERT`,
 (defun pointer (thing)
   (etypecase thing
     (c-pointer thing)
-    ((or c-pointer-wrapper exception) (pointer-to thing))))
+    ((or c-pointer-wrapper exception) (pointer-to thing))
+    (t (pointer-to (coerce-object thing :id)))))
 
 (defun object-is-class-p (obj)
   (%objcl-object-is-class (pointer obj)))

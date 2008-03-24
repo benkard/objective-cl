@@ -207,7 +207,13 @@ easier to use with __apply__.
 
   __invoke__"
 
-  (invoke-by-name-super-v receiver method-name nil args))
+  (invoke-by-name-super-v (typecase receiver
+                            (symbol (find-objc-class receiver))
+                            ((or id objective-c-class) receiver)
+                            (t (pointer receiver)))
+                          method-name
+                          nil
+                          args))
 
 
 (defun invoke-by-name-super-v (receiver method-name superclass-for-send-super
