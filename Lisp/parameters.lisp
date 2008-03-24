@@ -26,6 +26,8 @@
 
 (defvar *skip-retaining* nil)
 
+(defvar *skip-value-wrapper-unwrapping* nil)
+
 (defvar *in-make-pointer-wrapper-p* nil
   "A debugging tool that helps identify direct MAKE-INSTANCE calls that
 ought not be there.")

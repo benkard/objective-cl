@@ -26,12 +26,6 @@
   (find-objc-class "NSDictionary" t))
 
 
-(defclass lisp-value-wrapper-mixin ()
-     ((lisp-value :initarg :value
-                  :initform nil
-                  :accessor lisp-value)))
-
-
 ;; May usefully override, among others:
 ;;  - description
 (defclass ns::mlk-lisp-value (ns::ns-object lisp-value-wrapper-mixin)
@@ -62,12 +56,14 @@
 (defun make-lisp-value (value)
   ;; FIXME: The following won't work.  Make MAKE-INSTANCE more useful...
   ;(make-instance 'ns::mlk-lisp-value :value value)
-  (let ((instance (invoke (typecase value
+  (let* ((*skip-value-wrapper-unwrapping* t)
+         (instance
+          (invoke-by-name (typecase value
                             (string (find-class 'ns::mlk-lisp-string))
                             (vector (find-class 'ns::mlk-lisp-array))
                             (list (find-class 'ns::mlk-lisp-list))
                             (t (find-class 'ns::mlk-lisp-value)))
-                          'new)))
+                          "new")))
     (setf (lisp-value instance) value)
     instance))
 

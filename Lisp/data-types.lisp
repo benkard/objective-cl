@@ -582,6 +582,12 @@ seems like an acceptable trade-off.
           (trivial-garbage:finalize new-wrapper #'finaliser))))))
 
 
+(defclass lisp-value-wrapper-mixin ()
+     ((lisp-value :initarg :value
+                  :initform nil
+                  :accessor lisp-value)))
+
+
 (defgeneric objcl-eql (obj1 obj2))
 
 (with-compilation-unit ()

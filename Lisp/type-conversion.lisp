@@ -25,9 +25,17 @@
               (typespec-primary-type typespec))
       ((id objective-c-class exception selector)
        (let ((*skip-retaining* skip-retaining-p))
-         (intern-pointer-wrapper (typespec-primary-type typespec)
-                                 :pointer (cffi:mem-ref foreign-value-cell
-                                                        c-type))))
+         (let ((instance
+                (intern-pointer-wrapper (typespec-primary-type typespec)
+                                        :pointer (cffi:mem-ref
+                                                  foreign-value-cell
+                                                  c-type))))
+           (typecase instance
+             (lisp-value-wrapper-mixin
+              (if *skip-value-wrapper-unwrapping*
+                  instance
+                  (lisp-value instance)))
+             (t instance)))))
       ((:char :unsigned-char)
        ;; FIXME?  This is non-trivial.  See policy.lisp for
        ;; details.
