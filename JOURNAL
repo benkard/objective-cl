@@ -3,7 +3,7 @@
 #title Objective-CL Development Diary
 #desc Random news from the Objective-CL lab
 
-; Time-stamp: <2008-03-23 14:10:56 mulk>
+; Time-stamp: <2008-06-10 15:27:51 mulk>
 ; 
 ; C-c i t	insert-time-stamp
 ; C-c C-t	muse-project-publish-this-file
@@ -16,6 +16,39 @@
 Context: [[http://matthias.benkard.de/objective-cl][The Objective-CL Project]].
 
 ----
+
+
+* 2008-03-26, 15:48:01 CET
+
+**  Bundles And Nib Files
+
+Currently, there is no way of loading nib files without knowing their
+exact location on the host filesystem.  This is unacceptable but a bit
+hard to solve.
+
+Every Cocoa application is normally located in its own application
+bundle, a directory containing resources such as nib files, among
+others.  In contrast, simply loading Objective-CL into your Lisp image
+does not cause any reasonable bundle path to be registered, as the
+bundle path is determined from the running executable's name, which
+usually belongs to your Lisp system.
+
+There are two approaches to handle this situation:
+
+ 1. Create application bundles out of Objective-CL-based applications.
+    This may be done either from Lisp itself or by a shell script.
+
+ 2. Manually register the bundle path with the runtime somehow.
+
+The disadvantage of option 1 is that it's no good for interactive
+development, so option 2 is more or less needed additionally either way.
+
+Either approach might need to defer loading =libobjcl= until after the
+application's launch.  This in turn would mean that Objective-CL would
+have to be split into two parts: a loader and the rest.  The loader
+might have to provide =notinline=-declared stubs of all of Objective-CL's
+public functions as well as all public macro definitions.  This would
+get ugly fast...  An alternative is needed.
 
 
 * 2008-03-21, 21:17:36 CET
