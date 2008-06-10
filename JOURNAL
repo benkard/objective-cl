@@ -58,19 +58,21 @@ get ugly fast...  An alternative is needed.
 **#1=(quote #1#)**
 
 <example>
-    +---------------+
-    |               |
-    v               |
- +------+------+    |
- |      |      |    |
- |      |   --------+
- |  |   |      |
- +--|---+------+
+    +--------------------+
+    |                    |
+    v                    |
+ +------+------+      +--|---+------+
+ |      |      |      |  |   |      |
+ |      |   --------->|      |   ---------> NIL
+ |  |   |      |      |      |      |
+ +--|---+------+      +------+------+
     |
     v
   QUOTE
 </example>
 
+(**Update 2008-06-10, 15:20 CEST:** [[http://www.foldr.org/~michaelw/][Michael Weber]] noticed that I had
+erroneously drawn **#1=(quote . #1#)**.  I've fixed the drawing.)
 
 
 * 2008-03-21, 19:50:17 CET
