@@ -22,6 +22,16 @@
 (defvar *bracket-syntax-macro-chars* (list))
 
 
+(defun in-method-syntax ()
+  ;; FIXME: Document.
+  (setq *readtable* (copy-readtable *readtable*))
+  (push (get-dispatch-macro-character #\# #\/) *method-syntax-macro-chars*)
+  (set-dispatch-macro-character #\# #\/ #'(lambda (stream char arg)
+                                            (declare (ignore char arg))
+                                            (read-objective-c-method stream)))
+  (values))
+
+
 (defun enable-method-syntax ()
   "Install a **reader macro** that makes method calls look nicer.
 
@@ -76,10 +86,7 @@ __selector__s registered by way of __collect-methods__.
   __enable-objective-c-syntax__"
 
   (save-readtable)
-  (push (get-dispatch-macro-character #\# #\/) *method-syntax-macro-chars*)
-  (set-dispatch-macro-character #\# #\/ #'(lambda (stream char arg)
-                                            (declare (ignore char arg))
-                                            (read-objective-c-method stream)))
+  (in-method-syntax)
   (values))
 
 

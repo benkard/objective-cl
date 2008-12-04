@@ -25,6 +25,7 @@
            #:shutdown-runtime
            #:install-reader-syntax
            #:enable-method-syntax
+           #:in-method-syntax
            #:enable-objective-c-syntax
            #:disable-method-syntax
            #:disable-objective-c-syntax

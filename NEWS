@@ -14,6 +14,14 @@ Context: [[http://matthias.benkard.de/objective-cl][The Objective-CL Project]].
 
 ----
 
+* 0.2.3 (?)
+
+ - The function IN-METHOD-SYNTAX has been added.  It's like
+   ENABLE-METHOD-SYNTAX except that it does not store the original
+   syntax to be restored by DISABLE-METHOD-SYNTAX later.  Use this for
+   file-local readtable changes (as opposed to code-block-local ones).
+
+
 * 0.2.2 (2008-03-23)
 
  - CMUCL compatibility has been restored.
