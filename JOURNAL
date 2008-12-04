@@ -405,7 +405,7 @@ In the Objective-C 2.0 runtime, the functions
 =class_add{Method,Protocol,Ivar}=, =class_copyMethodList=,
 ={class,protocol}_copyProtocolList=, =protocol_copyMethodDescriptionList=,
 and =class_copyPropertyList= are probably our friends.
-=class_copyMethodList= may be used to together with
+=class_copyMethodList= may be used in combination with
 =method_setImplementation= for good effect.
 
 But...  What about the GNU runtime?  Is it okay to inspect a Class'

@@ -463,9 +463,14 @@ __define-objective-c-generic-function__.
     (eval (loop for type in argument-types
                 for typespec = (typespec type)
                 for symbol in arg-symbols
+                for first-arg-p = t then nil
                 collect (list symbol (typespec->c-type typespec)) into cffi-lambda-list
                 if (member (typespec-primary-type typespec) '(:id :class :selector))
-                  collect `(intern-pointer-wrapper ',type :pointer ,symbol)
+                  collect `(coerce-object ,symbol ',type)
+                #+nil
+                `(intern-pointer-wrapper ',type
+                        :pointer ,symbol
+                        :skip-wrapper-unwrapping ,first-arg-p)
                     into arguments
                 else
                   collect symbol into arguments

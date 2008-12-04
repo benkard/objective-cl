@@ -71,12 +71,13 @@
 ;; Must override:
 ;;  - characterAtIndex:
 ;;  - length
+;;  - replaceCharactersInRange:withString:
 ;;
 ;; May usefully override, among others:
 ;;  - substringWithRange: (maybe)
 ;;  - getCharacters:range: (for performance reasons)
 ;;  - description
-(defclass ns::mlk-lisp-string (ns::ns-string lisp-value-wrapper-mixin)
+(defclass ns::mlk-lisp-string (ns::ns-mutable-string lisp-value-wrapper-mixin)
      ()
   (:metaclass ns::+ns-object))
 
