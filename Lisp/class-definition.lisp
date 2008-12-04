@@ -382,12 +382,18 @@ __define-objective-c-method__"
                                       direct-slots
                                       direct-default-initargs)
   (let* ((objective-c-superclasses
-          (remove-if-not #'(lambda (c) (typep c 'objective-c-class))
+          (remove-if-not #'(lambda (c) (or (typep c 'objective-c-class)
+                                           (eq (symbol-package (class-name c))
+                                               (find-package '#:ns))))
                          direct-superclasses))
          (superclass
           (case (length objective-c-superclasses)
             (0 (find-objc-class "NSObject"))
-            (1 (first objective-c-superclasses))
+            (1 (let ((class (first objective-c-superclasses)))
+                 (if (typep class 'forward-referenced-class)
+                     ;; Load the super class definition on demand.
+                     (find-objc-class (symbol->objc-class-name (class-name class)))
+                     class)))
             (otherwise
              (error "Tried to derive all of ~S at the same time.  ~
                     (At most one Objective-C class may be derived at once.)"
@@ -397,9 +403,7 @@ __define-objective-c-method__"
                                direct-slots))
          (new-class-pointer
           (objcl-create-class (symbol->objc-class-name name)
-                              (find-if #'(lambda (c)
-                                           (typep c 'objective-c-class))
-                                       direct-superclasses)
+                              superclass
                               nil
                               (mapcar #'(lambda (x)
                                           (getf x :foreign-name

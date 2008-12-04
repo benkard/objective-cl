@@ -346,7 +346,10 @@ conventional case for namespace identifiers in Objective-C."
   ;; the way as well.
   (let ((class-name (objc-class-name->symbol class-name-string))
         (class-ptr (%objcl-find-class class-name-string)))
-    (or (find-class class-name nil)
+    (or (let ((lisp-class (find-class class-name nil)))
+          ;; FORWARD-REFERENCED-CLASSes aren't what we want!
+          (and (typep lisp-class 'objective-c-class)
+               lisp-class))
         (if (objc-pointer-null class-ptr)
             nil
             (let ((superclass (let ((potential-superclass
