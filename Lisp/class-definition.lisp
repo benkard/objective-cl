@@ -413,6 +413,21 @@ __define-objective-c-method__"
                               (mapcar #'(lambda (x)
                                           (getf x :foreign-type))
                                       ivars)))
+         (direct-slots-with-typespecs
+          ;; Convert typespec designators into typespecs.
+          (mapcar #'(lambda (x)
+                      (if (or (null (getf x :foreign-type nil))
+                              (typespec-p (getf x :foreign-type nil)))
+                          x
+                          (let ((new-slotd (copy-list x))
+                                (designator (getf x :foreign-type)))
+                            (setf (getf new-slotd :foreign-type)
+                                  (list->typespec
+                                   (if (listp designator)
+                                       designator
+                                       (list designator '()))))
+                            (print new-slotd))))
+                  direct-slots))
          (metaclass
           (ensure-class (objc-meta-class-name->symbol
                          (symbol->objc-class-name name))
@@ -424,7 +439,7 @@ __define-objective-c-method__"
           (ensure-class (intern (symbol-name name) '#:objective-c-classes)
                         :metaclass metaclass
                         :pointer new-class-pointer
-                        :direct-slots direct-slots
+                        :direct-slots direct-slots-with-typespecs
                         :direct-superclasses direct-superclasses
                         :direct-default-initargs direct-default-initargs
                         :new-foreign-class-p t)))
